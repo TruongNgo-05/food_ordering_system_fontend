@@ -1,0 +1,170 @@
+.notfound-page {
+  background: #c4bdbd;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.notfound-container {
+  text-align: center;
+  max-width: 800px;
+  width: 100%;
+}
+
+.big-404 {
+  font-size: 100px;
+  font-weight: bold;
+  color: rgb(18, 1, 1);
+  opacity: 0.2;
+  line-height: 1;
+  margin-bottom: 15px;
+  animation: pulse 3s ease-in-out infinite;
+  user-select: none;
+}
+
+.icon-wrapper {
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.icon-circle {
+  width: 50px;
+  height: 50px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.content-card {
+  background: white;
+  border-radius: 20px;
+  padding: 50px 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  margin-bottom: 30px;
+}
+
+.notfound-page h1 {
+  font-size: 33px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.subtitle {
+  font-size: 17px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.suggestions {
+  background: #f3f0ff;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.suggestions h3 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.suggestions li {
+  color: #666;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+  line-height: 1.6;
+}
+
+.suggestions li::before {
+  content: "•";
+  color: #667eea;
+  font-size: 24px;
+  margin-right: 10px;
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.footer-text {
+  color: white;
+  opacity: 0.8;
+  font-size: 14px;
+  margin-top: 20px;
+}
+.notfound-page {
+  overflow: hidden;
+}
+/* Icon colors theo error */
+.icon-circle.warning {
+  background: #facc15;
+  color: #78350f;
+}
+
+.icon-circle.danger {
+  background: #ef4444;
+  color: white;
+}
+
+.icon-circle.error {
+  background: #dc2626;
+  color: white;
+}
+
+.icon-circle.info {
+  background: #6366f1;
+  color: white;
+}
+
+.icon-circle i {
+  font-size: 20px;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .big-404 {
+    font-size: 100px;
+  }
+  .notfound-page h1 {
+    font-size: 32px;
+  }
+  .content-card {
+    padding: 30px 20px;
+  }
+  .button-group {
+    flex-direction: column;
+  }
+}

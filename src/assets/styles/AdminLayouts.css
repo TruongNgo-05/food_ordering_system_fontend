@@ -1,0 +1,68 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+/* Main content area - to the right of Sider */
+.main-content {
+  flex: 1;
+  margin-left: 260px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Header - at the top */
+.main-content > .header {
+  position: sticky;
+  top: 0;
+  z-index: 99;
+}
+
+/* Content area */
+.content {
+  flex: 1;
+  padding: 24px;
+  background: #f5f5f5;
+}
+
+/* Content area styling */
+.content h1 {
+  color: #333;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+/* Card styling for content */
+.content-card {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Footer styling */
+.footer {
+  height: 48px;
+  background: white;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 80px;
+  }
+  
+  .content {
+    padding: 16px;
+  }
+}
+
