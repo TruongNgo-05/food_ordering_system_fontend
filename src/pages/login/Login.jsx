@@ -56,7 +56,7 @@ const Login = () => {
               <img src={logo} alt="Ngô Quang Trường" className="logo" />
             </div>
             <h1>Chào mừng trở lại</h1>
-            <p>Đăng nhập vào hệ thống quản lý</p>
+            <p>Đăng nhập vào hệ thống</p>
           </div>
 
           <Form layout="vertical" className="login-form" onFinish={onFinish}>
@@ -121,8 +121,8 @@ const Login = () => {
 
         <div className="info-side">
           <div className="info-content">
-            <h2>Hệ thống X</h2>
-            <p>Quản lý X một cách chuyên nghiệp</p>
+            <h2>Hệ thống nhà hàng NQT</h2>
+            <p>Quản lý nhà hàng một cách chuyên nghiệp</p>
           </div>
         </div>
       </div>

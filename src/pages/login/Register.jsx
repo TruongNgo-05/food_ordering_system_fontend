@@ -48,6 +48,17 @@ const Register = () => {
             <p>Đăng ký để sử dụng hệ thống</p>
           </div>
           <Form layout="vertical" className="login-form" onFinish={onFinish}>
+            <Form.Item
+              label="Tên đăng nhập"
+              name="username"
+              rules={[{ required: true, message: "Vui lòng nhập username" }]}
+            >
+              <Input
+                placeholder="Username"
+                prefix={<FontAwesomeIcon icon={faUser} />}
+              />
+            </Form.Item>
+
             <Row gutter={16}>
               <Col xs={24} sm={12}>
                 <Form.Item
@@ -75,17 +86,6 @@ const Register = () => {
                 </Form.Item>
               </Col>
             </Row>
-
-            <Form.Item
-              label="Username"
-              name="username"
-              rules={[{ required: true, message: "Vui lòng nhập username" }]}
-            >
-              <Input
-                placeholder="Username"
-                prefix={<FontAwesomeIcon icon={faUser} />}
-              />
-            </Form.Item>
 
             <Form.Item
               label="Email"
@@ -134,29 +134,23 @@ const Register = () => {
               />
             </Form.Item>
 
-            <Row gutter={16}>
-              <Col xs={24} sm={12}>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={loading}
-                  block
-                  size="large"
-                >
-                  Đăng Ký
-                </Button>
-              </Col>
-              <Col xs={24} sm={12}>
-                <Button
-                  type="default"
-                  block
-                  size="large"
-                  onClick={() => navigate("/")}
-                >
-                  Quay Lại
-                </Button>
-              </Col>
-            </Row>
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                block
+                size="large"
+              >
+                Đăng Ký
+              </Button>
+            </Form.Item>
+
+            <Form.Item style={{ textAlign: "center", marginBottom: 0 }}>
+              <Button type="link" onClick={() => navigate("/")}>
+                Quay Lại
+              </Button>
+            </Form.Item>
           </Form>
 
           <div className="login-footer">
@@ -166,8 +160,8 @@ const Register = () => {
 
         <div className="info-side">
           <div className="info-content">
-            <h2>Hệ thống X</h2>
-            <p>Quản lý X một cách chuyên nghiệp</p>
+            <h2>Hệ thống nhà hàng NQT</h2>
+            <p>Quản lý nhà hàng một cách chuyên nghiệp</p>
           </div>
         </div>
       </div>
