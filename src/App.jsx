@@ -22,6 +22,7 @@ import CustomerCart from "./pages/customer/Cart";
 import CustomerOrders from "./pages/customer/Orders";
 import CustomerFavorites from "./pages/customer/Favorites";
 import CustomerSupport from "./pages/customer/Support";
+import CustomerDetail from "./pages/customer/Detail";
 import CustomerLayout from "./layouts/customer/UserLayout";
 
 const App = () => {
@@ -65,6 +66,8 @@ const App = () => {
           }
         >
           <Route index element={<CustomerHome />} />
+          <Route path="table/:tableNo" element={<CustomerHome />} />
+          <Route path="foods/:id" element={<CustomerDetail />} />
           <Route path="carts" element={<CustomerCart />} />
           <Route path="orders" element={<CustomerOrders />} />
           <Route path="favorites" element={<CustomerFavorites />} />

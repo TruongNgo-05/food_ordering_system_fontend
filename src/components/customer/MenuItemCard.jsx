@@ -38,23 +38,6 @@ export default function MenuItemCard({
         }}
       >
         {item.image}
-        {item.badge && (
-          <span
-            style={{
-              position: "absolute",
-              top: 10,
-              left: 10,
-              background: T.primary,
-              color: "#fff",
-              fontSize: 10,
-              fontWeight: 800,
-              padding: "3px 10px",
-              borderRadius: 99,
-            }}
-          >
-            {item.badge}
-          </span>
-        )}
         <button
           onClick={(e) => {
             e.stopPropagation();

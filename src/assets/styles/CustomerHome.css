@@ -1,0 +1,24 @@
+.customer-home-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.customer-home-header-wrap {
+  padding: 28px 36px 0;
+}
+
+.customer-home-content-wrap {
+  padding: 20px;
+}
+
+.customer-home-recent-grid,
+.customer-home-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.customer-home-recent-section {
+  margin-bottom: 24px;
+}
