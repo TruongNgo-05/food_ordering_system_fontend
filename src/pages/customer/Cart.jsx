@@ -1,14 +1,54 @@
-
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Modal } from "antd";
+import { toast } from "react-toastify";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLocationDot, faQrcode } from "@fortawesome/free-solid-svg-icons";
 import { T, fmt } from "../../constants/customerTheme";
-import { mockVouchers } from "../../data/mockData";
-import { EmptyState, SectionTitle } from "../../components/customer/SharedUI";
+import { EmptyState } from "../../components/customer/SharedUI";
 import UserHeader from "../../components/user/UserHeader";
+import FoodImage from "../../components/common/FoodImage";
+import DeliveryAddressModal from "../../components/customer/DeliveryAddressModal";
+import VoucherSection from "../../components/customer/cart/VoucherSection";
+import PaymentMethodSection from "../../components/customer/cart/PaymentMethodSection";
+import OrderSummarySection from "../../components/customer/cart/OrderSummarySection";
+import {
+  loadSharedVouchers,
+  SHARED_DATA_UPDATED_EVENT,
+} from "../../utils/sharedData";
+import { confirmLoginWithToast } from "../../utils/authGuards";
+import { useAuth } from "../../hooks/useAuth";
 import "../../assets/styles/CustomerCart.css";
+
+const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
+const BANK_OPTIONS = [
+  { code: "VCB", name: "Vietcombank" },
+  { code: "BIDV", name: "BIDV" },
+  { code: "TCB", name: "Techcombank" },
+  { code: "MB", name: "MB Bank" },
+  { code: "ACB", name: "ACB" },
+  { code: "VPB", name: "VPBank" },
+];
+
+const calcVoucherDiscount = (voucher, subtotal) => {
+  if (!voucher) return 0;
+  return voucher.discount_type === "percent"
+    ? Math.min(
+        Math.round((subtotal * voucher.discount_value) / 100),
+        voucher.max_discount,
+      )
+    : voucher.discount_value;
+};
 
 const Cart = () => {
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      confirmLoginWithToast(navigate, () => navigate("/customer"));
+    }
+  }, [isLoggedIn, navigate]);
 
   const [cart, setCart] = useState(() => {
     const saved = localStorage.getItem("cart");
@@ -16,20 +56,35 @@ const Cart = () => {
   });
 
   const [voucherInput, setVoucherInput] = useState("");
-  const [appliedVoucher, setAppliedVoucher] = useState(null);
+  const [appliedVouchers, setAppliedVouchers] = useState([]);
   const [voucherError, setVoucherError] = useState("");
+  const [vouchers, setVouchers] = useState(() => loadSharedVouchers());
 
   const [payMethod, setPayMethod] = useState("COD");
-  const [address, setAddress] = useState("123 Nguyễn Huệ, Q.1, TP.HCM");
-  const [activeTable] = useState(() => {
-    const saved = localStorage.getItem("active-table");
-    return saved ? saved : null;
-  });
+  const [selectedBank, setSelectedBank] = useState("");
+  const [address, setAddress] = useState("");
+  const [openAddressModal, setOpenAddressModal] = useState(false);
   const [placed, setPlaced] = useState(false);
+  const [openQrModal, setOpenQrModal] = useState(false);
+  const [onlinePaymentRef, setOnlinePaymentRef] = useState("");
 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
+    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
   }, [cart]);
+
+  useEffect(() => {
+    const syncVouchers = () => setVouchers(loadSharedVouchers());
+    syncVouchers();
+    window.addEventListener("focus", syncVouchers);
+    window.addEventListener("storage", syncVouchers);
+    window.addEventListener(SHARED_DATA_UPDATED_EVENT, syncVouchers);
+    return () => {
+      window.removeEventListener("focus", syncVouchers);
+      window.removeEventListener("storage", syncVouchers);
+      window.removeEventListener(SHARED_DATA_UPDATED_EVENT, syncVouchers);
+    };
+  }, []);
 
   const updateQty = (id, d) =>
     setCart((prev) =>
@@ -38,20 +93,22 @@ const Cart = () => {
         .filter((c) => c.qty > 0),
     );
 
-  const removeItem = (id) => setCart((prev) => prev.filter((c) => c.item_id !== id));
+  const removeItem = (id) =>
+    setCart((prev) => prev.filter((c) => c.item_id !== id));
 
-  const subtotal = useMemo(() => cart.reduce((s, c) => s + c.price * c.qty, 0), [cart]);
-  const shipping = activeTable ? 0 : subtotal > 0 ? 15000 : 0;
+  const subtotal = useMemo(
+    () => cart.reduce((s, c) => s + c.price * c.qty, 0),
+    [cart],
+  );
+  const shipping = subtotal > 0 ? 15000 : 0;
 
   const discount = useMemo(() => {
-    if (!appliedVoucher) return 0;
-    return appliedVoucher.discount_type === "percent"
-      ? Math.min(
-          Math.round((subtotal * appliedVoucher.discount_value) / 100),
-          appliedVoucher.max_discount,
-        )
-      : appliedVoucher.discount_value;
-  }, [appliedVoucher, subtotal]);
+    const sum = appliedVouchers.reduce(
+      (acc, voucher) => acc + calcVoucherDiscount(voucher, subtotal),
+      0,
+    );
+    return Math.min(sum, subtotal + shipping);
+  }, [appliedVouchers, subtotal, shipping]);
 
   const total = Math.max(0, subtotal + shipping - discount);
 
@@ -59,26 +116,49 @@ const Cart = () => {
     const code = voucherInput.trim().toUpperCase();
     if (!code) {
       setVoucherError("Vui lòng nhập mã");
-      setAppliedVoucher(null);
       return;
     }
 
-    const v = mockVouchers.find((x) => x.code === code);
+    const v = vouchers.find((x) => x.code === code);
     if (!v) {
       setVoucherError("Mã không hợp lệ");
-      setAppliedVoucher(null);
+      return;
+    }
+    if (appliedVouchers.some((x) => x.code === v.code)) {
+      setVoucherError("Mã này đã được áp dụng");
       return;
     }
     if (subtotal < v.min_order) {
       setVoucherError(`Đơn tối thiểu ${fmt(v.min_order)}`);
-      setAppliedVoucher(null);
       return;
     }
-    setAppliedVoucher(v);
+    const now = Date.now();
+    const start = v.start_at ? new Date(v.start_at).getTime() : null;
+    const end = v.end_at
+      ? new Date(v.end_at).getTime()
+      : v.expired
+        ? new Date(v.expired).getTime()
+        : null;
+    if (start && now < start) {
+      setVoucherError("Voucher chưa đến thời gian áp dụng");
+      return;
+    }
+    if (end && now > end) {
+      setVoucherError("Voucher đã hết hạn");
+      return;
+    }
+    setAppliedVouchers((prev) => [...prev, v]);
     setVoucherError("");
+    setVoucherInput("");
   };
 
-  const placeOrder = () => {
+  const removeAppliedVoucher = (code) => {
+    setAppliedVouchers((prev) =>
+      prev.filter((voucher) => voucher.code !== code),
+    );
+  };
+
+  const finalizeOrder = (paymentStatus) => {
     if (cart.length === 0) return;
 
     const order = {
@@ -86,7 +166,7 @@ const Cart = () => {
       created_at: new Date().toLocaleString("vi-VN"),
       status: "pending",
       payment_method: payMethod,
-      payment_status: payMethod === "ONLINE" ? "paid" : "pending",
+      payment_status: paymentStatus,
       items: cart.map((c) => ({
         item_id: c.item_id,
         name: c.name,
@@ -98,26 +178,53 @@ const Cart = () => {
       discount,
       shipping,
       total,
-      voucher: appliedVoucher?.code || null,
-      address: activeTable ? `Bàn ${activeTable}` : address,
-      order_type: activeTable ? "dine_in" : "delivery",
-      table_number: activeTable || null,
+      voucher: appliedVouchers.map((voucher) => voucher.code),
+      address,
     };
 
     const saved = localStorage.getItem("orders");
     const prevOrders = saved ? JSON.parse(saved) : [];
-    const nextOrders = Array.isArray(prevOrders) ? [order, ...prevOrders] : [order];
+    const nextOrders = Array.isArray(prevOrders)
+      ? [order, ...prevOrders]
+      : [order];
     localStorage.setItem("orders", JSON.stringify(nextOrders));
 
     setCart([]);
-    setAppliedVoucher(null);
+    setAppliedVouchers([]);
     setVoucherInput("");
+    setSelectedBank("");
     setPlaced(true);
 
     setTimeout(() => {
       setPlaced(false);
       navigate("/customer/orders");
     }, 900);
+  };
+
+  const placeOrder = () => {
+    if (cart.length === 0) return;
+    if (!address.trim()) {
+      toast.warning("Vui lòng chọn địa chỉ giao hàng");
+      setOpenAddressModal(true);
+      return;
+    }
+    if (payMethod === "ONLINE") {
+      if (!selectedBank) {
+        toast.warning("Vui lòng chọn ngân hàng để thanh toán online");
+        return;
+      }
+      const ref = `PAY-${Date.now()}`;
+      setOnlinePaymentRef(ref);
+      setOpenQrModal(true);
+      return;
+    }
+    finalizeOrder("pending");
+  };
+
+  const saveAddressFromModal = (fullAddress) => {
+    setAddress(fullAddress);
+    setOpenAddressModal(false);
+    toast.success("Đã cập nhật địa chỉ giao hàng");
   };
 
   if (placed) {
@@ -134,7 +241,9 @@ const Cart = () => {
         }}
       >
         <div style={{ fontSize: 90 }}>🎉</div>
-        <h2 style={{ margin: 0, color: T.green, fontWeight: 900, fontSize: 26 }}>
+        <h2
+          style={{ margin: 0, color: T.green, fontWeight: 900, fontSize: 26 }}
+        >
           Đặt hàng thành công!
         </h2>
         <p style={{ margin: 0, color: T.sub, fontSize: 15 }}>
@@ -147,15 +256,14 @@ const Cart = () => {
   if (cart.length === 0) {
     return (
       <div style={{ height: "100%", background: T.bg, padding: 36 }}>
-        <UserHeader
-          title="Giỏ hàng"
-          description={
-            activeTable
-              ? `Bạn đang gọi món tại bàn ${activeTable}`
-              : "Xem lại món bạn đã chọn"
-          }
-        />
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <UserHeader title="Giỏ hàng" description="Xem lại món bạn đã chọn" />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <EmptyState
             icon="🛒"
             title="Giỏ hàng trống"
@@ -171,25 +279,14 @@ const Cart = () => {
   return (
     <div className="customer-cart-page" style={{ background: T.bg }}>
       <div className="customer-cart-container">
-        <SectionTitle count={`${cart.length} món`}>Giỏ hàng</SectionTitle>
-        {activeTable && (
-          <div
-            style={{
-              background: T.blueBg,
-              border: `1px solid ${T.blue}33`,
-              borderRadius: 12,
-              color: T.blue,
-              fontSize: 13,
-              fontWeight: 700,
-              padding: "10px 12px",
-              marginBottom: 14,
-            }}
-          >
-            🪑 Đơn này sẽ được phục vụ tại bàn <strong>{activeTable}</strong>.
-          </div>
-        )}
+        <UserHeader
+          title="Giỏ hàng"
+          description={`${cart.length} món đã chọn`}
+        />
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 28 }}>
+        <div
+          style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 28 }}
+        >
           {/* Left */}
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             {/* Items */}
@@ -207,7 +304,14 @@ const Cart = () => {
                   borderBottom: `1px solid ${T.border}`,
                 }}
               >
-                <p style={{ margin: 0, fontWeight: 800, fontSize: 15, color: T.text }}>
+                <p
+                  style={{
+                    margin: 0,
+                    fontWeight: 800,
+                    fontSize: 15,
+                    color: T.text,
+                  }}
+                >
                   🛍️ Món đã chọn
                 </p>
               </div>
@@ -219,7 +323,8 @@ const Cart = () => {
                     display: "flex",
                     gap: 16,
                     padding: "16px 22px",
-                    borderBottom: i < cart.length - 1 ? `1px solid ${T.border}` : "none",
+                    borderBottom:
+                      i < cart.length - 1 ? `1px solid ${T.border}` : "none",
                     alignItems: "center",
                   }}
                 >
@@ -236,7 +341,12 @@ const Cart = () => {
                       flexShrink: 0,
                     }}
                   >
-                    {item.image}
+                    <FoodImage
+                      src={item.image}
+                      size={48}
+                      radius={10}
+                      textSize={28}
+                    />
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -253,12 +363,21 @@ const Cart = () => {
                     >
                       {item.name}
                     </p>
-                    <p style={{ margin: 0, fontSize: 13, color: T.primary, fontWeight: 800 }}>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: 13,
+                        color: T.primary,
+                        fontWeight: 800,
+                      }}
+                    >
                       {fmt(item.price)} / phần
                     </p>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                  >
                     <button
                       onClick={() => updateQty(item.item_id, -1)}
                       style={{
@@ -337,36 +456,7 @@ const Cart = () => {
               ))}
             </div>
 
-            {!activeTable && (
-              <div
-                style={{
-                  background: T.card,
-                  borderRadius: 18,
-                  border: `1px solid ${T.border}`,
-                  padding: "18px 22px",
-                }}
-              >
-                <p style={{ margin: "0 0 12px", fontWeight: 800, color: T.text, fontSize: 15 }}>
-                  📍 Địa chỉ giao hàng
-                </p>
-                <input
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "11px 14px",
-                    borderRadius: 11,
-                    border: `1.5px solid ${T.border}`,
-                    fontSize: 14,
-                    color: T.text,
-                    outline: "none",
-                    boxSizing: "border-box",
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Voucher */}
+            {/* Address */}
             <div
               style={{
                 background: T.card,
@@ -375,212 +465,144 @@ const Cart = () => {
                 padding: "18px 22px",
               }}
             >
-              <p style={{ margin: "0 0 12px", fontWeight: 800, color: T.text, fontSize: 15 }}>
-                🏷️ Mã giảm giá
-              </p>
-
-              <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-                <input
-                  value={voucherInput}
-                  onChange={(e) => {
-                    setVoucherInput(e.target.value.toUpperCase());
-                    setVoucherError("");
-                  }}
-                  placeholder="Nhập mã voucher..."
-                  style={{
-                    flex: 1,
-                    padding: "11px 14px",
-                    borderRadius: 11,
-                    border: `1.5px solid ${
-                      voucherError ? T.red : appliedVoucher ? T.green : T.border
-                    }`,
-                    fontSize: 14,
-                    outline: "none",
-                  }}
+              <p
+                style={{
+                  margin: "0 0 12px",
+                  fontWeight: 800,
+                  color: T.text,
+                  fontSize: 15,
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={faLocationDot}
+                  style={{ marginRight: 8 }}
                 />
-                <button
-                  onClick={applyVoucher}
-                  style={{
-                    padding: "11px 22px",
-                    background: T.primary,
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 11,
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
-                  Áp dụng
-                </button>
-              </div>
-
-              {voucherError && (
-                <p style={{ margin: "0 0 8px", fontSize: 13, color: T.red }}>
-                  {voucherError}
-                </p>
-              )}
-              {appliedVoucher && (
-                <p style={{ margin: "0 0 8px", fontSize: 13, color: T.green, fontWeight: 700 }}>
-                  ✅ {appliedVoucher.description} — Tiết kiệm {fmt(discount)}
-                </p>
-              )}
-
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {mockVouchers.map((v) => (
-                  <button
-                    key={v.id}
-                    onClick={() => {
-                      setVoucherInput(v.code);
-                      setVoucherError("");
-                    }}
-                    style={{
-                      fontSize: 12,
-                      padding: "4px 12px",
-                      borderRadius: 99,
-                      border: `1.5px dashed ${T.primary}`,
-                      background: T.primaryLight,
-                      color: T.primary,
-                      cursor: "pointer",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {v.code}
-                  </button>
-                ))}
-              </div>
+                Địa chỉ giao hàng
+              </p>
+              <button
+                type="button"
+                onClick={() => setOpenAddressModal(true)}
+                style={{
+                  width: "100%",
+                  padding: "11px 14px",
+                  borderRadius: 11,
+                  border: `1.5px solid ${T.border}`,
+                  fontSize: 14,
+                  color: T.text,
+                  textAlign: "left",
+                  background: "#fff",
+                  cursor: "pointer",
+                  boxSizing: "border-box",
+                }}
+              >
+                {address || "Chọn địa chỉ giao hàng"}
+              </button>
             </div>
+
+            <VoucherSection
+              voucherInput={voucherInput}
+              voucherError={voucherError}
+              appliedVouchers={appliedVouchers}
+              vouchers={vouchers}
+              subtotal={subtotal}
+              onVoucherInputChange={(value) => {
+                setVoucherInput(value);
+                setVoucherError("");
+              }}
+              onApplyVoucher={applyVoucher}
+              onPickVoucherCode={(code) => {
+                setVoucherInput(code);
+                setVoucherError("");
+              }}
+              onRemoveAppliedVoucher={removeAppliedVoucher}
+              calcVoucherDiscount={calcVoucherDiscount}
+            />
           </div>
 
           {/* Right */}
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            {/* Payment */}
-            <div
-              style={{
-                background: T.card,
-                borderRadius: 18,
-                border: `1px solid ${T.border}`,
-                padding: "18px 22px",
-              }}
-            >
-              <p style={{ margin: "0 0 14px", fontWeight: 800, color: T.text, fontSize: 15 }}>
-                💳 Phương thức thanh toán
-              </p>
+            <PaymentMethodSection
+              payMethod={payMethod}
+              selectedBank={selectedBank}
+              bankOptions={BANK_OPTIONS}
+              onChangePayMethod={setPayMethod}
+              onSelectBank={setSelectedBank}
+            />
 
-              {[
-                ["COD", "💵", "Tiền mặt khi nhận", "Trả tiền lúc giao hàng"],
-                ["ONLINE", "🏦", "Thanh toán online", "Chuyển khoản / Ví điện tử"],
-              ].map(([v, ic, lb, sub]) => (
-                <label
-                  key={v}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "12px 14px",
-                    borderRadius: 12,
-                    marginBottom: 6,
-                    cursor: "pointer",
-                    border: `1.5px solid ${payMethod === v ? T.primary : T.border}`,
-                    background: payMethod === v ? T.primaryLight : "#fff",
-                    transition: "all .15s",
-                  }}
-                >
-                  <input
-                    type="radio"
-                    value={v}
-                    checked={payMethod === v}
-                    onChange={() => setPayMethod(v)}
-                    style={{ accentColor: T.primary }}
-                  />
-                  <span style={{ fontSize: 22 }}>{ic}</span>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: T.text }}>
-                      {lb}
-                    </p>
-                    <p style={{ margin: 0, fontSize: 11, color: T.sub }}>{sub}</p>
-                  </div>
-                  {payMethod === v && (
-                    <span style={{ color: T.green, fontSize: 16, fontWeight: 900 }}>✓</span>
-                  )}
-                </label>
-              ))}
-
-              {payMethod === "ONLINE" && (
-                <div style={{ background: T.blueBg, borderRadius: 10, padding: "10px 14px" }}>
-                  <p style={{ margin: 0, fontSize: 12, color: T.blue }}>
-                    🔒 Thanh toán an toàn qua VNPay, Momo, ZaloPay.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Summary */}
-            <div
-              style={{
-                background: T.card,
-                borderRadius: 18,
-                border: `1px solid ${T.border}`,
-                padding: "18px 22px",
-              }}
-            >
-              <p style={{ margin: "0 0 14px", fontWeight: 800, color: T.text, fontSize: 15 }}>
-                📄 Tóm tắt
-              </p>
-
-              {[
-                ["Tạm tính", fmt(subtotal), T.text],
-                ["Phí giao hàng", fmt(shipping), T.text],
-                ...(discount > 0 ? [["Giảm giá", `−${fmt(discount)}`, T.green]] : []),
-              ].map(([k, v, c]) => (
-                <div
-                  key={k}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: 14,
-                    padding: "5px 0",
-                  }}
-                >
-                  <span style={{ color: T.sub }}>{k}</span>
-                  <span style={{ color: c, fontWeight: c === T.green ? 700 : 400 }}>{v}</span>
-                </div>
-              ))}
-
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontWeight: 900,
-                  fontSize: 20,
-                  marginTop: 14,
-                  paddingTop: 14,
-                  borderTop: `2px solid ${T.border}`,
-                }}
-              >
-                <span>Tổng cộng</span>
-                <span style={{ color: T.primary }}>{fmt(total)}</span>
-              </div>
-            </div>
-
-            <button
-              onClick={placeOrder}
-              style={{
-                width: "100%",
-                padding: 16,
-                background: T.primary,
-                color: "#fff",
-                border: "none",
-                borderRadius: 14,
-                fontSize: 16,
-                fontWeight: 800,
-                cursor: "pointer",
-              }}
-            >
-              {activeTable ? `🍽️ Gọi món bàn ${activeTable} — ${fmt(total)}` : `🛒 Đặt hàng ngay — ${fmt(total)}`}
-            </button>
+            <OrderSummarySection
+              subtotal={subtotal}
+              shipping={shipping}
+              discount={discount}
+              total={total}
+              onPlaceOrder={placeOrder}
+            />
           </div>
         </div>
       </div>
+
+      <DeliveryAddressModal
+        open={openAddressModal}
+        onCancel={() => setOpenAddressModal(false)}
+        onSave={saveAddressFromModal}
+      />
+
+      <Modal
+        title={
+          <span>
+            <FontAwesomeIcon icon={faQrcode} style={{ marginRight: 8 }} />
+            Quét QR để thanh toán
+          </span>
+        }
+        open={openQrModal}
+        onCancel={() => setOpenQrModal(false)}
+        footer={null}
+      >
+        <div style={{ textAlign: "center" }}>
+          <p style={{ marginBottom: 10, color: T.sub }}>
+            Ngân hàng:{" "}
+            <strong>
+              {BANK_OPTIONS.find((b) => b.code === selectedBank)?.name || "-"}
+            </strong>
+          </p>
+          <img
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(
+              `BANK:${selectedBank}|AMOUNT:${total}|REF:${onlinePaymentRef}`,
+            )}`}
+            alt="QR thanh toán"
+            style={{
+              width: 220,
+              height: 220,
+              borderRadius: 12,
+              border: `1px solid ${T.border}`,
+            }}
+          />
+          <p style={{ marginTop: 10, color: T.sub, fontSize: 12 }}>
+            Nội dung chuyển khoản: <strong>{onlinePaymentRef}</strong>
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setOpenQrModal(false);
+              finalizeOrder("paid");
+            }}
+            style={{
+              marginTop: 8,
+              border: "none",
+              borderRadius: 10,
+              background: T.primary,
+              color: "#fff",
+              fontWeight: 800,
+              padding: "10px 16px",
+              cursor: "pointer",
+            }}
+          >
+            Tôi đã quét và thanh toán thành công
+          </button>
+          <p style={{ marginTop: 8, fontSize: 12, color: T.sub }}>
+            Sau thanh toán, đơn sẽ ở trạng thái chờ xác nhận.
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 };

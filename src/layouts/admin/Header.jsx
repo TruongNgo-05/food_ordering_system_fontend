@@ -6,8 +6,9 @@ import {
   faCog,
   faKey,
   faSignOutAlt,
+  faBars,
 } from "@fortawesome/free-solid-svg-icons";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext } from "../../context/authContext";
 import {
   updateProfileApi,
   changePasswordApi,
@@ -17,7 +18,7 @@ import { toast } from "react-toastify";
 import Capnhatthongtin from "../../components/modal/auth/Capnhatthongtin";
 import Capnhatmatkhau from "../../components/modal/auth/Capnhatmatkhau";
 
-const Header = () => {
+const Header = ({ onMenuToggle }) => {
   const { logout, userFullName, refreshUser, user } = useContext(AuthContext);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = React.useState(false);
@@ -97,7 +98,11 @@ const Header = () => {
 
   return (
     <header className="header">
-      <div className="header-left"></div>
+      <div className="header-left">
+        <button className="menu-toggle-btn" onClick={onMenuToggle} aria-label="Mở menu">
+          <FontAwesomeIcon icon={faBars} />
+        </button>
+      </div>
 
       <div className="header-right">
         <Dropdown

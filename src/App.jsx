@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
 import Login from "./pages/login/Login";
@@ -15,14 +15,17 @@ import AdminFoods from "./pages/admin/AdminFoods";
 import AdminCategories from "./pages/admin/AdminCategories";
 import AdminVouchers from "./pages/admin/AdminVouchers";
 import AdminOrders from "./pages/admin/AdminOrders";
-import AdminPayments from "./pages/admin/AdminPayments";
-import AdminIngredients from "./pages/admin/AdminIngredients";
+import AdminTableBookings from "./pages/admin/AdminTableBookings";
+import AdminBanners from "./pages/admin/AdminBanners";
+import AdminReviews from "./pages/admin/AdminReviews";
 import CustomerHome from "./pages/customer/Home";
 import CustomerCart from "./pages/customer/Cart";
 import CustomerOrders from "./pages/customer/Orders";
 import CustomerFavorites from "./pages/customer/Favorites";
 import CustomerSupport from "./pages/customer/Support";
 import CustomerDetail from "./pages/customer/Detail";
+import CustomerTableOrder from "./pages/customer/TableOrder";
+import CustomerTableQrSamples from "./pages/customer/TableQrSamples";
 import CustomerLayout from "./layouts/customer/UserLayout";
 
 const App = () => {
@@ -30,8 +33,9 @@ const App = () => {
     <>
       <Routes>
         {/* Public Routes */}
+        <Route path="/" element={<Navigate to="/customer" replace />} />
         <Route
-          path="/"
+          path="/login"
           element={
             <PublicRoute>
               <Login />
@@ -55,23 +59,16 @@ const App = () => {
           }
         />
 
-        {/* Protected Routes */}
-        {/* User */}
-        <Route
-          path="/customer"
-          element={
-            <ProtectedRoute allowedRoles={["CUSTOMER"]}>
-              <CustomerLayout />
-            </ProtectedRoute>
-          }
-        >
+        {/* Customer routes (public) */}
+        <Route path="/customer" element={<CustomerLayout />}>
           <Route index element={<CustomerHome />} />
-          <Route path="table/:tableNo" element={<CustomerHome />} />
           <Route path="foods/:id" element={<CustomerDetail />} />
           <Route path="carts" element={<CustomerCart />} />
           <Route path="orders" element={<CustomerOrders />} />
           <Route path="favorites" element={<CustomerFavorites />} />
           <Route path="support" element={<CustomerSupport />} />
+          <Route path="table-order" element={<CustomerTableOrder />} />
+          <Route path="table-qr-samples" element={<CustomerTableQrSamples />} />
         </Route>
 
         <Route
@@ -88,8 +85,9 @@ const App = () => {
           <Route path="categories" element={<AdminCategories />} />
           <Route path="vouchers" element={<AdminVouchers />} />
           <Route path="orders" element={<AdminOrders />} />
-          <Route path="payments" element={<AdminPayments />} />
-          <Route path="ingredients" element={<AdminIngredients />} />
+          <Route path="table-bookings" element={<AdminTableBookings />} />
+          <Route path="banners" element={<AdminBanners />} />
+          <Route path="reviews" element={<AdminReviews />} />
         </Route>
 
         {/* 404 Page */}

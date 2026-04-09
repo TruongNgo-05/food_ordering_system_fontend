@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHouse,
@@ -7,9 +7,14 @@ import {
   faClipboardList,
   faHeart,
   faHeadset,
+  faQrcode,
 } from "@fortawesome/free-solid-svg-icons";
 import "../../assets/styles/Sider.css";
 import logo from "../../assets/images/logo.png";
+import { confirmLoginWithToast } from "../../utils/authGuards";
+import { useAuth } from "../../hooks/useAuth";
+
+const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 
 const menuItems = [
   {
@@ -42,9 +47,17 @@ const menuItems = [
     path: "/customer/support",
     icon: faHeadset,
   },
+  {
+    id: 6,
+    title: "QR Bàn",
+    path: "/customer/table-qr-samples",
+    icon: faQrcode,
+  },
 ];
-const Sider = () => {
+const Sider = ({ mobileOpen = false, onCloseMobile }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
 
   const [cartCount, setCartCount] = useState(0);
   const [favoriteCount, setFavoriteCount] = useState(0);
@@ -71,18 +84,36 @@ const Sider = () => {
       }
     };
 
-    // Initial sync + keep badges live without forcing page clicks
     syncBadges();
-    const timer = setInterval(syncBadges, 500);
     window.addEventListener("focus", syncBadges);
+    window.addEventListener("storage", syncBadges);
+    window.addEventListener(CUSTOMER_DATA_UPDATED_EVENT, syncBadges);
     return () => {
-      clearInterval(timer);
       window.removeEventListener("focus", syncBadges);
+      window.removeEventListener("storage", syncBadges);
+      window.removeEventListener(CUSTOMER_DATA_UPDATED_EVENT, syncBadges);
     };
   }, [location.pathname]);
 
+  const handleMenuClick = (event, item) => {
+    const requireAuth = [2, 3, 4].includes(item.id); // cart, orders, favorites
+    if (requireAuth && !isLoggedIn) {
+      event.preventDefault();
+      if (window.innerWidth <= 1024) onCloseMobile?.();
+      confirmLoginWithToast(
+        (path) => navigate(path),
+        () => {},
+      );
+      return;
+    }
+
+    if (window.innerWidth <= 1024) onCloseMobile?.();
+    if (location.pathname === item.path) return;
+    navigate(item.path);
+  };
+
   return (
-    <aside className="sider">
+    <aside className={`sider ${mobileOpen ? "mobile-open" : ""}`}>
       <div className="sider-content">
         <div className="sider-logo">
           <img src={logo} alt="Logo" className="logo-img" />
@@ -91,10 +122,11 @@ const Sider = () => {
 
         <nav className="sider-menu">
           {menuItems.map((item) => (
-            <Link
+            <button
+              type="button"
               key={item.id}
-              to={item.path}
               className={`menu-item ${location.pathname === item.path ? "active" : ""}`}
+              onClick={(event) => handleMenuClick(event, item)}
             >
               <span className="menu-icon" style={{ position: "relative" }}>
                 <FontAwesomeIcon icon={item.icon} />
@@ -146,7 +178,7 @@ const Sider = () => {
                 )}
               </span>
               <span className="menu-text">{item.title}</span>
-            </Link>
+            </button>
           ))}
         </nav>
       </div>

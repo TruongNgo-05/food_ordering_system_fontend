@@ -1,23 +1,44 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faListCheck,
+  faClock,
+  faBuildingColumns,
+  faMoneyBillWave,
+  faReceipt,
+  faLocationDot,
+  faFileLines,
+  faTags,
+  faRotateRight,
+  faBoxOpen,
+} from "@fortawesome/free-solid-svg-icons";
 import { T, fmt, STATUS_CFG } from "../../constants/customerTheme";
 import { EmptyState, StatusBadge } from "../../components/customer/SharedUI";
 import UserHeader from "../../components/user/UserHeader";
+import FoodImage from "../../components/common/FoodImage";
+import { mockOrders } from "../../data/mockData";
+import { confirmLoginWithToast } from "../../utils/authGuards";
+import { useAuth } from "../../hooks/useAuth";
 import "../../assets/styles/CustomerOrders.css";
+const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 const Orders = () => {
   const navigate = useNavigate();
-  const [orders] = useState(() => {
-    const saved = localStorage.getItem("orders");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const { isLoggedIn } = useAuth();
+  const [orders, setOrders] = useState(() => mockOrders);
 
   useEffect(() => {
-    localStorage.setItem("orders", JSON.stringify(orders));
-  }, [orders]);
+    if (!isLoggedIn) {
+      confirmLoginWithToast(navigate, () => navigate("/customer"));
+    }
+  }, [isLoggedIn, navigate]);
 
   const [detail, setDetail] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all");
-  const safeOrders = useMemo(() => (Array.isArray(orders) ? orders : []), [orders]);
+  const safeOrders = useMemo(
+    () => (Array.isArray(orders) ? orders : []),
+    [orders],
+  );
 
   const filtered = useMemo(() => {
     return filterStatus === "all"
@@ -26,13 +47,20 @@ const Orders = () => {
   }, [filterStatus, safeOrders]);
 
   const filters = useMemo(() => {
-    const steps = ["all", "pending", "processing", "delivering", "completed"];
+    const steps = [
+      "all",
+      "pending",
+      "processing",
+      "delivering",
+      "completed",
+      "cancelled",
+    ];
     return steps.map((k) => {
       if (k === "all")
         return {
           key: "all",
           label: "Tất cả",
-          icon: "📋",
+          icon: <FontAwesomeIcon icon={faListCheck} />,
           color: T.text,
           bg: "#fff",
         };
@@ -48,7 +76,8 @@ const Orders = () => {
   }, []);
 
   const handleReorder = (order) => {
-    if (!order || !Array.isArray(order.items) || order.items.length === 0) return;
+    if (!order || !Array.isArray(order.items) || order.items.length === 0)
+      return;
     const nextCart = order.items.map((it) => ({
       item_id: it.item_id || `${it.name}-${it.price}`,
       name: it.name,
@@ -57,7 +86,23 @@ const Orders = () => {
       qty: it.qty || 1,
     }));
     localStorage.setItem("cart", JSON.stringify(nextCart));
+    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
     navigate("/customer/carts");
+  };
+
+  const handleCancelOrder = (orderId) => {
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === orderId && o.status === "pending"
+          ? { ...o, status: "cancelled" }
+          : o,
+      ),
+    );
+    setDetail((prev) =>
+      prev && prev.id === orderId && prev.status === "pending"
+        ? { ...prev, status: "cancelled" }
+        : prev,
+    );
   };
 
   // ================= DETAIL =================
@@ -68,6 +113,10 @@ const Orders = () => {
     return (
       <div className="customer-orders-page" style={{ background: T.bg }}>
         <div className="customer-orders-container">
+          <UserHeader
+            title="Chi tiết đơn hàng"
+            description={`Mã đơn #${detail.id}`}
+          />
           <button
             onClick={() => setDetail(null)}
             style={{
@@ -80,7 +129,7 @@ const Orders = () => {
               color: T.sub,
               fontWeight: 700,
               fontSize: 14,
-              marginBottom: 18,
+              marginBottom: 14,
               padding: 0,
             }}
           >
@@ -116,7 +165,8 @@ const Orders = () => {
                   #{detail.id}
                 </p>
                 <p style={{ margin: "8px 0 0", fontSize: 13, color: T.sub }}>
-                  🕒 {detail.created_at}
+                  <FontAwesomeIcon icon={faClock} style={{ marginRight: 6 }} />
+                  {detail.created_at}
                 </p>
               </div>
               <div
@@ -128,28 +178,19 @@ const Orders = () => {
               >
                 <StatusBadge status={detail.status} />
                 <p style={{ margin: "10px 0 0", fontSize: 13, color: T.sub }}>
-                  {detail.payment_method === "ONLINE" ? "🏦 Online" : "💵 COD"}{" "}
-                  ·{" "}
+                  <FontAwesomeIcon
+                    icon={
+                      detail.payment_method === "ONLINE"
+                        ? faBuildingColumns
+                        : faMoneyBillWave
+                    }
+                    style={{ marginRight: 6 }}
+                  />
+                  {detail.payment_method === "ONLINE" ? "Online" : "COD"} ·{" "}
                   {detail.payment_status === "paid"
                     ? "Đã thanh toán"
                     : "Chưa thanh toán"}
                 </p>
-                {detail.order_type === "dine_in" && detail.table_number && (
-                  <span
-                    style={{
-                      marginTop: 8,
-                      background: T.blueBg,
-                      color: T.blue,
-                      border: `1px solid ${T.blue}33`,
-                      borderRadius: 999,
-                      padding: "4px 10px",
-                      fontSize: 12,
-                      fontWeight: 800,
-                    }}
-                  >
-                    🪑 Bàn {detail.table_number}
-                  </span>
-                )}
               </div>
             </div>
 
@@ -207,7 +248,11 @@ const Orders = () => {
                 }}
               >
                 <p style={{ margin: 0, fontWeight: 900, color: T.text }}>
-                  🧾 Món trong đơn
+                  <FontAwesomeIcon
+                    icon={faReceipt}
+                    style={{ marginRight: 8 }}
+                  />
+                  Món trong đơn
                 </p>
               </div>
 
@@ -238,7 +283,12 @@ const Orders = () => {
                       flexShrink: 0,
                     }}
                   >
-                    {it.image}
+                    <FoodImage
+                      src={it.image}
+                      size={34}
+                      radius={10}
+                      textSize={20}
+                    />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p
@@ -278,7 +328,11 @@ const Orders = () => {
                 <p
                   style={{ margin: "0 0 10px", fontWeight: 900, color: T.text }}
                 >
-                  {detail.order_type === "dine_in" ? "🪑 Bàn phục vụ" : "📍 Giao đến"}
+                  <FontAwesomeIcon
+                    icon={faLocationDot}
+                    style={{ marginRight: 8 }}
+                  />
+                  Giao đến
                 </p>
                 <p
                   style={{
@@ -303,7 +357,11 @@ const Orders = () => {
                 <p
                   style={{ margin: "0 0 10px", fontWeight: 900, color: T.text }}
                 >
-                  📄 Tóm tắt
+                  <FontAwesomeIcon
+                    icon={faFileLines}
+                    style={{ marginRight: 8 }}
+                  />
+                  Tóm tắt
                 </p>
 
                 {[
@@ -369,9 +427,27 @@ const Orders = () => {
                       fontWeight: 900,
                     }}
                   >
-                    🏷️ Voucher: {detail.voucher}
+                    <FontAwesomeIcon icon={faTags} style={{ marginRight: 6 }} />
+                    Voucher: {detail.voucher}
                   </p>
                 </div>
+              )}
+
+              {detail.status === "pending" && (
+                <button
+                  onClick={() => handleCancelOrder(detail.id)}
+                  style={{
+                    border: "none",
+                    borderRadius: 12,
+                    background: T.redBg,
+                    color: T.red,
+                    fontWeight: 800,
+                    padding: "10px 12px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Hủy đơn
+                </button>
               )}
 
               <button
@@ -386,7 +462,11 @@ const Orders = () => {
                   cursor: "pointer",
                 }}
               >
-                🔁 Đặt lại đơn này
+                <FontAwesomeIcon
+                  icon={faRotateRight}
+                  style={{ marginRight: 6 }}
+                />
+                Đặt lại đơn này
               </button>
             </div>
           </div>
@@ -441,7 +521,7 @@ const Orders = () => {
 
         {filtered.length === 0 ? (
           <EmptyState
-            icon="📦"
+            icon={<FontAwesomeIcon icon={faBoxOpen} />}
             title="Chưa có đơn hàng"
             desc="Hãy đặt món để xem lịch sử đơn hàng."
             btnLabel="Xem thực đơn"
@@ -496,7 +576,12 @@ const Orders = () => {
                         flexShrink: 0,
                       }}
                     >
-                      {first?.image || "🍽️"}
+                      <FoodImage
+                        src={first?.image || "🍽️"}
+                        size={38}
+                        radius={12}
+                        textSize={22}
+                      />
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <p style={{ margin: 0, fontWeight: 900, color: T.text }}>
@@ -509,7 +594,11 @@ const Orders = () => {
                           color: T.sub,
                         }}
                       >
-                        🕒 {order.created_at} · {itemCount} món
+                        <FontAwesomeIcon
+                          icon={faClock}
+                          style={{ marginRight: 6 }}
+                        />
+                        {order.created_at} · {itemCount} món
                       </p>
                       {first?.name && (
                         <p
@@ -543,26 +632,16 @@ const Orders = () => {
                     <p
                       style={{ margin: "10px 0 0", fontSize: 12, color: T.sub }}
                     >
-                      {order.payment_method === "ONLINE"
-                        ? "🏦 Online"
-                        : "💵 COD"}
+                      <FontAwesomeIcon
+                        icon={
+                          order.payment_method === "ONLINE"
+                            ? faBuildingColumns
+                            : faMoneyBillWave
+                        }
+                        style={{ marginRight: 6 }}
+                      />
+                      {order.payment_method === "ONLINE" ? "Online" : "COD"}
                     </p>
-                    {order.order_type === "dine_in" && order.table_number && (
-                      <span
-                        style={{
-                          marginTop: 8,
-                          background: T.blueBg,
-                          color: T.blue,
-                          border: `1px solid ${T.blue}33`,
-                          borderRadius: 999,
-                          padding: "4px 10px",
-                          fontSize: 11,
-                          fontWeight: 800,
-                        }}
-                      >
-                        🪑 Bàn {order.table_number}
-                      </span>
-                    )}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -582,6 +661,27 @@ const Orders = () => {
                     >
                       Đặt lại
                     </button>
+                    {order.status === "pending" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCancelOrder(order.id);
+                        }}
+                        style={{
+                          marginTop: 6,
+                          border: `1px solid ${T.red}33`,
+                          borderRadius: 10,
+                          background: T.redBg,
+                          color: T.red,
+                          fontWeight: 800,
+                          fontSize: 12,
+                          padding: "6px 10px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Hủy đơn
+                      </button>
+                    )}
                   </div>
                 </div>
               );

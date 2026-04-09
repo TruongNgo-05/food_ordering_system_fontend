@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, Input, Button, Row, Col } from "antd";
+import { Form, Input, Button } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faLock } from "@fortawesome/free-solid-svg-icons";
 import logo from "../../assets/images/logo.png";
@@ -36,15 +36,23 @@ const Login = () => {
         navigate("/customer");
       }
     } catch (error) {
-      // Xử lý lỗi API
-      if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else {
+      // Sai tài khoản/mật khẩu -> báo cố định
+      const status = error?.response?.status;
+      if (status === 400 || status === 401 || status === 403) {
+        toast.error("Bạn sai tài khoản hoặc mật khẩu");
+      } else if (!error?.response) {
+        // Không có response thường là lỗi mạng / backend không chạy
         toast.error("Không thể kết nối server");
+      } else {
+        toast.error("Đăng nhập thất bại, vui lòng thử lại");
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSocialLogin = (provider) => {
+    toast.info(`Đăng nhập bằng ${provider} đang được phát triển`);
   };
 
   return (
@@ -52,11 +60,15 @@ const Login = () => {
       <div className="login-container">
         <div className="login-box">
           <div className="login-header">
+            <div className="back-customer-link">
+              <a onClick={() => navigate("/customer")}>← Quay lại trang khách hàng</a>
+            </div>
             <div className="logo-container">
               <img src={logo} alt="Ngô Quang Trường" className="logo" />
             </div>
+            <div className="restaurant-tag">NQT Restaurant</div>
             <h1>Chào mừng trở lại</h1>
-            <p>Đăng nhập vào hệ thống</p>
+            <p>Đăng nhập để đặt món nhanh và theo dõi đơn hàng</p>
           </div>
 
           <Form layout="vertical" className="login-form" onFinish={onFinish}>
@@ -108,7 +120,30 @@ const Login = () => {
               Đăng nhập
             </Button>
 
-            <div style={{ textAlign: "center", marginTop: 10 }}>
+            <div className="social-divider">
+              <span>Hoặc đăng nhập bằng</span>
+            </div>
+
+            <div className="social-login-group">
+              <button
+                type="button"
+                className="social-login-btn google"
+                onClick={() => handleSocialLogin("Google")}
+              >
+                <span className="social-login-icon">G</span>
+                <span>Google</span>
+              </button>
+              <button
+                type="button"
+                className="social-login-btn facebook"
+                onClick={() => handleSocialLogin("Facebook")}
+              >
+                <span className="social-login-icon">f</span>
+                <span>Facebook</span>
+              </button>
+            </div>
+
+            <div className="auth-switch">
               Chưa có tài khoản?{" "}
               <a onClick={() => navigate("/register")}>Tạo tài khoản</a>
             </div>
@@ -121,8 +156,8 @@ const Login = () => {
 
         <div className="info-side">
           <div className="info-content">
-            <h2>Hệ thống nhà hàng NQT</h2>
-            <p>Quản lý nhà hàng một cách chuyên nghiệp</p>
+            <h2>Ẩm thực trọn vị tại NQT</h2>
+            <p>Đăng nhập để khám phá thực đơn, ưu đãi và đặt món dễ dàng.</p>
           </div>
         </div>
       </div>

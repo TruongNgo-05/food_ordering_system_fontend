@@ -34,4 +34,5 @@ export const STATUS_CFG = {
     icon: "🛵",
   },
   completed: { label: "Hoàn thành", color: T.green, bg: T.greenBg, icon: "✅" },
+  cancelled: { label: "Đã hủy", color: T.red, bg: T.redBg, icon: "❌" },
 };

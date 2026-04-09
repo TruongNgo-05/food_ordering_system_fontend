@@ -1,19 +1,38 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { T, fmt } from "../../constants/customerTheme";
-import { mockCategories, mockFoodReviews, mockMenuItems } from "../../data/mockData";
+import { mockFoodReviews } from "../../data/mockData";
 import { EmptyState, SectionTitle } from "../../components/customer/SharedUI";
 import MenuItemCard from "../../components/customer/MenuItemCard";
+import FoodImage from "../../components/common/FoodImage";
+import {
+  loadSharedCategories,
+  loadSharedFoods,
+  SHARED_DATA_UPDATED_EVENT,
+} from "../../utils/sharedData";
+import { confirmLoginWithToast } from "../../utils/authGuards";
+import { useAuth } from "../../hooks/useAuth";
 import "../../assets/styles/CustomerDetail.css";
+
+const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 
 const Detail = () => {
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
   const { id } = useParams();
   const itemId = Number(id);
+  const [foods, setFoods] = useState(() => loadSharedFoods());
+  const [categories, setCategories] = useState(() => loadSharedCategories());
 
   const item = useMemo(() => {
-    return mockMenuItems.find((m) => m.id === itemId) || null;
-  }, [itemId]);
+    return foods.find((m) => m.id === itemId) || null;
+  }, [foods, itemId]);
+  const galleryImages = useMemo(() => {
+    if (!item) return [];
+    const images = Array.isArray(item.images) ? item.images : [];
+    const merged = [item.image, ...images].filter(Boolean);
+    return [...new Set(merged)];
+  }, [item]);
 
   const [cart, setCart] = useState(() => {
     const saved = localStorage.getItem("cart");
@@ -31,11 +50,29 @@ const Detail = () => {
 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
+    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
   }, [cart]);
 
   useEffect(() => {
     localStorage.setItem("favorites", JSON.stringify(favorites));
+    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
   }, [favorites]);
+
+  useEffect(() => {
+    const syncSharedData = () => {
+      setFoods(loadSharedFoods());
+      setCategories(loadSharedCategories());
+    };
+    syncSharedData();
+    window.addEventListener("focus", syncSharedData);
+    window.addEventListener("storage", syncSharedData);
+    window.addEventListener(SHARED_DATA_UPDATED_EVENT, syncSharedData);
+    return () => {
+      window.removeEventListener("focus", syncSharedData);
+      window.removeEventListener("storage", syncSharedData);
+      window.removeEventListener(SHARED_DATA_UPDATED_EVENT, syncSharedData);
+    };
+  }, []);
 
   useEffect(() => {
     if (!item) return;
@@ -49,17 +86,41 @@ const Detail = () => {
   }, [item]);
 
   const [qty, setQty] = useState(1);
+  const [activeImage, setActiveImage] = useState("");
+  const requireLoginAction = () => {
+    confirmLoginWithToast(navigate);
+  };
+
+  useEffect(() => {
+    if (!galleryImages.length) {
+      setActiveImage("");
+      return;
+    }
+    setActiveImage(galleryImages[0]);
+  }, [galleryImages]);
+
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState("");
   const [showReviews, setShowReviews] = useState(false);
+  const [reviewSort, setReviewSort] = useState("newest");
+  const [editingReviewId, setEditingReviewId] = useState(null);
   const isFav = item ? favorites.includes(item.id) : false;
+  const currentUserName = useMemo(() => {
+    try {
+      const saved = localStorage.getItem("userInfo");
+      const parsed = saved ? JSON.parse(saved) : null;
+      return parsed?.fullName || parsed?.name || parsed?.username || "Bạn";
+    } catch {
+      return "Bạn";
+    }
+  }, []);
 
   const related = useMemo(() => {
     if (!item) return [];
-    return mockMenuItems
+    return foods
       .filter((m) => m.category_id === item.category_id && m.id !== item.id)
       .slice(0, 4);
-  }, [item]);
+  }, [foods, item]);
   const [customReviews, setCustomReviews] = useState(() => {
     const saved = localStorage.getItem("food-reviews");
     return saved ? JSON.parse(saved) : {};
@@ -75,6 +136,17 @@ const Detail = () => {
     const localReviews = customReviews[item.id] || [];
     return [...localReviews, ...baseReviews];
   }, [item, customReviews]);
+  const ownReview = useMemo(() => {
+    if (!item) return null;
+    const localReviews = customReviews[item.id] || [];
+    return localReviews.find((r) => r.user === currentUserName) || null;
+  }, [item, customReviews, currentUserName]);
+  const sortedReviews = useMemo(() => {
+    const list = [...reviews];
+    if (reviewSort === "highest") return list.sort((a, b) => b.rating - a.rating);
+    if (reviewSort === "lowest") return list.sort((a, b) => a.rating - b.rating);
+    return list.sort((a, b) => (b.created_ts || 0) - (a.created_ts || 0));
+  }, [reviews, reviewSort]);
   const avgReview = useMemo(() => {
     if (!reviews.length) return item?.rating || 0;
     const total = reviews.reduce((s, r) => s + r.rating, 0);
@@ -98,6 +170,10 @@ const Detail = () => {
 
   const addToCart = () => {
     if (!item) return;
+    if (!isLoggedIn) {
+      requireLoginAction();
+      return;
+    }
     setCart((prev) => {
       const ex = prev.find((c) => c.item_id === item.id);
       if (ex)
@@ -127,6 +203,10 @@ const Detail = () => {
   };
 
   const toggleFav = (foodId) => {
+    if (!isLoggedIn) {
+      requireLoginAction();
+      return;
+    }
     setFavorites((prev) =>
       prev.includes(foodId) ? prev.filter((f) => f !== foodId) : [...prev, foodId],
     );
@@ -138,18 +218,50 @@ const Detail = () => {
     const content = newComment.trim();
     if (!content) return;
 
-    const review = {
-      id: `local-${Date.now()}`,
-      user: "Bạn",
-      rating: newRating,
-      comment: content,
-      created_at: "Vừa xong",
-    };
+    setCustomReviews((prev) => {
+      const list = prev[item.id] || [];
+      const targetId = editingReviewId || ownReview?.id;
+      const now = Date.now();
+      const review = {
+        id: targetId || `local-${now}`,
+        user: currentUserName,
+        rating: newRating,
+        comment: content,
+        created_at: "Vừa xong",
+        created_ts: now,
+      };
 
-    setCustomReviews((prev) => ({
-      ...prev,
-      [item.id]: [review, ...(prev[item.id] || [])],
-    }));
+      if (targetId) {
+        return {
+          ...prev,
+          [item.id]: list.map((r) => (r.id === targetId ? review : r)),
+        };
+      }
+
+      return {
+        ...prev,
+        [item.id]: [review, ...list.filter((r) => r.user !== currentUserName)],
+      };
+    });
+    setNewComment("");
+    setNewRating(5);
+    setEditingReviewId(null);
+  };
+
+  const handleEditOwnReview = () => {
+    if (!ownReview) return;
+    setEditingReviewId(ownReview.id);
+    setNewRating(ownReview.rating);
+    setNewComment(ownReview.comment);
+  };
+
+  const handleDeleteOwnReview = () => {
+    if (!item || !ownReview) return;
+    setCustomReviews((prev) => {
+      const list = prev[item.id] || [];
+      return { ...prev, [item.id]: list.filter((r) => r.id !== ownReview.id) };
+    });
+    setEditingReviewId(null);
     setNewComment("");
     setNewRating(5);
   };
@@ -208,15 +320,59 @@ const Detail = () => {
           <div
             style={{
               background: T.primaryLight,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 130,
               position: "relative",
               minHeight: 340,
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+              padding: 14,
             }}
           >
-            {item.image}
+            <div
+              style={{
+                width: "100%",
+                minHeight: 290,
+                borderRadius: 18,
+                overflow: "hidden",
+                background: "#fff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <FoodImage
+                src={activeImage || item.image}
+                size="100%"
+                radius={0}
+                textSize={120}
+              />
+            </div>
+            {galleryImages.length > 1 && (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {galleryImages.map((img, idx) => (
+                  <button
+                    key={`${item.id}-thumb-${idx}`}
+                    type="button"
+                    onClick={() => setActiveImage(img)}
+                    style={{
+                      border:
+                        activeImage === img
+                          ? `2px solid ${T.primary}`
+                          : `1px solid ${T.border}`,
+                      borderRadius: 10,
+                      padding: 0,
+                      background: "#fff",
+                      cursor: "pointer",
+                      width: 56,
+                      height: 56,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <FoodImage src={img} size="100%" radius={0} textSize={24} />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Info */}
@@ -245,7 +401,7 @@ const Detail = () => {
                   borderRadius: 99,
                 }}
               >
-                {mockCategories.find((c) => c.id === item.category_id)?.name}
+                {categories.find((c) => c.id === item.category_id)?.name}
               </span>
               <button
                 onClick={() => toggleFav(item.id)}
@@ -441,6 +597,57 @@ const Detail = () => {
               <p style={{ margin: "0 0 10px", fontWeight: 800, color: T.text }}>
                 Viết đánh giá của bạn
               </p>
+              {ownReview && !editingReviewId && (
+                <div
+                  style={{
+                    marginBottom: 10,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 8,
+                    background: T.primaryLight,
+                    border: `1px solid ${T.primary}33`,
+                    borderRadius: 10,
+                    padding: "8px 10px",
+                  }}
+                >
+                  <span style={{ fontSize: 12, color: T.text }}>
+                    Bạn đã đánh giá món này. Bạn có thể sửa hoặc xóa.
+                  </span>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button
+                      onClick={handleEditOwnReview}
+                      style={{
+                        border: "none",
+                        borderRadius: 8,
+                        background: "#fff",
+                        color: T.primary,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        padding: "4px 8px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Sửa
+                    </button>
+                    <button
+                      onClick={handleDeleteOwnReview}
+                      style={{
+                        border: "none",
+                        borderRadius: 8,
+                        background: T.redBg,
+                        color: T.red,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        padding: "4px 8px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Xóa
+                    </button>
+                  </div>
+                </div>
+              )}
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
                 {[1, 2, 3, 4, 5].map((s) => (
                   <button
@@ -497,7 +704,7 @@ const Detail = () => {
                   }}
                   disabled={!canReview}
                 >
-                  Gửi
+                  {editingReviewId ? "Cập nhật" : "Gửi"}
                 </button>
               </div>
             </div>
@@ -525,6 +732,30 @@ const Detail = () => {
                   </p>
                 </div>
               </div>
+              <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                {[
+                  ["newest", "Mới nhất"],
+                  ["highest", "Điểm cao"],
+                  ["lowest", "Điểm thấp"],
+                ].map(([key, label]) => (
+                  <button
+                    key={key}
+                    onClick={() => setReviewSort(key)}
+                    style={{
+                      border: `1px solid ${reviewSort === key ? T.primary : T.border}`,
+                      background: reviewSort === key ? T.primaryLight : "#fff",
+                      color: reviewSort === key ? T.primary : T.text,
+                      borderRadius: 999,
+                      padding: "6px 10px",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {reviews.length === 0 ? (
@@ -542,7 +773,7 @@ const Detail = () => {
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {reviews.map((r) => (
+                {sortedReviews.map((r) => (
                   <div
                     key={r.id}
                     style={{
@@ -571,6 +802,40 @@ const Detail = () => {
                     <p style={{ margin: 0, color: T.sub, fontSize: 14, lineHeight: 1.6 }}>
                       {r.comment}
                     </p>
+                    {r.user === currentUserName && (
+                      <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+                        <button
+                          onClick={handleEditOwnReview}
+                          style={{
+                            border: "none",
+                            borderRadius: 8,
+                            background: T.primaryLight,
+                            color: T.primary,
+                            fontSize: 12,
+                            fontWeight: 700,
+                            padding: "4px 8px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Sửa
+                        </button>
+                        <button
+                          onClick={handleDeleteOwnReview}
+                          style={{
+                            border: "none",
+                            borderRadius: 8,
+                            background: T.redBg,
+                            color: T.red,
+                            fontSize: 12,
+                            fontWeight: 700,
+                            padding: "4px 8px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Xóa
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -597,6 +862,10 @@ const Detail = () => {
                   inCart={cartMap[r.id] || 0}
                   onToggleFav={toggleFav}
                   onAdd={(it) => {
+                    if (!isLoggedIn) {
+                      requireLoginAction();
+                      return;
+                    }
                     setQty(1);
                     setCart((prev) => {
                       const ex = prev.find((c) => c.item_id === it.id);

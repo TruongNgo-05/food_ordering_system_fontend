@@ -44,8 +44,9 @@ const Register = () => {
             <div className="logo-container">
               <img src={logo} alt="Logo" className="logo" />
             </div>
+            <div className="restaurant-tag">NQT Restaurant</div>
             <h1>Tạo tài khoản mới</h1>
-            <p>Đăng ký để sử dụng hệ thống</p>
+            <p>Đăng ký để đặt bàn, đặt món và nhận ưu đãi thành viên</p>
           </div>
           <Form layout="vertical" className="login-form" onFinish={onFinish}>
             <Form.Item
@@ -142,15 +143,13 @@ const Register = () => {
                 block
                 size="large"
               >
-                Đăng Ký
+                Đăng ký
               </Button>
             </Form.Item>
 
-            <Form.Item style={{ textAlign: "center", marginBottom: 0 }}>
-              <Button type="link" onClick={() => navigate("/")}>
-                Quay Lại
-              </Button>
-            </Form.Item>
+            <div className="auth-switch">
+              Đã có tài khoản? <a onClick={() => navigate("/login")}>Đăng nhập ngay</a>
+            </div>
           </Form>
 
           <div className="login-footer">
@@ -160,8 +159,8 @@ const Register = () => {
 
         <div className="info-side">
           <div className="info-content">
-            <h2>Hệ thống nhà hàng NQT</h2>
-            <p>Quản lý nhà hàng một cách chuyên nghiệp</p>
+            <h2>Gia nhập cộng đồng NQT</h2>
+            <p>Tích điểm mỗi đơn hàng, theo dõi lịch sử và nhận quà ưu đãi.</p>
           </div>
         </div>
       </div>

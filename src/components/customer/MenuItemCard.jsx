@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { T, fmt } from "../../constants/customerTheme";
+import FoodImage from "../common/FoodImage";
 
 export default function MenuItemCard({
   item,
@@ -6,9 +8,14 @@ export default function MenuItemCard({
   inCart,
   onToggleFav,
   onAdd,
-  onDec,
   onClick,
+  compact = false,
 }) {
+  const [hovered, setHovered] = useState(false);
+  const cardMaxWidth = compact ? 236 : 280;
+  const thumbHeight = compact ? 220 : 270;
+  const imageTextSize = compact ? 62 : 72;
+
   return (
     <div
       onClick={onClick}
@@ -19,25 +26,42 @@ export default function MenuItemCard({
         overflow: "hidden",
         cursor: "pointer",
         transition: "box-shadow .2s",
+        width: "100%",
+        maxWidth: cardMaxWidth,
       }}
-      onMouseEnter={(e) =>
-        (e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,.08)")
-      }
-      onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
+      onMouseEnter={(e) => {
+        setHovered(true);
+        e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,.08)";
+      }}
+      onMouseLeave={(e) => {
+        setHovered(false);
+        e.currentTarget.style.boxShadow = "none";
+      }}
     >
       {/* Thumbnail */}
       <div
         style={{
           background: T.primaryLight,
-          height: 130,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 62,
+          height: thumbHeight,
           position: "relative",
+          overflow: "hidden",
         }}
       >
-        {item.image}
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            transition: "transform .35s ease",
+            transform: hovered ? "scale(1.06)" : "scale(1)",
+          }}
+        >
+          <FoodImage
+            src={item.image}
+            size="100%"
+            radius={0}
+            textSize={imageTextSize}
+          />
+        </div>
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -68,10 +92,11 @@ export default function MenuItemCard({
         <p
           style={{
             margin: "0 0 4px",
-            fontWeight: 800,
-            fontSize: 14,
+            fontWeight: 700,
+            fontSize: compact ? 13 : 15,
             color: T.text,
             lineHeight: 1.3,
+            letterSpacing: 0.1,
           }}
         >
           {item.name}
@@ -79,9 +104,10 @@ export default function MenuItemCard({
         <p
           style={{
             margin: "0 0 10px",
-            fontSize: 12,
+            fontSize: compact ? 11 : 13,
+            fontWeight: 500,
             color: T.sub,
-            lineHeight: 1.5,
+            lineHeight: 1.55,
             overflow: "hidden",
             display: "-webkit-box",
             WebkitLineClamp: 2,
@@ -108,98 +134,69 @@ export default function MenuItemCard({
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 10,
           }}
         >
-          <span style={{ fontWeight: 900, color: T.primary, fontSize: 16 }}>
+          <span style={{ fontWeight: 800, color: T.primary, fontSize: compact ? 16 : 18 }}>
             {fmt(item.price)}
           </span>
-          {inCart > 0 ? (
-            <div
+          {inCart > 0 && (
+            <span
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                background: T.primaryLight,
-                borderRadius: 10,
-                padding: "4px 6px",
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDec(item.id, e);
-                }}
-                style={{
-                  width: 26,
-                  height: 26,
-                  border: "none",
-                  background: "#fff",
-                  borderRadius: 7,
-                  cursor: "pointer",
-                  fontWeight: 800,
-                  color: T.primary,
-                  fontSize: 15,
-                }}
-              >
-                −
-              </button>
-              <span
-                style={{
-                  fontWeight: 800,
-                  color: T.primary,
-                  minWidth: 14,
-                  textAlign: "center",
-                  fontSize: 14,
-                }}
-              >
-                {inCart}
-              </span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAdd(item, e);
-                }}
-                style={{
-                  width: 26,
-                  height: 26,
-                  border: "none",
-                  background: T.primary,
-                  borderRadius: 7,
-                  cursor: "pointer",
-                  color: "#fff",
-                  fontSize: 15,
-                }}
-              >
-                +
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onAdd(item, e);
-              }}
-              style={{
-                background: T.primary,
-                color: "#fff",
-                border: "none",
-                borderRadius: 10,
-                width: 34,
-                height: 34,
-                fontSize: 20,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 900,
+                fontSize: 12,
+                fontWeight: 700,
+                color: T.green,
+                background: T.greenBg,
+                borderRadius: 999,
+                padding: "3px 8px",
               }}
             >
-              +
-            </button>
+              Trong giỏ: {inCart}
+            </span>
           )}
+        </div>
+
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAdd(item, e);
+            }}
+            style={{
+              flex: 1,
+              border: "none",
+              borderRadius: 10,
+              background: T.primary,
+              color: "#fff",
+              fontWeight: 800,
+              padding: "9px 10px",
+              cursor: "pointer",
+              fontSize: 12,
+            }}
+          >
+            Thêm vào giỏ hàng
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick?.();
+            }}
+            style={{
+              flex: 1,
+              border: `1px solid ${T.border}`,
+              borderRadius: 10,
+              background: "#fff",
+              color: T.text,
+              fontWeight: 700,
+              padding: "9px 10px",
+              cursor: "pointer",
+              fontSize: 12,
+            }}
+          >
+            Xem chi tiết
+          </button>
         </div>
       </div>
     </div>

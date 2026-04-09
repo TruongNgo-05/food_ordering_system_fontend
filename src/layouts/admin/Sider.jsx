@@ -9,8 +9,9 @@ import {
   faLayerGroup,
   faTicketAlt,
   faClipboardList,
-  faCreditCard,
-  faWarehouse,
+  faCalendarCheck,
+  faComments,
+  faImages,
 } from "@fortawesome/free-solid-svg-icons";
 import "../../assets/styles/Sider.css";
 import logo from "../../assets/images/logo.png";
@@ -54,23 +55,29 @@ const adminMenuItems = [
   },
   {
     id: 7,
-    title: "Quản lý thanh toán",
-    path: "/admin/payments",
-    icon: faCreditCard,
+    title: "Quản lý đặt bàn",
+    path: "/admin/table-bookings",
+    icon: faCalendarCheck,
   },
   {
     id: 8,
-    title: "Quản lý kho",
-    path: "/admin/ingredients",
-    icon: faWarehouse,
+    title: "Quản lý banner",
+    path: "/admin/banners",
+    icon: faImages,
+  },
+  {
+    id: 9,
+    title: "Quản lý đánh giá",
+    path: "/admin/reviews",
+    icon: faComments,
   },
 ];
 
-const Sider = () => {
+const Sider = ({ mobileOpen = false, onCloseMobile }) => {
   const location = useLocation();
 
   return (
-    <aside className="sider">
+    <aside className={`sider ${mobileOpen ? "mobile-open" : ""}`}>
       <div className="sider-content">
         <div className="sider-logo">
           <img src={logo} alt="Logo" className="logo-img" />
@@ -83,6 +90,9 @@ const Sider = () => {
               key={item.id}
               to={item.path}
               className={`menu-item ${location.pathname === item.path ? "active" : ""}`}
+              onClick={() => {
+                if (window.innerWidth <= 1024) onCloseMobile?.();
+              }}
             >
               <span className="menu-icon">
                 <FontAwesomeIcon icon={item.icon} />

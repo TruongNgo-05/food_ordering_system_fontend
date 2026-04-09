@@ -5,28 +5,24 @@
 import React, { useState } from "react";
 import { T } from "../../constants/customerTheme";
 import { mockFAQTopics, FAQ_ANSWERS } from "../../data/mockData";
-import { EmptyState } from "../../components/customer/SharedUI";
 import UserHeader from "../../components/user/UserHeader";
 import "../../assets/styles/CustomerSupport.css";
 const Support = () => {
   const [activeTopic, setActiveTopic] = useState(null);
   const [openQ, setOpenQ] = useState(null);
-  const [search, setSearch] = useState("");
 
   const topic = activeTopic !== null ? mockFAQTopics[activeTopic] : null;
-  const keyword = search.trim().toLowerCase();
-  const filteredTopics = mockFAQTopics.filter(
-    (t) =>
-      keyword.length === 0 ||
-      t.topic.toLowerCase().includes(keyword) ||
-      t.questions.some((q) => q.toLowerCase().includes(keyword)),
-  );
+  const filteredTopics = mockFAQTopics;
 
   return (
     <div className="customer-support-page" style={{ background: T.bg }}>
       <div className="customer-support-container">
         {topic ? (
           <>
+            <UserHeader
+              title={`Hỗ trợ: ${topic.topic}`}
+              description="Danh sách câu hỏi thường gặp"
+            />
             <button
               onClick={() => {
                 setActiveTopic(null);
@@ -42,7 +38,7 @@ const Support = () => {
                 color: T.sub,
                 fontWeight: 600,
                 fontSize: 14,
-                marginBottom: 24,
+                marginBottom: 14,
                 padding: 0,
               }}
             >
@@ -151,7 +147,7 @@ const Support = () => {
                         }}
                       >
                         {FAQ_ANSWERS[q] ||
-                          "Vui lòng liên hệ hotline 1800-1234 để được hỗ trợ trực tiếp."}
+                          "Vui lòng liên hệ hotline 0389-582-843 để được hỗ trợ trực tiếp."}
                       </p>
                     </div>
                   )}
@@ -162,32 +158,8 @@ const Support = () => {
         ) : (
           <>
             <UserHeader
-              title="Hỗ trợ & FAQ"
+              title="Hỗ trợ & Thắc mắc"
               description="Tìm câu trả lời nhanh hoặc liên hệ trực tiếp"
-              extra={
-                <div
-                  style={{
-                    background: T.card,
-                    border: `1px solid ${T.border}`,
-                    borderRadius: 12,
-                    padding: "10px 12px",
-                    width: 260,
-                  }}
-                >
-                  <input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Tìm câu hỏi..."
-                    style={{
-                      width: "100%",
-                      border: "none",
-                      outline: "none",
-                      background: "transparent",
-                      color: T.text,
-                    }}
-                  />
-                </div>
-              }
             />
             <div
               style={{
@@ -228,9 +200,14 @@ const Support = () => {
               }}
             >
               {[
-                ["☎️ Hotline", "1800-1234", T.primaryLight, T.primary],
+                ["☎️ Hotline", "0389-582-843", T.primaryLight, T.primary],
                 ["💬 Chat", "8:00 - 22:00", T.blueBg, T.blue],
-                ["📧 Email", "support@nqt.vn", T.greenBg, T.green],
+                [
+                  "📧 Email",
+                  "ngoquangtruongwork05@gmail.com",
+                  T.greenBg,
+                  T.green,
+                ],
               ].map(([title, value, bg, color]) => (
                 <div
                   key={title}
@@ -258,84 +235,76 @@ const Support = () => {
               ))}
             </div>
 
-            {filteredTopics.length === 0 ? (
-              <EmptyState
-                icon="🔎"
-                title="Không tìm thấy chủ đề"
-                desc="Thử từ khóa khác hoặc gọi hotline để được hỗ trợ ngay."
-              />
-            ) : (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 16,
-                }}
-              >
-                {filteredTopics.map((t) => {
-                  const originalIndex = mockFAQTopics.findIndex(
-                    (x) => x.id === t.id,
-                  );
-                  return (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 16,
+              }}
+            >
+              {filteredTopics.map((t) => {
+                const originalIndex = mockFAQTopics.findIndex(
+                  (x) => x.id === t.id,
+                );
+                return (
+                  <div
+                    key={t.id}
+                    onClick={() => setActiveTopic(originalIndex)}
+                    style={{
+                      background: T.card,
+                      borderRadius: 16,
+                      border: `1.5px solid ${T.border}`,
+                      padding: "20px 22px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 16,
+                      transition: "all .15s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = T.primary;
+                      e.currentTarget.style.background = T.primaryLight;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = T.border;
+                      e.currentTarget.style.background = T.card;
+                    }}
+                  >
                     <div
-                      key={t.id}
-                      onClick={() => setActiveTopic(originalIndex)}
                       style={{
-                        background: T.card,
+                        width: 54,
+                        height: 54,
                         borderRadius: 16,
-                        border: `1.5px solid ${T.border}`,
-                        padding: "20px 22px",
-                        cursor: "pointer",
+                        background: T.primaryLight,
                         display: "flex",
                         alignItems: "center",
-                        gap: 16,
-                        transition: "all .15s",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = T.primary;
-                        e.currentTarget.style.background = T.primaryLight;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = T.border;
-                        e.currentTarget.style.background = T.card;
+                        justifyContent: "center",
+                        fontSize: 28,
+                        flexShrink: 0,
                       }}
                     >
-                      <div
+                      {t.icon}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p
                         style={{
-                          width: 54,
-                          height: 54,
-                          borderRadius: 16,
-                          background: T.primaryLight,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: 28,
-                          flexShrink: 0,
+                          margin: "0 0 4px",
+                          fontWeight: 800,
+                          fontSize: 16,
+                          color: T.text,
                         }}
                       >
-                        {t.icon}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <p
-                          style={{
-                            margin: "0 0 4px",
-                            fontWeight: 800,
-                            fontSize: 16,
-                            color: T.text,
-                          }}
-                        >
-                          {t.topic}
-                        </p>
-                        <p style={{ margin: 0, fontSize: 13, color: T.sub }}>
-                          {t.questions.length} câu hỏi
-                        </p>
-                      </div>
-                      <span style={{ color: T.muted, fontSize: 20 }}>›</span>
+                        {t.topic}
+                      </p>
+                      <p style={{ margin: 0, fontSize: 13, color: T.sub }}>
+                        {t.questions.length} câu hỏi
+                      </p>
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                    <span style={{ color: T.muted, fontSize: 20 }}>›</span>
+                  </div>
+                );
+              })}
+            </div>
           </>
         )}
       </div>

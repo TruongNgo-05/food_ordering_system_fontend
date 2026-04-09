@@ -11,7 +11,7 @@ const ResetPassword = () => {
     const email = localStorage.getItem("resetEmail");
     if (!email) {
       toast.error("Vui lòng nhập email trước khi đặt lại mật khẩu!");
-      navigate("/");
+      navigate("/login");
     }
   }, [navigate]);
   const onFinish = async (values) => {
@@ -35,7 +35,7 @@ const ResetPassword = () => {
 
       localStorage.removeItem("resetEmail");
 
-      navigate("/");
+      navigate("/login");
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Đặt lại mật khẩu thất bại!",
@@ -45,12 +45,15 @@ const ResetPassword = () => {
   return (
     <div className="reset-password-wrapper">
       <div className="reset-password-container">
-        <div className="close-btn" onClick={() => navigate("/")}>
+        <div className="close-btn" onClick={() => navigate("/login")}>
           <CloseOutlined />
         </div>
         <div className="reset-password-header">
           <h2>Đặt lại mật khẩu</h2>
         </div>
+        <p className="reset-password-subtitle">
+          Nhập OTP đã gửi về email và tạo mật khẩu mới an toàn.
+        </p>
 
         <Form
           layout="vertical"

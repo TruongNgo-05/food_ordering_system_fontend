@@ -1,6 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { T } from "../../constants/customerTheme";
-import { mockCategories, mockMenuItems } from "../../data/mockData";
+import {
+  loadSharedCategories,
+  loadSharedFoods,
+  SHARED_DATA_UPDATED_EVENT,
+} from "../../utils/sharedData";
+import "../../assets/styles/CustomerChatWidget.css";
 
 const CustomerChatWidget = () => {
   const [showAIChat, setShowAIChat] = useState(false);
@@ -12,12 +17,30 @@ const CustomerChatWidget = () => {
       text: "Xin chào! Mình là trợ lý AI. Bạn có thể hỏi món bán chạy, món theo danh mục, hoặc mức giá phù hợp nhé.",
     },
   ]);
+  const [categories, setCategories] = useState(() => loadSharedCategories());
+  const [foods, setFoods] = useState(() => loadSharedFoods());
+
+  useEffect(() => {
+    const syncSharedData = () => {
+      setCategories(loadSharedCategories());
+      setFoods(loadSharedFoods());
+    };
+    syncSharedData();
+    window.addEventListener("focus", syncSharedData);
+    window.addEventListener("storage", syncSharedData);
+    window.addEventListener(SHARED_DATA_UPDATED_EVENT, syncSharedData);
+    return () => {
+      window.removeEventListener("focus", syncSharedData);
+      window.removeEventListener("storage", syncSharedData);
+      window.removeEventListener(SHARED_DATA_UPDATED_EVENT, syncSharedData);
+    };
+  }, []);
 
   const getAIReply = (question) => {
     const q = question.toLowerCase();
 
     if (q.includes("bán chạy") || q.includes("best")) {
-      const top = [...mockMenuItems]
+      const top = [...foods]
         .sort((a, b) => (b.sold || 0) - (a.sold || 0))
         .slice(0, 3)
         .map((m) => `${m.name} (${m.sold} lượt bán)`);
@@ -25,23 +48,26 @@ const CustomerChatWidget = () => {
     }
 
     if (q.includes("giá rẻ") || q.includes("rẻ") || q.includes("dưới")) {
-      const budgetItems = mockMenuItems.filter((m) => m.price <= 40000).slice(0, 4);
-      if (budgetItems.length === 0) return "Hiện chưa có món dưới mức giá bạn muốn.";
+      const budgetItems = foods.filter((m) => m.price <= 40000).slice(0, 4);
+      if (budgetItems.length === 0)
+        return "Hiện chưa có món dưới mức giá bạn muốn.";
       return `Một số món giá tốt: ${budgetItems.map((m) => m.name).join(", ")}.`;
     }
 
-    const foundCategory = mockCategories.find(
-      (c) => c.name !== "Tất cả" && (q.includes(c.name.toLowerCase()) || q.includes(c.icon)),
+    const foundCategory = categories.find(
+      (c) =>
+        c.name !== "Tất cả" &&
+        (q.includes(c.name.toLowerCase()) || q.includes(c.icon)),
     );
     if (foundCategory) {
-      const itemsByCat = mockMenuItems
+      const itemsByCat = foods
         .filter((m) => m.category_id === foundCategory.id)
         .slice(0, 4)
         .map((m) => m.name);
       return `Danh mục ${foundCategory.name} gợi ý: ${itemsByCat.join(", ")}.`;
     }
 
-    const foundFood = mockMenuItems.find((m) => q.includes(m.name.toLowerCase()));
+    const foundFood = foods.find((m) => q.includes(m.name.toLowerCase()));
     if (foundFood) {
       return `${foundFood.name} có giá ${foundFood.price.toLocaleString("vi-VN")}đ, đánh giá ${foundFood.rating}/5 và đã bán ${foundFood.sold}.`;
     }
@@ -70,58 +96,31 @@ const CustomerChatWidget = () => {
 
   return (
     <>
-      <div
-        style={{
-          position: "fixed",
-          bottom: 24,
-          right: 24,
-          zIndex: 999,
-          display: "flex",
-          flexDirection: "column",
-          gap: 10,
-        }}
-      >
+      <div className="floating-contact-widget">
         <button
+          className="floating-btn floating-btn-chat"
           onClick={() => setShowAIChat((prev) => !prev)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 52,
-            height: 52,
-            borderRadius: "50%",
-            border: "none",
-            background: T.primary,
-            color: "#fff",
-            cursor: "pointer",
-            boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
-            fontSize: 22,
-          }}
           title="Chat AI"
         >
-          💬
+          <span className="floating-btn-ping" />
+          <span className="floating-btn-icon">💬</span>
+          <span className="floating-btn-label">Chat</span>
         </button>
 
         <button
-          onClick={() => window.open("https://zalo.me", "_blank", "noopener,noreferrer")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 52,
-            height: 52,
-            borderRadius: "50%",
-            border: "none",
-            background: "#0068FF",
-            color: "#fff",
-            cursor: "pointer",
-            boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
-            fontSize: 16,
-            fontWeight: 900,
-          }}
+          className="floating-btn floating-btn-zalo"
+          onClick={() =>
+            window.open(
+              "https://zalo.me/0389582843",
+              "_blank",
+              "noopener,noreferrer",
+            )
+          }
           title="Liên hệ Zalo"
         >
-          Zalo
+          <span className="floating-btn-ping" />
+          <span className="floating-btn-icon">Zalo</span>
+          <span className="floating-btn-label">Zalo</span>
         </button>
       </div>
 
@@ -198,7 +197,14 @@ const CustomerChatWidget = () => {
             ))}
           </div>
 
-          <div style={{ padding: 10, display: "flex", gap: 8, borderTop: `1px solid ${T.border}` }}>
+          <div
+            style={{
+              padding: 10,
+              display: "flex",
+              gap: 8,
+              borderTop: `1px solid ${T.border}`,
+            }}
+          >
             <input
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}

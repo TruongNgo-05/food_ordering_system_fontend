@@ -1,14 +1,29 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { T } from "../../constants/customerTheme";
-import { mockMenuItems } from "../../data/mockData";
-import { SectionTitle, EmptyState } from "../../components/customer/SharedUI";
+import { EmptyState } from "../../components/customer/SharedUI";
 import MenuItemCard from "../../components/customer/MenuItemCard";
 import UserHeader from "../../components/user/UserHeader";
+import {
+  loadSharedFoods,
+  SHARED_DATA_UPDATED_EVENT,
+} from "../../utils/sharedData";
+import { confirmLoginWithToast } from "../../utils/authGuards";
+import { useAuth } from "../../hooks/useAuth";
 import "../../assets/styles/CustomerFavorites.css";
+
+const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
+const isSameArray = (a, b) => JSON.stringify(a || []) === JSON.stringify(b || []);
 
 const Favorites = () => {
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      confirmLoginWithToast(navigate, () => navigate("/customer"));
+    }
+  }, [isLoggedIn, navigate]);
 
   const [favorites, setFavorites] = useState(() => {
     const saved = localStorage.getItem("favorites");
@@ -17,6 +32,7 @@ const Favorites = () => {
 
   useEffect(() => {
     localStorage.setItem("favorites", JSON.stringify(favorites));
+    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
   }, [favorites]);
 
   // CART
@@ -24,22 +40,65 @@ const Favorites = () => {
     const saved = localStorage.getItem("cart");
     return saved ? JSON.parse(saved) : [];
   });
+  const [foods, setFoods] = useState(() => loadSharedFoods());
   const [search, setSearch] = useState("");
 
   useEffect(() => {
+    const syncLocalData = () => {
+      try {
+        const savedFav = localStorage.getItem("favorites");
+        const nextFav = savedFav ? JSON.parse(savedFav) : [];
+        setFavorites((prev) => (isSameArray(prev, nextFav) ? prev : nextFav));
+      } catch {
+        setFavorites([]);
+      }
+      try {
+        const savedCart = localStorage.getItem("cart");
+        const nextCart = savedCart ? JSON.parse(savedCart) : [];
+        setCart((prev) => (isSameArray(prev, nextCart) ? prev : nextCart));
+      } catch {
+        setCart([]);
+      }
+    };
+    syncLocalData();
+    window.addEventListener("focus", syncLocalData);
+    window.addEventListener("storage", syncLocalData);
+    window.addEventListener(CUSTOMER_DATA_UPDATED_EVENT, syncLocalData);
+    return () => {
+      window.removeEventListener("focus", syncLocalData);
+      window.removeEventListener("storage", syncLocalData);
+      window.removeEventListener(CUSTOMER_DATA_UPDATED_EVENT, syncLocalData);
+    };
+  }, []);
+
+  useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
+    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
   }, [cart]);
+
+  useEffect(() => {
+    const syncFoods = () => setFoods(loadSharedFoods());
+    syncFoods();
+    window.addEventListener("focus", syncFoods);
+    window.addEventListener("storage", syncFoods);
+    window.addEventListener(SHARED_DATA_UPDATED_EVENT, syncFoods);
+    return () => {
+      window.removeEventListener("focus", syncFoods);
+      window.removeEventListener("storage", syncFoods);
+      window.removeEventListener(SHARED_DATA_UPDATED_EVENT, syncFoods);
+    };
+  }, []);
 
   const items = useMemo(() => {
     const keyword = search.trim().toLowerCase();
-    return mockMenuItems.filter(
+    return foods.filter(
       (m) =>
         favorites.includes(m.id) &&
         (keyword.length === 0 ||
           m.name.toLowerCase().includes(keyword) ||
           m.desc.toLowerCase().includes(keyword)),
     );
-  }, [favorites, search]);
+  }, [foods, favorites, search]);
 
   const cartMap = useMemo(() => {
     return Object.fromEntries(cart.map((c) => [c.item_id, c.qty]));
@@ -130,8 +189,6 @@ const Favorites = () => {
             </div>
           }
         />
-        <SectionTitle count={items.length}>Món yêu thích</SectionTitle>
-
         {items.length === 0 ? (
           <EmptyState
             icon="❤️"

@@ -234,7 +234,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Be+Vietnam+Pro:wght@400;500;600&display=swap");
 
 .sider {
-  width: 270px;
+  width: 16.875rem;
   background: linear-gradient(180deg, #1a1208 0%, #2b1a0f 100%);
   height: 100vh;
   box-shadow: 4px 0 20px rgba(212, 135, 58, 0.3);
@@ -326,6 +326,10 @@
   align-items: center;
   gap: 14px;
   padding: 14px 18px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
   color: rgba(245, 230, 200, 0.7);
   text-decoration: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -419,7 +423,7 @@
 
 @media (max-width: 768px) {
   .sider {
-    width: 80px;
+    width: 5rem;
   }
 
   .logo-text {
@@ -442,6 +446,34 @@
 
   .sider-footer {
     display: none;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .sider {
+    width: min(82vw, 18rem);
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 200;
+  }
+
+  .sider.mobile-open {
+    transform: translateX(0);
+  }
+
+  .logo-text,
+  .menu-text {
+    display: block;
+  }
+
+  .sider-logo {
+    justify-content: flex-start;
+    padding: 1rem 0.875rem;
+  }
+
+  .menu-item {
+    justify-content: flex-start;
+    padding: 0.75rem 0.875rem;
   }
 }
 

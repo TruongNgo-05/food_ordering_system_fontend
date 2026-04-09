@@ -296,6 +296,7 @@
 // };
 // export default Header;
 import React, { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dropdown, message } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -303,8 +304,9 @@ import {
   faCog,
   faKey,
   faSignOutAlt,
+  faBars,
 } from "@fortawesome/free-solid-svg-icons";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext } from "../../context/authContext";
 import {
   updateProfileApi,
   changePasswordApi,
@@ -314,21 +316,29 @@ import { toast } from "react-toastify";
 import Capnhatthongtin from "../../components/modal/auth/Capnhatthongtin";
 import Capnhatmatkhau from "../../components/modal/auth/Capnhatmatkhau";
 
-const Header = () => {
-  const { logout, userFullName, refreshUser, user } = useContext(AuthContext);
+const Header = ({ onMenuToggle }) => {
+  const navigate = useNavigate();
+  const { isLoggedIn, logout, userFullName, refreshUser, user } = useContext(AuthContext);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = React.useState(false);
 
   const handleProfileUpdate = async (values) => {
     try {
-      const [firstName, ...lastNameParts] = values.fullName.trim().split(" ");
-      const lastName = lastNameParts.join(" ") || "";
+      const firstName = values.firstName || "";
+      const lastName = values.lastName || "";
       const updateData = {
         firstName,
         lastName,
         email: values.email,
       };
       await updateProfileApi(updateData);
+      if (values.avatar) {
+        const storedUser = localStorage.getItem("user");
+        const parsedUser = storedUser ? JSON.parse(storedUser) : {};
+        const nextUser = { ...parsedUser, avatar: values.avatar };
+        localStorage.setItem("user", JSON.stringify(nextUser));
+        localStorage.setItem("userInfo", JSON.stringify(nextUser));
+      }
       toast.success("Cập nhật thông tin thành công!");
       await refreshUser();
     } catch (error) {
@@ -361,8 +371,8 @@ const Header = () => {
     logout();
 
     message.success("Đăng xuất thành công!");
-    // Chuyển về trang login
-    window.location.href = "/";
+    // Chuyển về trang customer
+    navigate("/customer");
   };
 
   const menuItems = [
@@ -390,26 +400,41 @@ const Header = () => {
     },
   ];
 
-  const displayName = userFullName || "Admin";
+  const displayName = userFullName || "Khách hàng";
+  const avatarSrc = user?.avatar || "";
 
   return (
     <header className="header">
-      <div className="header-left"></div>
+      <div className="header-left">
+        <button className="menu-toggle-btn" onClick={onMenuToggle} aria-label="Mở menu">
+          <FontAwesomeIcon icon={faBars} />
+        </button>
+      </div>
 
       <div className="header-right">
-        <Dropdown
-          menu={{ items: menuItems }}
-          trigger={["click"]}
-          placement="bottomRight"
-        >
-          <div className="user-info">
-            <div className="user-avatar">
-              <FontAwesomeIcon icon={faUser} />
+        {isLoggedIn ? (
+          <Dropdown
+            menu={{ items: menuItems }}
+            trigger={["click"]}
+            placement="bottomRight"
+          >
+            <div className="user-info">
+              <div className="user-avatar">
+                {avatarSrc ? (
+                  <img src={avatarSrc} alt="avatar" className="user-avatar-img" />
+                ) : (
+                  <FontAwesomeIcon icon={faUser} />
+                )}
+              </div>
+              <span className="user-name">{displayName}</span>
+              <FontAwesomeIcon icon={faCog} className="dropdown-icon" />
             </div>
-            <span className="user-name">{displayName}</span>
-            <FontAwesomeIcon icon={faCog} className="dropdown-icon" />
-          </div>
-        </Dropdown>
+          </Dropdown>
+        ) : (
+          <button className="user-login-btn" onClick={() => navigate("/login")}>
+            Đăng nhập
+          </button>
+        )}
         <Capnhatthongtin
           open={isModalOpen}
           onCancel={() => setIsModalOpen(false)}

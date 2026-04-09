@@ -2,7 +2,15 @@ import { Pagination } from "antd";
 
 export default function AppPagination({ page, size, total, onChange }) {
   return (
-    <div className="pagination">
+    <div
+      className="pagination"
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        width: "100%",
+        marginTop: "1rem",
+      }}
+    >
       <Pagination
         current={page + 1}
         pageSize={size}
