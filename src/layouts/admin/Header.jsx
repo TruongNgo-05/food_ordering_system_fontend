@@ -1,16 +1,24 @@
-import React, { useContext } from 'react';
-import { Dropdown, message } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faCog, faKey, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
-import { AuthContext } from '../context/AuthContext';
-import { updateProfileApi, changePasswordApi } from '../services/userService';
-import '../assets/styles/Header.css';
-import { toast } from 'react-toastify';
-import Capnhatthongtin from '../components/modal/auth/Capnhatthongtin';
-import Capnhatmatkhau from '../components/modal/auth/Capnhatmatkhau';
+import React, { useContext } from "react";
+import { Dropdown, message } from "antd";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faUser,
+  faCog,
+  faKey,
+  faSignOutAlt,
+} from "@fortawesome/free-solid-svg-icons";
+import { AuthContext } from "../../context/AuthContext";
+import {
+  updateProfileApi,
+  changePasswordApi,
+} from "../../services/userService";
+import "../../assets/styles/AdminHeader.css";
+import { toast } from "react-toastify";
+import Capnhatthongtin from "../../components/modal/auth/Capnhatthongtin";
+import Capnhatmatkhau from "../../components/modal/auth/Capnhatmatkhau";
 
 const Header = () => {
- const { logout, userFullName, refreshUser, user } = useContext(AuthContext);
+  const { logout, userFullName, refreshUser, user } = useContext(AuthContext);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = React.useState(false);
 
@@ -27,8 +35,7 @@ const Header = () => {
       toast.success("Cập nhật thông tin thành công!");
       await refreshUser();
     } catch (error) {
-      const msg =
-        error.response?.data?.message || "Email đã tồn tại!";
+      const msg = error.response?.data?.message || "Email đã tồn tại!";
       toast.error(msg);
       throw new Error(msg);
     }
@@ -36,17 +43,12 @@ const Header = () => {
 
   const handleChangePassword = async (values) => {
     try {
-
       await changePasswordApi({
         password: values.currentPassword,
         newPassword: values.newPassword,
       });
-
     } catch (error) {
-
-      const msg =
-        error.response?.data?.message ||
-        "Đổi mật khẩu thất bại!";
+      const msg = error.response?.data?.message || "Đổi mật khẩu thất bại!";
 
       throw new Error(msg);
     }
@@ -91,9 +93,7 @@ const Header = () => {
     },
   ];
 
- 
-
-  const displayName = userFullName || 'Admin';
+  const displayName = userFullName || "Admin";
 
   return (
     <header className="header">

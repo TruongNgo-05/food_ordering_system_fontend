@@ -1,7 +1,17 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChartLine, faUsers } from "@fortawesome/free-solid-svg-icons";
+// Cập nhật lại danh sách import các icon phù hợp
+import {
+  faChartLine,
+  faUsers,
+  faUtensils,
+  faLayerGroup,
+  faTicketAlt,
+  faClipboardList,
+  faCreditCard,
+  faWarehouse,
+} from "@fortawesome/free-solid-svg-icons";
 import "../../assets/styles/Sider.css";
 import logo from "../../assets/images/logo.png";
 
@@ -14,9 +24,45 @@ const adminMenuItems = [
   },
   {
     id: 2,
-    title: "Quản lý ",
-    path: "/admin/1",
+    title: "Quản lý người dùng",
+    path: "/admin/user",
     icon: faUsers,
+  },
+  {
+    id: 3,
+    title: "Quản lý món ăn",
+    path: "/admin/foods",
+    icon: faUtensils,
+  },
+  {
+    id: 4,
+    title: "Quản lý danh mục",
+    path: "/admin/categories",
+    icon: faLayerGroup,
+  },
+  {
+    id: 5,
+    title: "Quản lý khuyến mãi",
+    path: "/admin/vouchers",
+    icon: faTicketAlt,
+  },
+  {
+    id: 6,
+    title: "Quản lý đơn hàng",
+    path: "/admin/orders",
+    icon: faClipboardList,
+  },
+  {
+    id: 7,
+    title: "Quản lý thanh toán",
+    path: "/admin/payments",
+    icon: faCreditCard,
+  },
+  {
+    id: 8,
+    title: "Quản lý kho",
+    path: "/admin/ingredients",
+    icon: faWarehouse,
   },
 ];
 
@@ -28,7 +74,7 @@ const Sider = () => {
       <div className="sider-content">
         <div className="sider-logo">
           <img src={logo} alt="Logo" className="logo-img" />
-          <span className="logo-text">Project</span>
+          <span className="logo-text">Nhà Hàng NQT</span>
         </div>
 
         <nav className="sider-menu">
@@ -49,4 +95,5 @@ const Sider = () => {
     </aside>
   );
 };
+
 export default Sider;

@@ -1,0 +1,118 @@
+.home-container {
+  padding: 30px 40px;
+  background: #fdfdfd;
+  min-height: 100vh;
+  color: #2d3436;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* CATEGORY - CÁC NÚT PHÂN LOẠI */
+.categories {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.categories button {
+  padding: 10px 22px;
+  border-radius: 25px;
+  border: 1px solid #eee;
+  background: white;
+  color: #666;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.categories button:hover {
+  border-color: #ff8c42;
+  color: #ff8c42;
+}
+
+.categories .active {
+  background: linear-gradient(
+    135deg,
+    #ff6b35,
+    #ff8c42
+  ); /* Cùng màu với Header */
+  color: white;
+  border: none;
+  box-shadow: 0 4px 10px rgba(255, 107, 53, 0.3);
+}
+
+/* GRID - BỐ CỤC LƯỚI */
+.food-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 30px;
+}
+
+/* CARD - THẺ MÓN ĂN */
+.food-card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+.food-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.food-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  transition: 0.3s;
+}
+
+.food-card:hover img {
+  scale: 1.05; /* Hiệu ứng zoom nhẹ khi di chuột */
+}
+
+/* INFO - THÔNG TIN TRONG CARD */
+.food-info {
+  padding: 20px;
+  text-align: center;
+}
+
+.food-info h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: #2d3436;
+  font-weight: 700;
+}
+
+.food-info p {
+  color: #ff6b35; /* Màu cam chủ đạo */
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+}
+
+.food-info button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: #f8f9fa;
+  color: #ff6b35;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+  border: 1px solid #ffe6dc;
+}
+
+.food-info button:hover {
+  background: #ff6b35;
+  color: white;
+  box-shadow: 0 5px 15px rgba(255, 107, 53, 0.2);
+}
+.home-content {
+  padding: 30px 60px;
+}

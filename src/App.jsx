@@ -4,14 +4,25 @@ import { ToastContainer } from "react-toastify";
 
 import Login from "./pages/login/Login";
 import AdminLayouts from "./layouts/admin/AdminLayout";
-import UserLayout from "./layouts/user/UserLayout";
 import ResetPassword from "./pages/login/ResetPassword";
 import Dashboard from "./pages/admin/Dashboard";
 import ProtectedRoute from "./routers/ProtectedRoute";
 import PublicRoute from "./routers/PublicRoute";
 import NotFound from "./errors/NotFound";
-import UserDashboard from "./pages/user/Dashboard";
 import Register from "./pages/login/Register";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminFoods from "./pages/admin/AdminFoods";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminVouchers from "./pages/admin/AdminVouchers";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminPayments from "./pages/admin/AdminPayments";
+import AdminIngredients from "./pages/admin/AdminIngredients";
+import CustomerHome from "./pages/user/Home";
+import CustomerCart from "./pages/user/Cart";
+import CustomerOrders from "./pages/user/Orders";
+import CustomerFavorites from "./pages/user/Favorites";
+import CustomerSupport from "./pages/user/Support";
+import CustomerLayout from "./layouts/user/UserLayout";
 
 const App = () => {
   return (
@@ -46,15 +57,18 @@ const App = () => {
         {/* Protected Routes */}
         {/* User */}
         <Route
-          path="/user"
+          path="/customer"
           element={
-            <ProtectedRoute allowedRoles={["USER"]}>
-              <UserLayout />
+            <ProtectedRoute allowedRoles={["CUSTOMER"]}>
+              <CustomerLayout />
             </ProtectedRoute>
           }
         >
-          <Route index element={<UserDashboard />} />
-          {/* <Route path="exams" element={<TeacherExams />} /> */}
+          <Route index element={<CustomerHome />} />
+          <Route path="carts" element={<CustomerCart />} />
+          <Route path="orders" element={<CustomerOrders />} />
+          <Route path="favorites" element={<CustomerFavorites />} />
+          <Route path="support" element={<CustomerSupport />} />
         </Route>
 
         <Route
@@ -66,7 +80,13 @@ const App = () => {
           }
         >
           <Route index element={<Dashboard />} />
-          {/* <Route path="users" element={<User />} /> */}
+          <Route path="user" element={<AdminUsers />} />
+          <Route path="foods" element={<AdminFoods />} />
+          <Route path="categories" element={<AdminCategories />} />
+          <Route path="vouchers" element={<AdminVouchers />} />
+          <Route path="orders" element={<AdminOrders />} />
+          <Route path="payments" element={<AdminPayments />} />
+          <Route path="ingredients" element={<AdminIngredients />} />
         </Route>
 
         {/* 404 Page */}

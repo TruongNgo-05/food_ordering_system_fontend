@@ -1,16 +1,100 @@
-# React + Vite
+# File Tree: food_ordering_system_fontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Generated:** 4/8/2026, 8:50:16 PM
+**Root Path:** `c:\Users\x1gen7\Desktop\food_ordering_system\food_ordering_system_fontend`
 
-Currently, two official plugins are available:
+```
+├── 📁 src
+│   ├── 📁 assets
+│   │   ├── 📁 images
+│   │   │   ├── 🖼️ icon.png
+│   │   │   └── 🖼️ logo.png
+│   │   └── 📁 styles
+│   │       ├── 🎨 AdminHeader.css
+│   │       ├── 🎨 AdminLayouts.css
+│   │       ├── 🎨 Banner.css
+│   │       ├── 🎨 ChangePassword.css
+│   │       ├── 🎨 HeaderCustomer.css
+│   │       ├── 🎨 HomeCustomer.css
+│   │       ├── 🎨 Login.css
+│   │       ├── 🎨 NotFound.css
+│   │       ├── 🎨 ResetPassword.css
+│   │       ├── 🎨 Sider.css
+│   │       └── 🎨 errors.css
+│   ├── 📁 components
+│   │   ├── 📁 common
+│   │   │   ├── 📄 AppPagination.jsx
+│   │   │   ├── 📄 BaseTable.jsx
+│   │   │   └── 📄 TableActions.jsx
+│   │   ├── 📁 customer
+│   │   │   ├── 📄 Banner.jsx
+│   │   │   └── 📄 Filter.jsx
+│   │   └── 📁 modal
+│   │       └── 📁 auth
+│   │           ├── 📄 Capnhatmatkhau.jsx
+│   │           ├── 📄 Capnhatthongtin.jsx
+│   │           └── 📄 Quenmatkhau.jsx
+│   ├── 📁 context
+│   │   └── 📄 AuthContext.jsx
+│   ├── 📁 data
+│   │   └── 📄 mockData.js
+│   ├── 📁 errors
+│   │   ├── 📄 Forbidden403.jsx
+│   │   ├── 📄 NotFound.jsx
+│   │   ├── 📄 ServerError500.jsx
+│   │   ├── 📄 Unauthorized401.jsx
+│   │   └── 📄 notFound404.jsx
+│   ├── 📁 hooks
+│   │   └── 📄 useAuth.jsx
+│   ├── 📁 layouts
+│   │   ├── 📁 admin
+│   │   │   ├── 📄 AdminLayout.jsx
+│   │   │   ├── 📄 Header.jsx
+│   │   │   └── 📄 Sider.jsx
+│   │   └── 📁 user
+│   │       ├── 📄 Header.jsx
+│   │       └── 📄 UserLayout.jsx
+│   ├── 📁 pages
+│   │   ├── 📁 admin
+│   │   │   ├── 📄 AdminCategories.jsx
+│   │   │   ├── 📄 AdminFoods.jsx
+│   │   │   ├── 📄 AdminIngredients.jsx
+│   │   │   ├── 📄 AdminOrders.jsx
+│   │   │   ├── 📄 AdminPayments.jsx
+│   │   │   ├── 📄 AdminUsers.jsx
+│   │   │   ├── 📄 AdminVouchers.jsx
+│   │   │   └── 📄 Dashboard.jsx
+│   │   ├── 📁 login
+│   │   │   ├── 📄 Login.jsx
+│   │   │   ├── 📄 Register.jsx
+│   │   │   └── 📄 ResetPassword.jsx
+│   │   └── 📁 user
+│   │       ├── 📄 Cart.jsx
+│   │       ├── 📄 Favorites.jsx
+│   │       ├── 📄 Home.jsx
+│   │       ├── 📄 Orders.jsx
+│   │       └── 📄 Support.jsx
+│   ├── 📁 routers
+│   │   ├── 📄 ProtectedRoute.jsx
+│   │   └── 📄 PublicRoute.jsx
+│   ├── 📁 services
+│   │   ├── 📄 apiClient.js
+│   │   ├── 📄 authService.js
+│   │   └── 📄 userService.js
+│   ├── 📁 utils
+│   │   └── 📄 format.js
+│   ├── 📄 App.jsx
+│   ├── 🎨 index.css
+│   └── 📄 main.jsx
+├── ⚙️ .gitignore
+├── 📝 README.md
+├── 📄 eslint.config.js
+├── 🌐 index.html
+├── ⚙️ package-lock.json
+├── ⚙️ package.json
+└── 📄 vite.config.js
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+_Generated by FileTree Pro Extension_

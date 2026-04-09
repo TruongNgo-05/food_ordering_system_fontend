@@ -1,20 +1,15 @@
 import React from "react";
-import Header from "../Header";
-import Sider from "./Sider";
+import Header from "./Header";
 import { Outlet } from "react-router-dom";
-const UserLayout = () => {
+const CustomerLayout = () => {
   return (
-    <div className="layout">
-      <Sider />
-
-      <div className="main-content">
-        <Header />
-
-        <div className="content">
-          <Outlet />
-        </div>
+    <div className="customer-layout">
+      <Header />
+      <div className="customer-content">
+        <Outlet />
       </div>
     </div>
   );
 };
-export default UserLayout;
+
+export default CustomerLayout;
