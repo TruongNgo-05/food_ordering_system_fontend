@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Banner from "../../components/customer/Banner";
 import "../../assets/styles/HomeCustomer.css";
-
+import AppPagination from "../../components/common/AppPagination";
 // MOCK DATA
 const foods = [
   {
@@ -43,18 +43,27 @@ const foods = [
 
 // CATEGORY
 const categories = ["Tất cả", "Cơm", "Trà sữa", "FastFood", "Món nước"];
-
 const CustomerHome = () => {
   const [selectedCategory, setSelectedCategory] = useState("Tất cả");
+
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(4);
 
   const filteredFoods =
     selectedCategory === "Tất cả"
       ? foods
       : foods.filter((f) => f.category === selectedCategory);
 
+  const total = filteredFoods.length;
+
+  // paginate
+  const start = (page - 1) * size;
+  const paginatedFoods = filteredFoods.slice(start, start + size);
+
   return (
     <div className="home-container">
       <Banner />
+
       <div className="home-content">
         {/* FILTER */}
         <div className="categories">
@@ -62,7 +71,10 @@ const CustomerHome = () => {
             <button
               key={index}
               className={selectedCategory === cat ? "active" : ""}
-              onClick={() => setSelectedCategory(cat)}
+              onClick={() => {
+                setSelectedCategory(cat);
+                setPage(1); // reset page khi đổi category
+              }}
             >
               {cat}
             </button>
@@ -71,9 +83,12 @@ const CustomerHome = () => {
 
         {/* FOOD GRID */}
         <div className="food-grid">
-          {filteredFoods.map((food) => (
+          {paginatedFoods.map((food) => (
             <div className="food-card" key={food.id}>
-              <img src={food.image} alt={food.name} />
+              <img
+                src={`${food.image}?auto=format&fit=crop&w=800&q=60`}
+                alt={food.name}
+              />
               <div className="food-info">
                 <h3>{food.name}</h3>
                 <p>{food.price.toLocaleString()}đ</p>
@@ -83,8 +98,18 @@ const CustomerHome = () => {
           ))}
         </div>
       </div>
+
+      {/* PAGINATION */}
+      <AppPagination
+        page={page}
+        size={size}
+        total={total}
+        onChange={(p, s) => {
+          setPage(p);
+          setSize(s);
+        }}
+      />
     </div>
   );
 };
-
 export default CustomerHome;

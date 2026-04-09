@@ -17,11 +17,11 @@ import AdminVouchers from "./pages/admin/AdminVouchers";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminPayments from "./pages/admin/AdminPayments";
 import AdminIngredients from "./pages/admin/AdminIngredients";
-import CustomerHome from "./pages/user/Home";
-import CustomerCart from "./pages/user/Cart";
-import CustomerOrders from "./pages/user/Orders";
-import CustomerFavorites from "./pages/user/Favorites";
-import CustomerSupport from "./pages/user/Support";
+import CustomerHome from "./pages/customer/Home";
+import CustomerCart from "./pages/customer/Cart";
+import CustomerOrders from "./pages/customer/Orders";
+import CustomerFavorites from "./pages/customer/Favorites";
+import CustomerSupport from "./pages/customer/Support";
 import CustomerLayout from "./layouts/user/UserLayout";
 
 const App = () => {
