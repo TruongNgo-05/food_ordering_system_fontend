@@ -19,7 +19,7 @@
   transition: all 0.3s ease;
 }
 
-/* ===== LOGO ===== */
+
 .customer-header-logo {
   display: flex;
   align-items: center;
@@ -37,7 +37,7 @@
   font-size: 18px;
 }
 
-/* ===== SEARCH ===== */
+
 .customer-header-search {
   width: 380px;
   background: white;
@@ -57,13 +57,13 @@
   font-size: 14px;
 }
 
-/* focus */
+
 .customer-header-search:focus-within {
   box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.3);
   transform: scale(1.02);
 }
 
-/* ===== MENU ===== */
+
 .customer-header-menu {
   display: flex;
   gap: 20px;
@@ -93,8 +93,6 @@
   font-weight: 700;
 }
 
-/* ===== USER STYLE GIỐNG ADMIN ===== */
-
 .customer-user-info {
   display: flex;
   align-items: center;
@@ -114,7 +112,7 @@
   box-shadow: 0 4px 15px rgba(212, 135, 58, 0.3);
 }
 
-/* Avatar giống admin */
+
 
 .customer-user-avatar {
   width: 38px;
@@ -138,7 +136,7 @@
   transform: scale(1.1);
 }
 
-/* Name */
+
 
 .customer-user-name {
   font-size: 14px;
@@ -146,7 +144,7 @@
   color: #fff;
 }
 
-/* Icon dropdown */
+
 
 .customer-dropdown-icon {
   font-size: 12px;
@@ -159,7 +157,7 @@
   transform: rotate(90deg);
   color: #fff;
 }
-/* ===== SCROLL ===== */
+
 .customer-header.scrolled {
   background: rgba(255, 107, 53, 0.95);
   backdrop-filter: blur(8px);
@@ -170,7 +168,6 @@
   padding-top: 70px;
 }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .customer-header {
     padding: 0 20px;

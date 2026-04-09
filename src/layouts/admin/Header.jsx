@@ -12,7 +12,7 @@ import {
   updateProfileApi,
   changePasswordApi,
 } from "../../services/userService";
-import "../../assets/styles/AdminHeader.css";
+import "../../assets/styles/Header.css";
 import { toast } from "react-toastify";
 import Capnhatthongtin from "../../components/modal/auth/Capnhatthongtin";
 import Capnhatmatkhau from "../../components/modal/auth/Capnhatmatkhau";

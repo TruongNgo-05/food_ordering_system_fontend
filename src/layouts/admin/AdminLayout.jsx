@@ -1,7 +1,7 @@
 import React from "react";
 import Header from "./Header";
 import Sider from "./Sider";
-import "../../assets/styles/AdminLayouts.css";
+import "../../assets/styles/Layouts.css";
 import { Outlet } from "react-router-dom";
 const AdminLayouts = () => {
   return (

@@ -22,7 +22,7 @@ import CustomerCart from "./pages/customer/Cart";
 import CustomerOrders from "./pages/customer/Orders";
 import CustomerFavorites from "./pages/customer/Favorites";
 import CustomerSupport from "./pages/customer/Support";
-import CustomerLayout from "./layouts/user/UserLayout";
+import CustomerLayout from "./layouts/customer/UserLayout";
 
 const App = () => {
   return (

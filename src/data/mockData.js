@@ -175,7 +175,7 @@ export const mockVouchers = [
 export const mockOrders = [
   {
     id: "ORD-2041",
-    created_at: "2025-04-06 12:30",
+    created_at: "06/04/2025 12:30",
     status: "completed",
     payment_method: "COD",
     payment_status: "paid",
@@ -192,7 +192,7 @@ export const mockOrders = [
   },
   {
     id: "ORD-2039",
-    created_at: "2025-04-07 18:45",
+    created_at: "07/04/2025 18:45",
     status: "delivering",
     payment_method: "ONLINE",
     payment_status: "paid",
@@ -209,7 +209,7 @@ export const mockOrders = [
   },
   {
     id: "ORD-2040",
-    created_at: "2025-04-08 09:10",
+    created_at: "08/04/2025 09:10",
     status: "processing",
     payment_method: "COD",
     payment_status: "pending",
@@ -219,7 +219,7 @@ export const mockOrders = [
     shipping: 0,
     total: 84000,
     voucher: "WELCOME20",
-    address: "78 Đinh Tiên Hoàng, Bình Thạnh",
+    address: "78 Đinh Tiên Hoàng, BT",
   },
 ];
 
@@ -265,56 +265,18 @@ export const mockFAQTopics = [
     ],
   },
 ];
-const T = {
-  primary: "#FF6B35",
-  primaryLight: "#FFF3EE",
-  primaryDark: "#E5521A",
-  surface: "#FFFFFF",
-  bg: "#F7F5F2",
-  card: "#FFFFFF",
-  border: "#EDEBE8",
-  text: "#1A1612",
-  sub: "#7A7570",
-  muted: "#B5B0AA",
-  green: "#16A34A",
-  greenBg: "#F0FDF4",
-  amber: "#D97706",
-  amberBg: "#FFFBEB",
-  blue: "#2563EB",
-  blueBg: "#EFF6FF",
-  red: "#DC2626",
-  redBg: "#FEF2F2",
-};
 
-const fmt = (n) => n.toLocaleString("vi-VN") + "đ";
-
-const STATUS_CONFIG = {
-  pending: {
-    label: "Chờ xác nhận",
-    color: T.amber,
-    bg: T.amberBg,
-    step: 0,
-    icon: "⏳",
-  },
-  processing: {
-    label: "Đang làm",
-    color: T.blue,
-    bg: T.blueBg,
-    step: 1,
-    icon: "👨‍🍳",
-  },
-  delivering: {
-    label: "Đang giao",
-    color: T.primary,
-    bg: T.primaryLight,
-    step: 2,
-    icon: "🛵",
-  },
-  completed: {
-    label: "Hoàn thành",
-    color: T.green,
-    bg: T.greenBg,
-    step: 3,
-    icon: "✅",
-  },
+export const FAQ_ANSWERS = {
+  "Tôi có thể thanh toán bằng những hình thức nào?":
+    "Chúng tôi hỗ trợ thanh toán tiền mặt khi nhận hàng (COD) và thanh toán online qua VNPay, Momo, ZaloPay.",
+  "Tiền có bị trừ ngay khi đặt không?":
+    "Với thanh toán online, tiền sẽ được giữ tạm và xác nhận sau khi đơn hàng hoàn thành. Với COD, bạn trả khi nhận hàng.",
+  "Hoàn tiền mất bao lâu?":
+    "Thông thường 3–5 ngày làm việc tùy theo ngân hàng hoặc ví điện tử của bạn.",
+  "Thời gian giao hàng là bao lâu?":
+    "Từ 20–45 phút tùy khoảng cách và thời điểm. Giờ cao điểm có thể lâu hơn.",
+  "Phạm vi giao hàng ở đâu?":
+    "Hiện tại chúng tôi giao hàng trong bán kính 10km từ các chi nhánh tại Q.1, Q.3 và Bình Thạnh.",
+  "Tôi có thể đặt giao giờ hẹn không?":
+    "Hiện tại chưa hỗ trợ. Tính năng đặt trước theo giờ sẽ ra mắt trong phiên bản tiếp theo.",
 };
