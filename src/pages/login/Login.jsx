@@ -9,6 +9,9 @@ import Quenmatkhau from "../../components/modal/auth/Quenmatkhau";
 import { toast } from "react-toastify";
 import { useAuth } from "../../hooks/useAuth";
 
+import axios from "axios";
+import { GoogleLogin } from "@react-oauth/google";
+
 const Login = () => {
   const [loading, setLoading] = React.useState(false);
   const [openForgot, setOpenForgot] = React.useState(false);
@@ -17,40 +20,42 @@ const Login = () => {
 
   const onFinish = async (values) => {
     setLoading(true);
+
     try {
       const userData = await login(values);
-      // Hiển thị cảnh báo nếu có lần đăng nhập sai
       if (userData.failCount > 0) {
         toast.warning(`Bạn đã nhập sai ${userData.failCount} lần`);
       }
-
       toast.success("Đăng nhập thành công!");
 
-      // Điều hướng theo role (AuthContext đã lưu token/role)
       const role = userData.role;
+
       if (role === "ADMIN") {
         navigate("/admin");
-      } else if (role === "STAFF") {
-        navigate("/staff");
       } else {
         navigate("/customer");
       }
     } catch (error) {
-      // Sai tài khoản/mật khẩu -> báo cố định
       const status = error?.response?.status;
-      if (status === 400 || status === 401 || status === 403) {
-        toast.error("Bạn sai tài khoản hoặc mật khẩu");
+      const message = error?.response?.data?.message;
+      if (message) {
+        toast.error(message);
       } else if (!error?.response) {
-        // Không có response thường là lỗi mạng / backend không chạy
         toast.error("Không thể kết nối server");
       } else {
-        toast.error("Đăng nhập thất bại, vui lòng thử lại");
+        if (status === 401) {
+          toast.error("Sai tài khoản hoặc mật khẩu");
+        } else if (status === 403) {
+          toast.error("Tài khoản bị khóa");
+        } else {
+          toast.error("Đăng nhập thất bại, vui lòng thử lại");
+        }
       }
     } finally {
       setLoading(false);
     }
   };
-
+  
   const handleSocialLogin = (provider) => {
     toast.info(`Đăng nhập bằng ${provider} đang được phát triển`);
   };
@@ -61,7 +66,9 @@ const Login = () => {
         <div className="login-box">
           <div className="login-header">
             <div className="back-customer-link">
-              <a onClick={() => navigate("/customer")}>← Quay lại trang khách hàng</a>
+              <a onClick={() => navigate("/customer")}>
+                ← Quay lại trang khách hàng
+              </a>
             </div>
             <div className="logo-container">
               <img src={logo} alt="Ngô Quang Trường" className="logo" />
@@ -125,14 +132,33 @@ const Login = () => {
             </div>
 
             <div className="social-login-group">
-              <button
-                type="button"
-                className="social-login-btn google"
-                onClick={() => handleSocialLogin("Google")}
-              >
-                <span className="social-login-icon">G</span>
-                <span>Google</span>
-              </button>
+              <div style={{ width: "100%" }}>
+                <GoogleLogin
+                  onSuccess={async (credentialResponse) => {
+                    try {
+                      const res = await axios.post(
+                        "http://localhost:8080/api/auth/google",
+                        {
+                          token: credentialResponse.credential, 
+                        },
+                      );
+
+                      const user = res.data;
+
+                      toast.success("Đăng nhập Google thành công!");
+
+                      if (user.role === "ADMIN") {
+                        navigate("/admin");
+                      } else {
+                        navigate("/customer");
+                      }
+                    } catch (err) {
+                      toast.error("Login Google thất bại");
+                    }
+                  }}
+                  onError={() => toast.error("Google login lỗi")}
+                />
+              </div>
               <button
                 type="button"
                 className="social-login-btn facebook"

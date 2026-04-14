@@ -1,4 +1,4 @@
-.floating-contact-widget {
+/* .floating-contact-widget {
   position: fixed;
   right: 1.25rem;
   bottom: 1.25rem;
@@ -20,7 +20,10 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
-  transition: transform 0.2s ease, box-shadow 0.25s ease, filter 0.25s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.25s ease,
+    filter 0.25s ease;
   overflow: hidden;
 }
 
@@ -63,7 +66,9 @@
   opacity: 0;
   pointer-events: none;
   white-space: nowrap;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .floating-btn:hover .floating-btn-label {
@@ -100,6 +105,154 @@
     bottom: 1rem;
     gap: 0.65rem;
   }
+  .floating-btn {
+    width: 3.1rem;
+    height: 3.1rem;
+  }
+} */
+.floating-contact-widget {
+  position: fixed;
+  right: 1.4rem;
+  bottom: 1.4rem;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+/* BUTTON */
+.floating-btn {
+  position: relative;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* 🔥 Glass effect */
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.08);
+
+  color: #fff;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+/* HOVER */
+.floating-btn:hover {
+  transform: translateY(-4px) scale(1.06);
+}
+
+/* ACTIVE */
+.floating-btn:active {
+  transform: scale(0.96);
+}
+
+/* CHAT */
+.floating-btn-chat {
+  background: linear-gradient(135deg, #ff8a24, #ff5e2e);
+}
+
+.floating-btn-chat:hover {
+  box-shadow: 0 0 18px rgba(255, 94, 46, 0.7);
+}
+
+/* ZALO */
+.floating-btn-zalo {
+  background: linear-gradient(135deg, #1f7cff, #0068ff);
+}
+
+.floating-btn-zalo:hover {
+  box-shadow: 0 0 18px rgba(0, 104, 255, 0.7);
+}
+
+/* ICON */
+.floating-btn-icon {
+  position: relative;
+  z-index: 2;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* TOOLTIP */
+.floating-btn-label {
+  position: absolute;
+  right: 115%;
+  top: 50%;
+  transform: translateY(-50%) translateX(10px);
+
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(6px);
+
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  border-radius: 999px;
+  padding: 0.4rem 0.65rem;
+
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+
+  transition: all 0.25s ease;
+}
+
+/* Tooltip arrow */
+.floating-btn-label::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent transparent rgba(17, 24, 39, 0.95);
+}
+
+/* SHOW LABEL */
+.floating-btn:hover .floating-btn-label {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* 🔥 PING ANIMATION XỊN */
+.floating-btn-ping {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes ping {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .floating-contact-widget {
+    right: 1rem;
+    bottom: 1rem;
+  }
+
   .floating-btn {
     width: 3.1rem;
     height: 3.1rem;

@@ -7,7 +7,7 @@ import "../../assets/styles/Login.css";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
-
+import { createAccount } from "../../services/user/ueser";
 const Register = () => {
   const [loading, setLoading] = React.useState(false);
   const navigate = useNavigate();
@@ -15,12 +15,13 @@ const Register = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      await axios.post("/api/auth/register", {
-        email: values.email,
+      await createAccount({
         username: values.username,
-        password: values.password,
-        first_name: values.firstName,
-        last_name: values.lastName,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        passWord: values.password,
+        confirmPassword: values.confirmPassword,
       });
 
       toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
@@ -148,7 +149,8 @@ const Register = () => {
             </Form.Item>
 
             <div className="auth-switch">
-              Đã có tài khoản? <a onClick={() => navigate("/login")}>Đăng nhập ngay</a>
+              Đã có tài khoản?{" "}
+              <a onClick={() => navigate("/login")}>Đăng nhập ngay</a>
             </div>
           </Form>
 

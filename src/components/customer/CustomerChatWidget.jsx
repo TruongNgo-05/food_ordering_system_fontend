@@ -14,7 +14,7 @@ const CustomerChatWidget = () => {
     {
       id: 1,
       role: "ai",
-      text: "Xin chào! Mình là trợ lý AI. Bạn có thể hỏi món bán chạy, món theo danh mục, hoặc mức giá phù hợp nhé.",
+      text: "Xin chào ! Mình là trợ lý AI 👋",
     },
   ]);
   const [categories, setCategories] = useState(() => loadSharedCategories());
@@ -44,14 +44,13 @@ const CustomerChatWidget = () => {
         .sort((a, b) => (b.sold || 0) - (a.sold || 0))
         .slice(0, 3)
         .map((m) => `${m.name} (${m.sold} lượt bán)`);
-      return `Top món bán chạy hiện tại: ${top.join(", ")}.`;
+      return `🔥 Top món bán chạy: ${top.join(", ")}`;
     }
 
     if (q.includes("giá rẻ") || q.includes("rẻ") || q.includes("dưới")) {
       const budgetItems = foods.filter((m) => m.price <= 40000).slice(0, 4);
-      if (budgetItems.length === 0)
-        return "Hiện chưa có món dưới mức giá bạn muốn.";
-      return `Một số món giá tốt: ${budgetItems.map((m) => m.name).join(", ")}.`;
+      if (budgetItems.length === 0) return "Hiện chưa có món phù hợp 😢";
+      return `💸 Giá tốt: ${budgetItems.map((m) => m.name).join(", ")}`;
     }
 
     const foundCategory = categories.find(
@@ -64,15 +63,17 @@ const CustomerChatWidget = () => {
         .filter((m) => m.category_id === foundCategory.id)
         .slice(0, 4)
         .map((m) => m.name);
-      return `Danh mục ${foundCategory.name} gợi ý: ${itemsByCat.join(", ")}.`;
+      return `📂 ${foundCategory.name}: ${itemsByCat.join(", ")}`;
     }
 
     const foundFood = foods.find((m) => q.includes(m.name.toLowerCase()));
     if (foundFood) {
-      return `${foundFood.name} có giá ${foundFood.price.toLocaleString("vi-VN")}đ, đánh giá ${foundFood.rating}/5 và đã bán ${foundFood.sold}.`;
+      return `🍽 ${foundFood.name}\n💰 ${foundFood.price.toLocaleString(
+        "vi-VN",
+      )}đ\n⭐ ${foundFood.rating}/5\n🔥 ${foundFood.sold} lượt bán`;
     }
 
-    return "Mình gợi ý bạn thử hỏi: 'món bán chạy', 'món giá rẻ', 'gợi ý đồ uống', hoặc tên món cụ thể nhé.";
+    return "Bạn thử hỏi: 'món bán chạy', 'giá rẻ', hoặc tên món nhé 😉";
   };
 
   const handleSendAIChat = () => {
@@ -97,16 +98,17 @@ const CustomerChatWidget = () => {
   return (
     <>
       <div className="floating-contact-widget">
+        {/* CHAT AI */}
         <button
           className="floating-btn floating-btn-chat"
           onClick={() => setShowAIChat((prev) => !prev)}
-          title="Chat AI"
         >
           <span className="floating-btn-ping" />
           <span className="floating-btn-icon">💬</span>
-          <span className="floating-btn-label">Chat</span>
+          <span className="floating-btn-label">Chat AI</span>
         </button>
 
+        {/* ZALO */}
         <button
           className="floating-btn floating-btn-zalo"
           onClick={() =>
@@ -116,14 +118,18 @@ const CustomerChatWidget = () => {
               "noopener,noreferrer",
             )
           }
-          title="Liên hệ Zalo"
         >
           <span className="floating-btn-ping" />
-          <span className="floating-btn-icon">Zalo</span>
+          <span className="floating-btn-icon">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg"
+              alt="Zalo"
+              style={{ width: 20 }}
+            />
+          </span>
           <span className="floating-btn-label">Zalo</span>
         </button>
       </div>
-
       {showAIChat && (
         <div
           style={{

@@ -1,80 +1,38 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Modal } from "antd";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { T } from "../../constants/customerTheme";
 
-const ADDRESS_OPTIONS = [
-  {
-    name: "TP. Ho Chi Minh",
-    districts: [
-      {
-        name: "Quận 1",
-        wards: ["Phường Bến Nghé", "Phường Bến Thành", "Phường Cầu Ông Lãnh"],
-      },
-      {
-        name: "Quận 7",
-        wards: ["Phường Tân Phú", "Phường Tân Hưng", "Phường Tân Phong"],
-      },
-      {
-        name: "TP. Thủ Đức",
-        wards: ["Phường Hiệp Bình Chánh", "Phường Linh Trung", "Phường An Phú"],
-      },
-    ],
-  },
-  {
-    name: "Ha Noi",
-    districts: [
-      {
-        name: "Quận Cầu Giấy",
-        wards: ["Phường Dịch Vọng", "Phường Quan Hoa", "Phường Nghĩa Đô"],
-      },
-      {
-        name: "Quận Ba Đình",
-        wards: ["Phường Kim Mã", "Phường Cống Vị", "Phường Liễu Giai"],
-      },
-      {
-        name: "Quận Hoàng Mai",
-        wards: ["Phường Định Công", "Phường Đại Kim", "Phường Hoàng Liệt"],
-      },
-    ],
-  },
-  {
-    name: "Da Nang",
-    districts: [
-      {
-        name: "Quận Hải Châu",
-        wards: ["Phường Thạch Thang", "Phường Hải Châu I", "Phường Bình Hiên"],
-      },
-      {
-        name: "Quận Sơn Trà",
-        wards: ["Phường An Hải Bắc", "Phường Mân Thái", "Phường Phước Mỹ"],
-      },
-      {
-        name: "Quận Thanh Khê",
-        wards: ["Phường Thanh Khê Đông", "Phường Xuân Hà", "Phường Chính Gián"],
-      },
-    ],
-  },
-];
-
 export default function DeliveryAddressModal({ open, onCancel, onSave }) {
+  const [addressData, setAddressData] = useState([]);
+
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
   const [ward, setWard] = useState("");
   const [detailAddress, setDetailAddress] = useState("");
+  
+  useEffect(() => {
+    fetch("https://provinces.open-api.vn/api/?depth=3")
+      .then((res) => res.json())
+      .then((data) => setAddressData(data))
+      .catch(() => {
+        toast.error("Không tải được dữ liệu địa chỉ!");
+      });
+  }, []);
 
-  const districtOptions = useMemo(
-    () => ADDRESS_OPTIONS.find((c) => c.name === city)?.districts || [],
-    [city],
-  );
+  //  LẤY QUẬN
+  const districtOptions = useMemo(() => {
+    return addressData.find((c) => c.name === city)?.districts || [];
+  }, [city, addressData]);
 
-  const wardOptions = useMemo(
-    () => districtOptions.find((d) => d.name === district)?.wards || [],
-    [districtOptions, district],
-  );
+  //  LẤY PHƯỜNG
+  const wardOptions = useMemo(() => {
+    return districtOptions.find((d) => d.name === district)?.wards || [];
+  }, [districtOptions, district]);
 
+  //  SAVE
   const handleSave = () => {
     if (!city || !district || !ward || !detailAddress.trim()) {
       toast.warning(
@@ -82,6 +40,7 @@ export default function DeliveryAddressModal({ open, onCancel, onSave }) {
       );
       return;
     }
+
     const fullAddress = `${detailAddress.trim()}, ${ward}, ${district}, ${city}`;
     onSave(fullAddress);
   };
@@ -101,8 +60,16 @@ export default function DeliveryAddressModal({ open, onCancel, onSave }) {
       cancelText="Hủy"
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {/* CITY */}
         <div>
-          <p style={{ margin: "0 0 6px", fontSize: 13, fontWeight: 700, color: T.text }}>
+          <p
+            style={{
+              margin: "0 0 6px",
+              fontSize: 13,
+              fontWeight: 700,
+              color: T.text,
+            }}
+          >
             Tỉnh/Thành phố
           </p>
           <select
@@ -121,16 +88,24 @@ export default function DeliveryAddressModal({ open, onCancel, onSave }) {
             }}
           >
             <option value="">Chọn Tỉnh/Thành phố</option>
-            {ADDRESS_OPTIONS.map((item) => (
-              <option key={item.name} value={item.name}>
+            {addressData.map((item) => (
+              <option key={item.code} value={item.name}>
                 {item.name}
               </option>
             ))}
           </select>
         </div>
 
+        {/* DISTRICT */}
         <div>
-          <p style={{ margin: "0 0 6px", fontSize: 13, fontWeight: 700, color: T.text }}>
+          <p
+            style={{
+              margin: "0 0 6px",
+              fontSize: 13,
+              fontWeight: 700,
+              color: T.text,
+            }}
+          >
             Quận/Huyện
           </p>
           <select
@@ -151,15 +126,23 @@ export default function DeliveryAddressModal({ open, onCancel, onSave }) {
           >
             <option value="">Chọn Quận/Huyện</option>
             {districtOptions.map((item) => (
-              <option key={item.name} value={item.name}>
+              <option key={item.code} value={item.name}>
                 {item.name}
               </option>
             ))}
           </select>
         </div>
 
+        {/* WARD */}
         <div>
-          <p style={{ margin: "0 0 6px", fontSize: 13, fontWeight: 700, color: T.text }}>
+          <p
+            style={{
+              margin: "0 0 6px",
+              fontSize: 13,
+              fontWeight: 700,
+              color: T.text,
+            }}
+          >
             Phường/Xã
           </p>
           <select
@@ -177,15 +160,23 @@ export default function DeliveryAddressModal({ open, onCancel, onSave }) {
           >
             <option value="">Chọn Phường/Xã</option>
             {wardOptions.map((item) => (
-              <option key={item} value={item}>
-                {item}
+              <option key={item.code} value={item.name}>
+                {item.name}
               </option>
             ))}
           </select>
         </div>
 
+        {/* DETAIL */}
         <div>
-          <p style={{ margin: "0 0 6px", fontSize: 13, fontWeight: 700, color: T.text }}>
+          <p
+            style={{
+              margin: "0 0 6px",
+              fontSize: 13,
+              fontWeight: 700,
+              color: T.text,
+            }}
+          >
             Địa chỉ chi tiết
           </p>
           <input
