@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { loginApi } from "../services/authService";
 import { AuthContext } from "./authContext";
+import { getCurrentUserApi } from "../services/userService"; // ✅ thêm import
 
 const getFullName = (u) => {
   if (!u) return "";
   if (u.fullName) return u.fullName;
   const firstName = u.firstName || "";
   const lastName = u.lastName || "";
-  const fullName = `${firstName} ${lastName}`.trim();
-  return fullName || u.username || u.email || "";
+  return `${firstName} ${lastName}`.trim() || u.username || u.email || "";
 };
 
 export const AuthProvider = ({ children }) => {
@@ -24,22 +24,21 @@ export const AuthProvider = ({ children }) => {
     () => localStorage.getItem("userFullName") || "",
   );
 
+  useEffect(() => {
+    if (localStorage.getItem("accessToken")) {
+      refreshUser();
+    }
+  }, []);
+
   const login = async (credentials) => {
     const res = await loginApi(credentials);
     const loginUser = res.data.data;
 
-    // Lưu dữ liệu login
     localStorage.setItem("accessToken", loginUser.token);
     localStorage.setItem("role", loginUser.role);
-    localStorage.setItem("user", JSON.stringify(loginUser));
-    localStorage.setItem("userInfo", JSON.stringify(loginUser));
-    const fullName = getFullName(loginUser);
-    localStorage.setItem("userFullName", fullName);
-
     setIsLoggedIn(true);
     setRole(loginUser.role);
-    setUser(loginUser);
-    setUserFullName(fullName);
+    await refreshUser();
 
     return loginUser;
   };
@@ -53,17 +52,32 @@ export const AuthProvider = ({ children }) => {
   };
 
   const refreshUser = async () => {
-    const stored = localStorage.getItem("user");
-    const parsed = stored ? JSON.parse(stored) : null;
-    setUser(parsed);
-    const fullName = getFullName(parsed);
-    setUserFullName(fullName);
-    localStorage.setItem("userFullName", fullName);
+    try {
+      const res = await getCurrentUserApi();
+      const apiUser = res.data?.data;
+      if (apiUser) {
+        const fullName = getFullName(apiUser);
+        localStorage.setItem("user", JSON.stringify(apiUser));
+        localStorage.setItem("userFullName", fullName);
+        setUser(apiUser);
+        setUserFullName(fullName);
+      }
+    } catch (err) {
+      console.error("Lỗi fetch /users/me:", err);
+    }
   };
 
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn, role, user, userFullName, login, logout, refreshUser }}
+      value={{
+        isLoggedIn,
+        role,
+        user,
+        userFullName,
+        login,
+        logout,
+        refreshUser,
+      }}
     >
       {children}
     </AuthContext.Provider>

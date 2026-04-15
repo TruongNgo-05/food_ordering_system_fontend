@@ -1,5 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, Button } from "antd";
+import React, { useState, useEffect, useContext } from "react";
+import { Modal, Form, Input, Button, message, Tabs } from "antd";
+import { LinkOutlined, UploadOutlined } from "@ant-design/icons";
+import { AuthContext } from "../../../context/authContext";
+import {
+  getCurrentUserApi,
+  updateProfileApi,
+} from "../../../services/userService";
 
 const fileToDataUrl = (file) =>
   new Promise((resolve, reject) => {
@@ -13,33 +19,56 @@ const Capnhatthongtin = ({
   open = false,
   onCancel = () => {},
   onUpdate = () => {},
-  user,
 }) => {
+  const { refreshUser } = useContext(AuthContext);
   const [form] = Form.useForm();
+
   const [loading, setLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState("");
+  const [avatarUrlInput, setAvatarUrlInput] = useState("");
+  const [avatarTab, setAvatarTab] = useState("upload"); // "upload" | "url"
+  const [urlError, setUrlError] = useState("");
 
   useEffect(() => {
-    if (open && user) {
-      form.setFieldsValue({
-        firstName: user.firstName || "".trim,
-        lastName: user.lastName || "".trim,
-        email: user.email || "".trim,
-      });
-      setAvatarPreview(user.avatar || "");
+    if (open) {
+      loadCurrentUser();
     }
-  }, [open, user, form]);
+  }, [open]);
+
+  //  Lấy user hiện tại
+  const loadCurrentUser = async () => {
+    try {
+      const res = await getCurrentUserApi();
+      const user = res.data.data;
+      form.setFieldsValue({
+        fullName: user.fullName || "",
+        email: user.email || "",
+      });
+
+      setAvatarPreview(user.avatar || "");
+    } catch (error) {
+      console.error("Load user failed", error);
+    }
+  };
 
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
 
-      await onUpdate({ ...values, avatar: avatarPreview });
+      const res = await updateProfileApi({
+        fullName: values.fullName,
+        email: values.email,
+        avatar: avatarPreview,
+      });
+      const msg = res.data.message;
+      message.success(msg);
+      await refreshUser();
+      await loadCurrentUser();
 
-      form.resetFields();
       onCancel();
     } catch (error) {
       console.error("Update failed", error);
+      message.error(error.response?.data?.message || "Cập nhật thất bại");
     } finally {
       setLoading(false);
     }
@@ -47,22 +76,150 @@ const Capnhatthongtin = ({
 
   const handleCancel = () => {
     form.resetFields();
-    setAvatarPreview(user?.avatar || "");
+    setAvatarPreview("");
+    setAvatarUrlInput("");
+    setUrlError("");
+    setAvatarTab("upload");
     onCancel();
   };
 
   const onUploadAvatar = async (event) => {
     const file = event.target.files?.[0];
+
     if (!file) return;
+
+    // Giới hạn 10MB
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Ảnh phải nhỏ hơn 10MB");
+      return;
+    }
+
     try {
       const dataUrl = await fileToDataUrl(file);
       setAvatarPreview(dataUrl);
     } catch (error) {
-      console.error("Cannot read avatar file", error);
-    } finally {
-      event.target.value = "";
+      console.error(error);
     }
   };
+
+  const handleAvatarUrlApply = () => {
+    const trimmed = avatarUrlInput.trim();
+    setUrlError("");
+
+    if (!trimmed) {
+      setUrlError("Vui lòng nhập URL ảnh!");
+      return;
+    }
+
+    try {
+      new URL(trimmed);
+    } catch {
+      setUrlError("URL không hợp lệ! Vui lòng kiểm tra lại.");
+      return;
+    }
+
+    setAvatarPreview(trimmed);
+    message.success("Đã áp dụng ảnh từ URL!");
+  };
+
+  const handleUrlKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAvatarUrlApply();
+    }
+  };
+
+  const tabItems = [
+    {
+      key: "upload",
+      label: (
+        <span>
+          <UploadOutlined /> Tải lên
+        </span>
+      ),
+      children: (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            paddingTop: 8,
+          }}
+        >
+          <label
+            htmlFor="avatar-upload-input"
+            style={{
+              cursor: "pointer",
+              padding: "8px 14px",
+              border: "1px solid #d1d5db",
+              borderRadius: 8,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              fontSize: 14,
+              color: "#374151",
+              background: "#fff",
+              transition: "border-color 0.2s",
+            }}
+          >
+            <UploadOutlined />
+            Chọn ảnh từ máy tính
+          </label>
+
+          <input
+            id="avatar-upload-input"
+            type="file"
+            accept="image/*"
+            onChange={onUploadAvatar}
+            style={{ display: "none" }}
+          />
+
+          <span style={{ fontSize: 12, color: "#9ca3af" }}>Tối đa 10MB</span>
+        </div>
+      ),
+    },
+    {
+      key: "url",
+      label: (
+        <span>
+          <LinkOutlined /> Từ URL
+        </span>
+      ),
+      children: (
+        <div style={{ paddingTop: 8 }}>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Input
+              placeholder="https://example.com/avatar.jpg"
+              value={avatarUrlInput}
+              onChange={(e) => {
+                setAvatarUrlInput(e.target.value);
+                setUrlError("");
+              }}
+              onKeyDown={handleUrlKeyDown}
+              size="middle"
+              status={urlError ? "error" : ""}
+              style={{ flex: 1 }}
+              prefix={<LinkOutlined style={{ color: "#9ca3af" }} />}
+            />
+            <Button onClick={handleAvatarUrlApply} type="default">
+              Áp dụng
+            </Button>
+          </div>
+
+          {urlError && (
+            <div style={{ color: "#ef4444", fontSize: 12, marginTop: 4 }}>
+              {urlError}
+            </div>
+          )}
+
+          <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 6 }}>
+            Nhập URL ảnh công khai và nhấn <strong>Áp dụng</strong> hoặc{" "}
+            <strong>Enter</strong>
+          </div>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <Modal
@@ -74,21 +231,22 @@ const Capnhatthongtin = ({
       destroyOnHidden
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        {/* Avatar */}
         <Form.Item label="Ảnh đại diện">
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+            {/* Preview */}
             <div
               style={{
-                width: 56,
-                height: 56,
+                width: 72,
+                height: 72,
                 borderRadius: "50%",
                 overflow: "hidden",
                 background: "#f3f4f6",
-                border: "1px solid #e5e7eb",
+                border: "2px solid #e5e7eb",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: "#6b7280",
-                fontWeight: 700,
+                flexShrink: 0,
               }}
             >
               {avatarPreview ? (
@@ -96,56 +254,37 @@ const Capnhatthongtin = ({
                   src={avatarPreview}
                   alt="avatar-preview"
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  onError={() => {
+                    message.error("Không thể tải ảnh từ URL này!");
+                    setAvatarPreview("");
+                  }}
                 />
               ) : (
-                "Ảnh"
+                <span style={{ fontSize: 11, color: "#9ca3af" }}>Ảnh</span>
               )}
             </div>
-            <label
-              htmlFor="avatar-upload-input"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: 40,
-                padding: "0 14px",
-                borderRadius: 8,
-                border: "1px solid #d1d5db",
-                background: "#fff",
-                cursor: "pointer",
-                fontWeight: 600,
-              }}
-            >
-              Chọn ảnh từ máy
-            </label>
-            <input
-              id="avatar-upload-input"
-              type="file"
-              accept="image/*"
-              onChange={onUploadAvatar}
-              style={{ display: "none" }}
-            />
+
+            {/* Tabs upload / URL */}
+            <div style={{ flex: 1 }}>
+              <Tabs
+                activeKey={avatarTab}
+                onChange={setAvatarTab}
+                items={tabItems}
+                size="small"
+              />
+            </div>
           </div>
         </Form.Item>
 
-        {/* FULL NAME */}
         <Form.Item
-          label="FistName"
-          name="firstName"
-          rules={[{ required: true, message: "Vui lòng nhập họ!" }]}
+          label="Full Name"
+          name="fullName"
+          rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
         >
-          <Input placeholder="Nhập họ..." size="large" />
+          <Input placeholder="Nhập họ tên..." size="large" />
         </Form.Item>
 
-        <Form.Item
-          label="LastName"
-          name="lastName"
-          rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
-        >
-          <Input placeholder="Nhập tên..." size="large" />
-        </Form.Item>
-
-        {/* EMAIL */}
+        {/* Email */}
         <Form.Item
           label="Email"
           name="email"
@@ -157,15 +296,9 @@ const Capnhatthongtin = ({
           <Input placeholder="Nhập email..." size="large" />
         </Form.Item>
 
-        {/* BUTTON */}
-        <Form.Item style={{ marginBottom: 0 }}>
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              justifyContent: "flex-end",
-            }}
-          >
+        {/* Buttons */}
+        <Form.Item>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>
             <Button onClick={handleCancel} size="large">
               Hủy
             </Button>
@@ -173,8 +306,8 @@ const Capnhatthongtin = ({
             <Button
               type="primary"
               htmlType="submit"
-              size="large"
               loading={loading}
+              size="large"
             >
               Cập nhật
             </Button>

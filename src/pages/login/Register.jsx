@@ -42,6 +42,9 @@ const Register = () => {
       <div className="login-container">
         <div className="login-box">
           <div className="login-header">
+            <div className="back-customer-link">
+              <a onClick={() => navigate("/login")}>← Quay lại trang Login</a>
+            </div>
             <div className="logo-container">
               <img src={logo} alt="Logo" className="logo" />
             </div>

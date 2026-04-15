@@ -17,6 +17,21 @@ const Login = () => {
   const [openForgot, setOpenForgot] = React.useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { setUser } = useAuth(); // nếu có
+
+  const loginWithGoogle = async (tokenGG) => {
+    const res = await api.post("/auth/google", {
+      token: tokenGG,
+    });
+
+    const user = res.data;
+
+    localStorage.setItem("token", user.token); // 🔥 QUAN TRỌNG
+
+    setUser(user); // nếu bạn có context
+
+    return user;
+  };
 
   const onFinish = async (values) => {
     setLoading(true);
@@ -55,7 +70,7 @@ const Login = () => {
       setLoading(false);
     }
   };
-  
+
   const handleSocialLogin = (provider) => {
     toast.info(`Đăng nhập bằng ${provider} đang được phát triển`);
   };
@@ -136,14 +151,9 @@ const Login = () => {
                 <GoogleLogin
                   onSuccess={async (credentialResponse) => {
                     try {
-                      const res = await axios.post(
-                        "http://localhost:8080/api/auth/google",
-                        {
-                          token: credentialResponse.credential, 
-                        },
+                      const user = await loginWithGoogle(
+                        credentialResponse.credential,
                       );
-
-                      const user = res.data;
 
                       toast.success("Đăng nhập Google thành công!");
 
@@ -156,7 +166,6 @@ const Login = () => {
                       toast.error("Login Google thất bại");
                     }
                   }}
-                  onError={() => toast.error("Google login lỗi")}
                 />
               </div>
               <button
