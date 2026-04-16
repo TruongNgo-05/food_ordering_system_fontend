@@ -1,100 +1,118 @@
-# File Tree: food_ordering_system_fontend
+# 🍽️ Hệ Thống Đặt Hàng Thực Phẩm - Frontend
 
-**Generated:** 4/8/2026, 8:50:16 PM
-**Root Path:** `c:\Users\x1gen7\Desktop\food_ordering_system\food_ordering_system_fontend`
+Ứng dụng web đặt hàng thực phẩm hiện đại với giao diện khách hàng và bảng điều khiển quản trị viên.
 
+## ✨ Tính Năng Chính
+
+### Khách Hàng
+
+- 📱 Duyệt menu thực phẩm
+- 🛒 Quản lý giỏ hàng
+- 📦 Theo dõi đơn hàng
+- ❤️ Lưu yêu thích
+- 🪑 Đặt bàn tại nhà hàng
+- 💬 Chat hỗ trợ trực tiếp
+
+### Quản Trị Viên
+
+- 📊 Bảng điều khiển thống kê
+- 👥 Quản lý người dùng
+- 🍔 Quản lý menu thực phẩm
+- 📋 Quản lý đơn hàng
+- 🎟️ Quản lý voucher
+- ⭐ Xem đánh giá khách hàng
+
+## 🛠️ Công Nghệ
+
+| Công Nghệ    | Phiên Bản |
+| ------------ | --------- |
+| React        | 19.2.4    |
+| Vite         | 7.3.1     |
+| Ant Design   | 6.3.2     |
+| React Router | 7.13.1    |
+| Axios        | 1.13.6    |
+| Bootstrap    | 5.3.8     |
+
+## 🚀 Cài Đặt Nhanh
+
+### Yêu Cầu
+
+- Node.js v16+
+- npm hoặc yarn
+
+### Các Bước
+
+1. **Clone dự án**
+
+   ```bash
+   git clone https://github.com/yourusername/food_ordering_system_fontend.git
+   cd food_ordering_system_fontend
+   ```
+
+2. **Cài đặt phụ thuộc**
+
+   ```bash
+   npm install
+   ```
+
+3. **Tạo file `.env`**
+
+   ```env
+   VITE_API_URL=http://localhost:8000/api
+   VITE_GOOGLE_CLIENT_ID=101891197501-b8sp0vq7f264d8st9k019i7jlrm88rhq.apps.googleusercontent.com
+   ```
+
+4. **Khởi chạy**
+   ```bash
+   npm run dev
+   ```
+   Truy cập: `http://localhost:5173`
+
+## 📋 Lệnh Chính
+
+```bash
+npm run dev      # Chế độ phát triển (hot reload)
+npm run build    # Build sản xuất
+npm run preview  # Xem trước bản build
+npm run lint     # Kiểm tra code
 ```
-├── 📁 src
-│   ├── 📁 assets
-│   │   ├── 📁 images
-│   │   │   ├── 🖼️ icon.png
-│   │   │   └── 🖼️ logo.png
-│   │   └── 📁 styles
-│   │       ├── 🎨 AdminHeader.css
-│   │       ├── 🎨 AdminLayouts.css
-│   │       ├── 🎨 Banner.css
-│   │       ├── 🎨 ChangePassword.css
-│   │       ├── 🎨 HeaderCustomer.css
-│   │       ├── 🎨 HomeCustomer.css
-│   │       ├── 🎨 Login.css
-│   │       ├── 🎨 NotFound.css
-│   │       ├── 🎨 ResetPassword.css
-│   │       ├── 🎨 Sider.css
-│   │       └── 🎨 errors.css
-│   ├── 📁 components
-│   │   ├── 📁 common
-│   │   │   ├── 📄 AppPagination.jsx
-│   │   │   ├── 📄 BaseTable.jsx
-│   │   │   └── 📄 TableActions.jsx
-│   │   ├── 📁 customer
-│   │   │   ├── 📄 Banner.jsx
-│   │   │   └── 📄 Filter.jsx
-│   │   └── 📁 modal
-│   │       └── 📁 auth
-│   │           ├── 📄 Capnhatmatkhau.jsx
-│   │           ├── 📄 Capnhatthongtin.jsx
-│   │           └── 📄 Quenmatkhau.jsx
-│   ├── 📁 context
-│   │   └── 📄 AuthContext.jsx
-│   ├── 📁 data
-│   │   └── 📄 mockData.js
-│   ├── 📁 errors
-│   │   ├── 📄 Forbidden403.jsx
-│   │   ├── 📄 NotFound.jsx
-│   │   ├── 📄 ServerError500.jsx
-│   │   ├── 📄 Unauthorized401.jsx
-│   │   └── 📄 notFound404.jsx
-│   ├── 📁 hooks
-│   │   └── 📄 useAuth.jsx
-│   ├── 📁 layouts
-│   │   ├── 📁 admin
-│   │   │   ├── 📄 AdminLayout.jsx
-│   │   │   ├── 📄 Header.jsx
-│   │   │   └── 📄 Sider.jsx
-│   │   └── 📁 user
-│   │       ├── 📄 Header.jsx
-│   │       └── 📄 UserLayout.jsx
-│   ├── 📁 pages
-│   │   ├── 📁 admin
-│   │   │   ├── 📄 AdminCategories.jsx
-│   │   │   ├── 📄 AdminFoods.jsx
-│   │   │   ├── 📄 AdminIngredients.jsx
-│   │   │   ├── 📄 AdminOrders.jsx
-│   │   │   ├── 📄 AdminPayments.jsx
-│   │   │   ├── 📄 AdminUsers.jsx
-│   │   │   ├── 📄 AdminVouchers.jsx
-│   │   │   └── 📄 Dashboard.jsx
-│   │   ├── 📁 login
-│   │   │   ├── 📄 Login.jsx
-│   │   │   ├── 📄 Register.jsx
-│   │   │   └── 📄 ResetPassword.jsx
-│   │   └── 📁 user
-│   │       ├── 📄 Cart.jsx
-│   │       ├── 📄 Favorites.jsx
-│   │       ├── 📄 Home.jsx
-│   │       ├── 📄 Orders.jsx
-│   │       └── 📄 Support.jsx
-│   ├── 📁 routers
-│   │   ├── 📄 ProtectedRoute.jsx
-│   │   └── 📄 PublicRoute.jsx
-│   ├── 📁 services
-│   │   ├── 📄 apiClient.js
-│   │   ├── 📄 authService.js
-│   │   └── 📄 userService.js
-│   ├── 📁 utils
-│   │   └── 📄 format.js
-│   ├── 📄 App.jsx
-│   ├── 🎨 index.css
-│   └── 📄 main.jsx
-├── ⚙️ .gitignore
-├── 📝 README.md
-├── 📄 eslint.config.js
-├── 🌐 index.html
-├── ⚙️ package-lock.json
-├── ⚙️ package.json
-└── 📄 vite.config.js
-```
+
+## 🔐 Xác Thực
+
+- **JWT Token**: Đăng nhập với email/password
+- **Google OAuth**: Đăng nhập bằng Google
+- **Role-based**: Kiểm soát truy cập Admin/Customer
+
+## 🎨 Giao Diện
+
+- ✅ Responsive (desktop, tablet, mobile)
+- ✅ UI professional với Ant Design
+- ✅ Dark/Light theme support
+- ✅ Thông báo real-time
+
+## 📱 Responsive Design
+
+Ứng dụng hoạt động tốt trên:
+
+- 💻 Desktop
+- 📱 Mobile
+- 📲 Tablet
+
+## 🚢 Triển Khai
+
+- Cấu hình sẵn cho **Vercel**
+- Build: `npm run build`
+- Output: Thư mục `dist/`
+
+## 🤝 Hỗ Trợ
+
+Có vấn đề? Hãy mở **Issue** trong repository hoặc liên hệ qua email support.
+
+## 📄 Giấy Phép
+
+MIT License - Tự do sử dụng trong dự án cá nhân hoặc thương mại
 
 ---
 
-_Generated by FileTree Pro Extension_
+**Phiên bản**: 1.0.0  
+**Cập nhật**: Tháng 4, 2026
