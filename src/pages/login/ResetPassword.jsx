@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Form, Input, Button } from "antd";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,10 @@ import { resetPasswordApi } from "../../services/authService";
 import { CloseOutlined } from "@ant-design/icons";
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const [form] = Form.useForm();
+  const [otpValues, setOtpValues] = useState(["", "", "", "", "", ""]);
+  const otpInputRefs = useRef([]);
+
   useEffect(() => {
     const email = localStorage.getItem("resetEmail");
     if (!email) {
@@ -14,8 +18,47 @@ const ResetPassword = () => {
       navigate("/login");
     }
   }, [navigate]);
+
+  const handleOtpChange = (index, value) => {
+    // Chỉ cho phép số
+    if (!/^\d*$/.test(value)) return;
+
+    const newOtpValues = [...otpValues];
+    newOtpValues[index] = value.slice(-1); // Lấy ký tự cuối cùng
+    setOtpValues(newOtpValues);
+
+    // Tự động chuyển sang ô tiếp theo
+    if (value && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    // Xử lý Backspace
+    if (e.key === "Backspace") {
+      if (!otpValues[index] && index > 0) {
+        otpInputRefs.current[index - 1]?.focus();
+      }
+    }
+    // Xử lý Arrow keys
+    if (e.key === "ArrowLeft" && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+    if (e.key === "ArrowRight" && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const otp = otpValues.join("");
+
   const onFinish = async (values) => {
-    const { otp, password, confirmPassword } = values;
+    // Kiểm tra OTP đầy đủ
+    if (otp.length !== 6) {
+      toast.error("Vui lòng nhập đầy đủ 6 chữ số OTP");
+      return;
+    }
+
+    const { password, confirmPassword } = values;
     if (password !== confirmPassword) {
       toast.error("Mật khẩu nhập lại không khớp!");
       return;
@@ -59,17 +102,47 @@ const ResetPassword = () => {
           layout="vertical"
           onFinish={onFinish}
           className="reset-password-form"
+          form={form}
         >
-          <Form.Item
-            label="Mã OTP"
-            name="otp"
-            rules={[
-              { required: true, message: "Vui lòng nhập mã OTP" },
-              { len: 6, message: "OTP phải gồm 6 số" },
-            ]}
-          >
-            <Input placeholder="Nhập mã OTP 6 số" />
-          </Form.Item>
+          <div style={{ marginBottom: "24px" }}>
+            <label
+              style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}
+            >
+              Mã OTP
+            </label>
+            <div
+              style={{
+                display: "flex",
+                gap: "8px",
+                justifyContent: "center",
+              }}
+            >
+              {otpValues.map((value, index) => (
+                <Input
+                  key={index}
+                  ref={(el) => {
+                    otpInputRefs.current[index] = el;
+                  }}
+                  value={value}
+                  onChange={(e) => handleOtpChange(index, e.target.value)}
+                  onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                  maxLength="1"
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    textAlign: "center",
+                    fontSize: "20px",
+                    fontWeight: "bold",
+                    border: "2px solid #d1d5db",
+                    borderRadius: "8px",
+                    padding: "0",
+                  }}
+                  inputMode="numeric"
+                  placeholder="0"
+                />
+              ))}
+            </div>
+          </div>
 
           <Form.Item
             label="Mật khẩu mới"

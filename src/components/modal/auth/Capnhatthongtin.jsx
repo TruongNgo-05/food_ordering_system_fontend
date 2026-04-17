@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Modal, Form, Input, Button, message, Tabs } from "antd";
-import { LinkOutlined, UploadOutlined } from "@ant-design/icons";
+import { LinkOutlined, UploadOutlined, CloseOutlined } from "@ant-design/icons";
 import { AuthContext } from "../../../context/authContext";
 import {
   getCurrentUserApi,
@@ -22,6 +22,7 @@ const Capnhatthongtin = ({
 }) => {
   const { refreshUser } = useContext(AuthContext);
   const [form] = Form.useForm();
+  const fileInputRef = React.useRef(null);
 
   const [loading, setLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState("");
@@ -43,6 +44,7 @@ const Capnhatthongtin = ({
       form.setFieldsValue({
         fullName: user.fullName || "",
         email: user.email || "",
+        phone: user.phone || "",
       });
 
       setAvatarPreview(user.avatar || "");
@@ -58,6 +60,7 @@ const Capnhatthongtin = ({
       const res = await updateProfileApi({
         fullName: values.fullName,
         email: values.email,
+        phone: values.phone,
         avatar: avatarPreview,
       });
       const msg = res.data.message;
@@ -91,14 +94,24 @@ const Capnhatthongtin = ({
     // Giới hạn 10MB
     if (file.size > 10 * 1024 * 1024) {
       alert("Ảnh phải nhỏ hơn 10MB");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       return;
     }
 
     try {
       const dataUrl = await fileToDataUrl(file);
       setAvatarPreview(dataUrl);
+      // Reset input để có thể upload lại file cùng tên
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     } catch (error) {
       console.error(error);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -127,6 +140,15 @@ const Capnhatthongtin = ({
       e.preventDefault();
       handleAvatarUrlApply();
     }
+  };
+
+  const handleDeleteAvatar = () => {
+    setAvatarPreview("");
+    setAvatarUrlInput("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    message.success("Đã xóa ảnh!");
   };
 
   const tabItems = [
@@ -167,6 +189,7 @@ const Capnhatthongtin = ({
           </label>
 
           <input
+            ref={fileInputRef}
             id="avatar-upload-input"
             type="file"
             accept="image/*"
@@ -240,25 +263,74 @@ const Capnhatthongtin = ({
                 width: 72,
                 height: 72,
                 borderRadius: "50%",
-                overflow: "hidden",
+                overflow: "visible",
                 background: "#f3f4f6",
                 border: "2px solid #e5e7eb",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
+                position: "relative",
               }}
             >
               {avatarPreview ? (
-                <img
-                  src={avatarPreview}
-                  alt="avatar-preview"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  onError={() => {
-                    message.error("Không thể tải ảnh từ URL này!");
-                    setAvatarPreview("");
-                  }}
-                />
+                <>
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <img
+                      src={avatarPreview}
+                      alt="avatar-preview"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                      onError={() => {
+                        message.error("Không thể tải ảnh từ URL này!");
+                        setAvatarPreview("");
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleDeleteAvatar}
+                    style={{
+                      position: "absolute",
+                      top: -8,
+                      right: -8,
+                      width: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      background: "#ef4444",
+                      border: "none",
+                      color: "#fff",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 14,
+                      fontWeight: "bold",
+                      transition: "background-color 0.2s",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                      zIndex: 10,
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = "#dc2626";
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = "#ef4444";
+                    }}
+                    title="Xóa ảnh"
+                  >
+                    <CloseOutlined />
+                  </button>
+                </>
               ) : (
                 <span style={{ fontSize: 11, color: "#9ca3af" }}>Ảnh</span>
               )}
@@ -294,6 +366,21 @@ const Capnhatthongtin = ({
           ]}
         >
           <Input placeholder="Nhập email..." size="large" />
+        </Form.Item>
+
+        {/* Phone */}
+        <Form.Item
+          label="Số điện thoại"
+          name="phone"
+          rules={[
+            { required: true, message: "Vui lòng nhập số điện thoại!" },
+            {
+              pattern: /^[0-9]{10,11}$/,
+              message: "Số điện thoại phải có 10-11 chữ số!",
+            },
+          ]}
+        >
+          <Input placeholder="Nhập số điện thoại..." size="large" />
         </Form.Item>
 
         {/* Buttons */}

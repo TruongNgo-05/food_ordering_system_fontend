@@ -17,8 +17,8 @@ const Register = () => {
     try {
       await createAccount({
         username: values.username,
-        firstName: values.firstName,
-        lastName: values.lastName,
+        fullName: values.fullName,
+        phone: values.phone,
         email: values.email,
         passWord: values.password,
         confirmPassword: values.confirmPassword,
@@ -53,26 +53,17 @@ const Register = () => {
             <p>Đăng ký để đặt bàn, đặt món và nhận ưu đãi thành viên</p>
           </div>
           <Form layout="vertical" className="login-form" onFinish={onFinish}>
-            <Form.Item
-              label="Tên đăng nhập"
-              name="username"
-              rules={[{ required: true, message: "Vui lòng nhập username" }]}
-            >
-              <Input
-                placeholder="Username"
-                prefix={<FontAwesomeIcon icon={faUser} />}
-              />
-            </Form.Item>
-
             <Row gutter={16}>
               <Col xs={24} sm={12}>
                 <Form.Item
-                  label="Họ"
-                  name="firstName"
-                  rules={[{ required: true, message: "Vui lòng nhập họ" }]}
+                  label="Tên đăng nhập"
+                  name="username"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập username" },
+                  ]}
                 >
                   <Input
-                    placeholder="Họ"
+                    placeholder="Username"
                     prefix={<FontAwesomeIcon icon={faUser} />}
                   />
                 </Form.Item>
@@ -80,12 +71,14 @@ const Register = () => {
 
               <Col xs={24} sm={12}>
                 <Form.Item
-                  label="Tên"
-                  name="lastName"
-                  rules={[{ required: true, message: "Vui lòng nhập tên" }]}
+                  label="Họ và tên"
+                  name="fullName"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập họ và tên" },
+                  ]}
                 >
                   <Input
-                    placeholder="Tên"
+                    placeholder="Họ và tên"
                     prefix={<FontAwesomeIcon icon={faUser} />}
                   />
                 </Form.Item>
@@ -103,6 +96,23 @@ const Register = () => {
               <Input
                 placeholder="Email"
                 prefix={<FontAwesomeIcon icon={faEnvelope} />}
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Số điện thoại"
+              name="phone"
+              rules={[
+                { required: true, message: "Vui lòng nhập số điện thoại" },
+                {
+                  pattern: /^[0-9]{10,11}$/,
+                  message: "Số điện thoại phải có 10-11 chữ số",
+                },
+              ]}
+            >
+              <Input
+                placeholder="Số điện thoại"
+                prefix={<FontAwesomeIcon icon={faUser} />}
               />
             </Form.Item>
 
