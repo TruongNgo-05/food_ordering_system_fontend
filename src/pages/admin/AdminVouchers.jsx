@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Form, Input, InputNumber, Modal } from "antd";
+import { Form, Input, InputNumber, Modal, Switch } from "antd";
 import AdminPageSection from "../../components/admin/AdminPageSection";
 import BaseTable from "../../components/common/BaseTable";
 import TableActions from "../../components/common/TableActions";
@@ -53,7 +53,8 @@ const AdminVouchers = () => {
           : timing.label === "Hết hạn"
             ? "expired"
             : "running";
-      const matchKeyword = !keyword || String(item.code).toLowerCase().includes(keyword);
+      const matchKeyword =
+        !keyword || String(item.code).toLowerCase().includes(keyword);
       const matchTiming = timingFilter === "all" || timingKey === timingFilter;
       return matchKeyword && matchTiming;
     });
@@ -63,13 +64,30 @@ const AdminVouchers = () => {
     () => filteredItems.slice(page * pageSize, page * pageSize + pageSize),
     [filteredItems, page],
   );
+
+  const handleToggleStatus = (id) => {
+    const nextItems = items.map((item) =>
+      item.id === id
+        ? {
+            ...item,
+            status: item.status === "active" ? "inactive" : "active",
+          }
+        : item,
+    );
+
+    setItems(nextItems);
+    saveSharedVouchers(nextItems);
+  };
+
   const columns = [
     { title: "Mã", dataIndex: "code" },
     {
       title: "Giảm giá",
       dataIndex: "discount_value",
       render: (v, r) =>
-        r.discount_type === "percent" ? `${v}%` : `${Number(v || 0).toLocaleString("vi-VN")}đ`,
+        r.discount_type === "percent"
+          ? `${v}%`
+          : `${Number(v || 0).toLocaleString("vi-VN")}đ`,
     },
     {
       title: "Khung giờ",
@@ -82,7 +100,17 @@ const AdminVouchers = () => {
       dataIndex: "status",
       render: (_, record) => {
         const timing = getVoucherTiming(record);
-        return <span className={`admin-status ${timing.className}`}>{timing.label}</span>;
+
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Switch
+              checked={record.status === "active"}
+              checkedChildren="Đang áp dụng"
+              unCheckedChildren="Hết hạn"
+              onChange={() => handleToggleStatus(record.id)}
+            />
+          </div>
+        );
       },
     },
     {
@@ -218,13 +246,31 @@ const AdminVouchers = () => {
           />
         }
       />
-      <Modal title="Tạo voucher" open={openAdd} onCancel={() => setOpenAdd(false)} onOk={onAdd}>
+      <Modal
+        title="Tạo voucher"
+        open={openAdd}
+        onCancel={() => setOpenAdd(false)}
+        onOk={onAdd}
+      >
         <Form form={form} layout="vertical">
-          <Form.Item name="code" label="Mã voucher" rules={[{ required: true, message: "Nhập mã voucher" }]}>
+          <Form.Item
+            name="code"
+            label="Mã voucher"
+            rules={[{ required: true, message: "Nhập mã voucher" }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item name="percent" label="Giảm giá (%)" rules={[{ required: true, message: "Nhập % giảm" }]}>
-            <InputNumber min={1} max={100} style={{ width: "100%" }} addonAfter="%" />
+          <Form.Item
+            name="percent"
+            label="Giảm giá (%)"
+            rules={[{ required: true, message: "Nhập % giảm" }]}
+          >
+            <InputNumber
+              min={1}
+              max={100}
+              style={{ width: "100%" }}
+              addonAfter="%"
+            />
           </Form.Item>
           <Form.Item
             name="start_at"
@@ -242,10 +288,16 @@ const AdminVouchers = () => {
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   const start = getFieldValue("start_at");
-                  if (!start || !value || new Date(value).getTime() > new Date(start).getTime()) {
+                  if (
+                    !start ||
+                    !value ||
+                    new Date(value).getTime() > new Date(start).getTime()
+                  ) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error("Giờ kết thúc phải sau giờ bắt đầu"));
+                  return Promise.reject(
+                    new Error("Giờ kết thúc phải sau giờ bắt đầu"),
+                  );
                 },
               }),
             ]}
@@ -257,13 +309,31 @@ const AdminVouchers = () => {
           </Form.Item>
         </Form>
       </Modal>
-      <Modal title="Sửa voucher" open={openEdit} onCancel={() => setOpenEdit(false)} onOk={onEdit}>
+      <Modal
+        title="Sửa voucher"
+        open={openEdit}
+        onCancel={() => setOpenEdit(false)}
+        onOk={onEdit}
+      >
         <Form form={form} layout="vertical">
-          <Form.Item name="code" label="Mã voucher" rules={[{ required: true, message: "Nhập mã voucher" }]}>
+          <Form.Item
+            name="code"
+            label="Mã voucher"
+            rules={[{ required: true, message: "Nhập mã voucher" }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item name="percent" label="Giảm giá (%)" rules={[{ required: true, message: "Nhập % giảm" }]}>
-            <InputNumber min={1} max={100} style={{ width: "100%" }} addonAfter="%" />
+          <Form.Item
+            name="percent"
+            label="Giảm giá (%)"
+            rules={[{ required: true, message: "Nhập % giảm" }]}
+          >
+            <InputNumber
+              min={1}
+              max={100}
+              style={{ width: "100%" }}
+              addonAfter="%"
+            />
           </Form.Item>
           <Form.Item
             name="start_at"
@@ -281,10 +351,16 @@ const AdminVouchers = () => {
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   const start = getFieldValue("start_at");
-                  if (!start || !value || new Date(value).getTime() > new Date(start).getTime()) {
+                  if (
+                    !start ||
+                    !value ||
+                    new Date(value).getTime() > new Date(start).getTime()
+                  ) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error("Giờ kết thúc phải sau giờ bắt đầu"));
+                  return Promise.reject(
+                    new Error("Giờ kết thúc phải sau giờ bắt đầu"),
+                  );
                 },
               }),
             ]}
@@ -296,7 +372,14 @@ const AdminVouchers = () => {
           </Form.Item>
         </Form>
       </Modal>
-      <Modal open={openDelete} title="Xác nhận xóa voucher" onCancel={() => setOpenDelete(false)} onOk={onDelete} okText="Xóa" okButtonProps={{ danger: true }}>
+      <Modal
+        open={openDelete}
+        title="Xác nhận xóa voucher"
+        onCancel={() => setOpenDelete(false)}
+        onOk={onDelete}
+        okText="Xóa"
+        okButtonProps={{ danger: true }}
+      >
         <p>Bạn chắc chắn muốn xóa voucher này?</p>
       </Modal>
     </>

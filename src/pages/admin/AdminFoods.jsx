@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Form, Input, InputNumber, Modal, Select, message } from "antd";
+import { Form, Input, InputNumber, Modal, Select, message, Switch } from "antd";
 import AdminPageSection from "../../components/admin/AdminPageSection";
 import AdminViewDrawer from "../../components/admin/AdminViewDrawer";
 import BaseTable from "../../components/common/BaseTable";
@@ -79,7 +79,19 @@ const AdminFoods = () => {
     () => filteredItems.slice(page * pageSize, page * pageSize + pageSize),
     [filteredItems, page],
   );
+  const handleToggleStatus = (id) => {
+    const nextItems = items.map((item) =>
+      item.id === id
+        ? {
+            ...item,
+            status: item.status === "active" ? "inactive" : "active",
+          }
+        : item,
+    );
 
+    setItems(nextItems);
+    saveSharedFoods(nextItems);
+  };
   const columns = [
     {
       title: "Ảnh",
@@ -105,11 +117,12 @@ const AdminFoods = () => {
       title: "Trạng thái",
       dataIndex: "status",
       render: (_, record) => (
-        <span
-          className={`admin-status ${record.status === "active" ? "ok" : "warn"}`}
-        >
-          {record.status === "active" ? "Đang bán" : "Tạm hết"}
-        </span>
+        <Switch
+          checked={record.status === "active"}
+          checkedChildren="Đang bán"
+          unCheckedChildren="Tạm hết"
+          onChange={() => handleToggleStatus(record.id)}
+        />
       ),
     },
     {

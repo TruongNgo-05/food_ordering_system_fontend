@@ -104,14 +104,6 @@ npm run lint     # Kiểm tra code
 - Build: `npm run build`
 - Output: Thư mục `dist/`
 
-## 🤝 Hỗ Trợ
-
-Có vấn đề? Hãy mở **Issue** trong repository hoặc liên hệ qua email support.
-
-## 📄 Giấy Phép
-
-MIT License - Tự do sử dụng trong dự án cá nhân hoặc thương mại
-
 ---
 
 **Phiên bản**: 1.0.0  

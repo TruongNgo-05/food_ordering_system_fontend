@@ -56,8 +56,17 @@ const AdminUsers = () => {
     [filteredItems, page],
   );
   const columns = [
+    {
+      title: "Ảnh",
+      dataIndex: "image",
+      width: 80,
+      // render: (image) => (
+
+      // ),
+    },
     { title: "Tên", dataIndex: "name" },
     { title: "Email", dataIndex: "email" },
+    { title: "Số điện thoại", dataIndex: "phone" },
     {
       title: "Trạng thái",
       dataIndex: "status",
@@ -82,7 +91,7 @@ const AdminUsers = () => {
             setEditingRecord(r);
             setOpenView(true);
           }}
-          onEdit={(r) => handleOpenEdit(r)}
+          showEdit={false}
           onDelete={(id) => {
             const found = items.find((x) => x.id === id);
             setEditingRecord(found || null);
@@ -107,12 +116,6 @@ const AdminUsers = () => {
     ]);
     setOpenAdd(false);
     form.resetFields();
-  };
-
-  const handleOpenEdit = (record) => {
-    setEditingRecord(record);
-    form.setFieldsValue(record);
-    setOpenEdit(true);
   };
 
   const handleEdit = async () => {

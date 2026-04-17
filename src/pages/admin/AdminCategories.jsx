@@ -25,10 +25,10 @@ const AdminCategories = () => {
     return loadSharedCategories()
       .filter((c) => c.id !== 1)
       .map((c) => ({
-      id: c.id,
-      name: c.name,
-      desc: `Danh mục ${c.name}`,
-      count: 0,
+        id: c.id,
+        name: c.name,
+        desc: `Danh mục ${c.name}`,
+        count: 0,
       }));
   });
   const [page, setPage] = useState(0);
@@ -48,7 +48,8 @@ const AdminCategories = () => {
         String(item.name).toLowerCase().includes(keyword) ||
         String(item.desc).toLowerCase().includes(keyword);
       if (countFilter === "all") return matchKeyword;
-      if (countFilter === "lt10") return matchKeyword && Number(item.count || 0) < 10;
+      if (countFilter === "lt10")
+        return matchKeyword && Number(item.count || 0) < 10;
       return matchKeyword && Number(item.count || 0) >= 10;
     });
   }, [countFilter, items, search]);
@@ -60,7 +61,6 @@ const AdminCategories = () => {
   const columns = [
     { title: "Tên danh mục", dataIndex: "name" },
     { title: "Mô tả", dataIndex: "desc" },
-    { title: "Số món", dataIndex: "count" },
     {
       title: "Thao tác",
       render: (_, record) => (
@@ -105,9 +105,14 @@ const AdminCategories = () => {
   const onEdit = async () => {
     const values = await form.validateFields();
     const nextItems = items.map((it) =>
-        it.id === editingRecord?.id
-          ? { ...it, name: values.name, desc: values.desc, count: Number(values.count || 0) }
-          : it,
+      it.id === editingRecord?.id
+        ? {
+            ...it,
+            name: values.name,
+            desc: values.desc,
+            count: Number(values.count || 0),
+          }
+        : it,
     );
     setItems(nextItems);
     saveSharedCategories([
@@ -179,33 +184,67 @@ const AdminCategories = () => {
           />
         }
       />
-      <Modal title="Thêm danh mục" open={openAdd} onCancel={() => setOpenAdd(false)} onOk={onAdd}>
+      <Modal
+        title="Thêm danh mục"
+        open={openAdd}
+        onCancel={() => setOpenAdd(false)}
+        onOk={onAdd}
+      >
         <Form form={form} layout="vertical">
-          <Form.Item name="name" label="Tên danh mục" rules={[{ required: true, message: "Nhập tên danh mục" }]}>
+          <Form.Item
+            name="name"
+            label="Tên danh mục"
+            rules={[{ required: true, message: "Nhập tên danh mục" }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item name="desc" label="Mô tả" rules={[{ required: true, message: "Nhập mô tả" }]}>
+          <Form.Item
+            name="desc"
+            label="Mô tả"
+            rules={[{ required: true, message: "Nhập mô tả" }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item name="count" label="Số món" rules={[{ required: true, message: "Nhập số món" }]}>
+          <Form.Item
+            name="count"
+            label="Số món"
+            rules={[{ required: true, message: "Nhập số món" }]}
+          >
             <InputNumber min={0} style={{ width: "100%" }} />
           </Form.Item>
         </Form>
       </Modal>
-      <Modal title="Sửa danh mục" open={openEdit} onCancel={() => setOpenEdit(false)} onOk={onEdit}>
+      <Modal
+        title="Sửa danh mục"
+        open={openEdit}
+        onCancel={() => setOpenEdit(false)}
+        onOk={onEdit}
+      >
         <Form form={form} layout="vertical">
-          <Form.Item name="name" label="Tên danh mục" rules={[{ required: true, message: "Nhập tên danh mục" }]}>
+          <Form.Item
+            name="name"
+            label="Tên danh mục"
+            rules={[{ required: true, message: "Nhập tên danh mục" }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item name="desc" label="Mô tả" rules={[{ required: true, message: "Nhập mô tả" }]}>
+          <Form.Item
+            name="desc"
+            label="Mô tả"
+            rules={[{ required: true, message: "Nhập mô tả" }]}
+          >
             <Input />
-          </Form.Item>
-          <Form.Item name="count" label="Số món" rules={[{ required: true, message: "Nhập số món" }]}>
-            <InputNumber min={0} style={{ width: "100%" }} />
           </Form.Item>
         </Form>
       </Modal>
-      <Modal open={openDelete} title="Xác nhận xóa danh mục" onCancel={() => setOpenDelete(false)} onOk={onDelete} okText="Xóa" okButtonProps={{ danger: true }}>
+      <Modal
+        open={openDelete}
+        title="Xác nhận xóa danh mục"
+        onCancel={() => setOpenDelete(false)}
+        onOk={onDelete}
+        okText="Xóa"
+        okButtonProps={{ danger: true }}
+      >
         <p>Bạn chắc chắn muốn xóa danh mục này?</p>
       </Modal>
     </>

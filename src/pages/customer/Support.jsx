@@ -1,7 +1,3 @@
-// const CustomerSupport = () => {
-//   return <div>CustomerSupport</div>;
-// };
-// export default CustomerSupport;
 import React, { useState } from "react";
 import { T } from "../../constants/customerTheme";
 import { mockFAQTopics, FAQ_ANSWERS } from "../../data/mockData";

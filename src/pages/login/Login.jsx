@@ -26,9 +26,9 @@ const Login = () => {
 
     const user = res.data;
 
-    localStorage.setItem("token", user.token); // 🔥 QUAN TRỌNG
+    localStorage.setItem("token", user.token);
 
-    setUser(user); // nếu bạn có context
+    setUser(user);
 
     return user;
   };
