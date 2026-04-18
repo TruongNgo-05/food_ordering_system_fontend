@@ -11,7 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import "../../assets/styles/Sider.css";
 import logo from "../../assets/images/logo.png";
-import { confirmLoginWithToast } from "../../utils/authGuards";
+import { confirmLoginWithModal } from "../../utils/authGuards";
 import { useAuth } from "../../hooks/useAuth";
 
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
@@ -100,7 +100,7 @@ const Sider = ({ mobileOpen = false, onCloseMobile }) => {
     if (requireAuth && !isLoggedIn) {
       event.preventDefault();
       if (window.innerWidth <= 1024) onCloseMobile?.();
-      confirmLoginWithToast(
+      confirmLoginWithModal(
         (path) => navigate(path),
         () => {},
       );

@@ -1,15 +1,17 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Form, Input, Modal, Switch } from "antd";
 import AdminPageSection from "../../components/admin/AdminPageSection";
 import BaseTable from "../../components/common/BaseTable";
 import TableActions from "../../components/common/TableActions";
 import AppPagination from "../../components/common/AppPagination";
-import { loadSharedBanners, saveSharedBanners } from "../../utils/sharedData";
-
+import AddBannerModal from "../../components/admin/banner/AddBannerModal";
+import EditBannerModal from "../../components/admin/banner/EditBannerModal";
+import bannerService from "../../services/admin/BannerService";
 const pageSize = 4;
 
 const AdminBanners = () => {
-  const [items, setItems] = useState(() => loadSharedBanners());
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
@@ -17,7 +19,8 @@ const AdminBanners = () => {
   const [editingRecord, setEditingRecord] = useState(null);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const [form] = Form.useForm();
+  const [addForm] = Form.useForm();
+  const [editForm] = Form.useForm();
 
   const filteredItems = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -58,12 +61,20 @@ const AdminBanners = () => {
       render: (_, r) => (
         <Switch
           checked={r.active !== false}
-          onChange={(checked) => {
-            const nextItems = items.map((it) =>
+          onChange={async (checked) => {
+            const newItems = items.map((it) =>
               it.id === r.id ? { ...it, active: checked } : it,
             );
-            setItems(nextItems);
-            saveSharedBanners(nextItems);
+            setItems(newItems);
+
+            try {
+              await bannerService.updateBanner(r.id, {
+                isActive: checked,
+              });
+            } catch (error) {
+              console.error(error);
+              fetchBanners();
+            }
           }}
         />
       ),
@@ -76,7 +87,7 @@ const AdminBanners = () => {
           showView={false}
           onEdit={(r) => {
             setEditingRecord(r);
-            form.setFieldsValue(r);
+            editForm.setFieldsValue(r);
             setOpenEdit(true);
           }}
           onDelete={(id) => {
@@ -88,34 +99,81 @@ const AdminBanners = () => {
       ),
     },
   ];
-
   const handleAdd = async () => {
-    const values = await form.validateFields();
-    const nextItems = [...items, { id: Date.now(), ...values, active: values.active !== false }];
-    setItems(nextItems);
-    saveSharedBanners(nextItems);
-    setOpenAdd(false);
-    form.resetFields();
-  };
+    try {
+      const values = await addForm.validateFields();
 
+      await bannerService.createBanner({
+        title: values.title,
+        description: values.desc,
+        imageUrl: values.image,
+        isActive: values.active ?? true,
+      });
+
+      await fetchBanners();
+      setOpenAdd(false);
+      addForm.resetFields();
+    } catch (error) {
+      console.error("Lỗi thêm banner:", error);
+    }
+  };
   const handleEdit = async () => {
-    const values = await form.validateFields();
-    const nextItems = items.map((it) =>
-      it.id === editingRecord?.id ? { ...it, ...values, active: values.active !== false } : it,
-    );
-    setItems(nextItems);
-    saveSharedBanners(nextItems);
-    setOpenEdit(false);
-    setEditingRecord(null);
+    try {
+      const values = await editForm.validateFields();
+
+      await bannerService.updateBanner(editingRecord.id, {
+        title: values.title,
+        description: values.desc,
+        imageUrl: values.image,
+        isActive: values.active,
+      });
+
+      await fetchBanners();
+
+      setOpenEdit(false);
+      setEditingRecord(null);
+    } catch (error) {
+      console.error("Lỗi update banner:", error);
+    }
+  };
+  const handleDelete = async () => {
+    try {
+      await bannerService.deleteBanner(editingRecord.id);
+
+      await fetchBanners();
+
+      setOpenDelete(false);
+      setEditingRecord(null);
+    } catch (error) {
+      console.error("Lỗi xóa banner:", error);
+    }
   };
 
-  const handleDelete = () => {
-    const nextItems = items.filter((it) => it.id !== editingRecord?.id);
-    setItems(nextItems);
-    saveSharedBanners(nextItems);
-    setOpenDelete(false);
-    setEditingRecord(null);
+  const fetchBanners = async () => {
+    try {
+      setLoading(true);
+      const res = await bannerService.getBannerAdmin();
+
+      const raw = res.data.data.content;
+      const mapped = raw.map((item) => ({
+        id: item.id,
+        title: item.title,
+        desc: item.description,
+        image: item.imageUrl,
+        active: item.isActive,
+      }));
+
+      setItems(mapped);
+    } catch (error) {
+      console.error("Lỗi load banner:", error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchBanners();
+  }, []);
 
   return (
     <>
@@ -124,14 +182,23 @@ const AdminBanners = () => {
         subtitle="Tạo và cập nhật banner hiển thị trên trang khách hàng."
         stats={[
           { label: "Tổng banner", value: items.length },
-          { label: "Đang hiển thị", value: items.filter((x) => x.active !== false).length },
-          { label: "Đã tắt", value: items.filter((x) => x.active === false).length },
-          { label: "Tỉ lệ hiển thị", value: `${items.length ? Math.round((items.filter((x) => x.active !== false).length / items.length) * 100) : 0}%` },
+          {
+            label: "Đang hiển thị",
+            value: items.filter((x) => x.active !== false).length,
+          },
+          {
+            label: "Đã tắt",
+            value: items.filter((x) => x.active === false).length,
+          },
+          {
+            label: "Tỉ lệ hiển thị",
+            value: `${items.length ? Math.round((items.filter((x) => x.active !== false).length / items.length) * 100) : 0}%`,
+          },
         ]}
         actionLabel="+ Thêm banner"
         onAddClick={() => {
-          form.resetFields();
-          form.setFieldValue("active", true);
+          addForm.resetFields();
+          addForm.setFieldValue("active", true);
           setOpenAdd(true);
         }}
         topControls={
@@ -159,7 +226,9 @@ const AdminBanners = () => {
             </select>
           </>
         }
-        table={<BaseTable columns={columns} data={pageData} />}
+        table={
+          <BaseTable columns={columns} data={pageData} loading={loading} />
+        }
         pagination={
           <AppPagination
             page={page}
@@ -170,39 +239,19 @@ const AdminBanners = () => {
         }
       />
 
-      <Modal title="Thêm banner" open={openAdd} onCancel={() => setOpenAdd(false)} onOk={handleAdd}>
-        <Form form={form} layout="vertical">
-          <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: "Nhập tiêu đề" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="desc" label="Mô tả" rules={[{ required: true, message: "Nhập mô tả" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="image" label="Link ảnh" rules={[{ required: true, message: "Nhập link ảnh" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="active" label="Hiển thị" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <AddBannerModal
+        open={openAdd}
+        onCancel={() => setOpenAdd(false)}
+        onOk={handleAdd}
+        form={addForm}
+      />
 
-      <Modal title="Sửa banner" open={openEdit} onCancel={() => setOpenEdit(false)} onOk={handleEdit}>
-        <Form form={form} layout="vertical">
-          <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: "Nhập tiêu đề" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="desc" label="Mô tả" rules={[{ required: true, message: "Nhập mô tả" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="image" label="Link ảnh" rules={[{ required: true, message: "Nhập link ảnh" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="active" label="Hiển thị" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <EditBannerModal
+        open={openEdit}
+        onCancel={() => setOpenEdit(false)}
+        onOk={handleEdit}
+        form={editForm}
+      />
 
       <Modal
         title="Xác nhận xóa banner"

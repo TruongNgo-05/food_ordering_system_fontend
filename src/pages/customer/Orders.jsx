@@ -18,7 +18,7 @@ import { EmptyState, StatusBadge } from "../../components/customer/SharedUI";
 import UserHeader from "../../components/user/UserHeader";
 import FoodImage from "../../components/common/FoodImage";
 import { mockOrders } from "../../data/mockData";
-import { confirmLoginWithToast } from "../../utils/authGuards";
+import { confirmLoginWithModal } from "../../utils/authGuards";
 import { useAuth } from "../../hooks/useAuth";
 import "../../assets/styles/CustomerOrders.css";
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
@@ -29,7 +29,7 @@ const Orders = () => {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      confirmLoginWithToast(navigate, () => navigate("/customer"));
+      confirmLoginWithModal(navigate, () => navigate("/customer"));
     }
   }, [isLoggedIn, navigate]);
 

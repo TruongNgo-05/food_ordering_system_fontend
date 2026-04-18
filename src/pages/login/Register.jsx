@@ -7,7 +7,7 @@ import "../../assets/styles/Login.css";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { createAccount } from "../../services/user/ueser";
+import { createAccount } from "../../services/userService";
 const Register = () => {
   const [loading, setLoading] = React.useState(false);
   const navigate = useNavigate();

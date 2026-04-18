@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Form, Input, InputNumber, Modal, Select, message, Switch } from "antd";
+import { Form, Modal, Switch } from "antd";
 import AdminPageSection from "../../components/admin/AdminPageSection";
-import AdminViewDrawer from "../../components/admin/AdminViewDrawer";
+import AdminViewDrawer from "../../components/admin/user/AdminViewDrawer";
 import BaseTable from "../../components/common/BaseTable";
 import TableActions from "../../components/common/TableActions";
 import AppPagination from "../../components/common/AppPagination";
 import FoodImage from "../../components/common/FoodImage";
+import AddFoodModal from "../../components/admin/food/AddFoodModal";
+import EditFoodModal from "../../components/admin/food/EditFoodModal";
 import {
   loadSharedFoods,
   loadSharedCategories,
@@ -16,13 +18,6 @@ import {
 const pageSize = 4;
 const formatPriceVND = (priceValue) =>
   `${Number(priceValue || 0).toLocaleString("vi-VN")} đ`;
-const fileToDataUrl = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 const parseAdditionalImages = (value) =>
   String(value || "")
     .split(/[\n,]/)
@@ -146,8 +141,7 @@ const AdminFoods = () => {
     },
   ];
 
-  const onAdd = async () => {
-    const values = await form.validateFields();
+  const onAdd = (values) => {
     const nextItems = [
       ...items,
       {
@@ -175,20 +169,10 @@ const AdminFoods = () => {
 
   const onOpenEdit = (record) => {
     setEditingRecord(record);
-    form.setFieldsValue({
-      name: record.name,
-      image: record.image || "",
-      additionalImages: (record.images || [])
-        .filter((img) => img && img !== record.image)
-        .join("\n"),
-      category: record.category_id,
-      priceInThousand: Math.round(record.price / 1000),
-    });
     setOpenEdit(true);
   };
 
-  const onEdit = async () => {
-    const values = await form.validateFields();
+  const onEdit = (values) => {
     const nextItems = items.map((it) =>
       it.id === editingRecord?.id
         ? {
@@ -208,40 +192,7 @@ const AdminFoods = () => {
     saveSharedFoods(nextItems);
     setOpenEdit(false);
     setEditingRecord(null);
-  };
-
-  const onUploadImage = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    try {
-      const dataUrl = await fileToDataUrl(file);
-      form.setFieldValue("image", dataUrl);
-      message.success("Tải ảnh thành công");
-    } catch {
-      message.error("Không thể đọc ảnh. Vui lòng thử lại.");
-    } finally {
-      event.target.value = "";
-    }
-  };
-
-  const onUploadAdditionalImages = async (event) => {
-    const files = Array.from(event.target.files || []);
-    if (files.length === 0) return;
-    try {
-      const dataUrls = await Promise.all(
-        files.map((file) => fileToDataUrl(file)),
-      );
-      const current = parseAdditionalImages(
-        form.getFieldValue("additionalImages"),
-      );
-      const next = [...current, ...dataUrls].filter(Boolean);
-      form.setFieldValue("additionalImages", next.join("\n"));
-      message.success("Tải ảnh phụ thành công");
-    } catch {
-      message.error("Không thể đọc ảnh phụ. Vui lòng thử lại.");
-    } finally {
-      event.target.value = "";
-    }
+    form.resetFields();
   };
 
   const onDelete = () => {
@@ -320,168 +271,24 @@ const AdminFoods = () => {
           />
         }
       />
-      <Modal
-        title="Thêm món ăn"
+      <AddFoodModal
         open={openAdd}
         onCancel={() => setOpenAdd(false)}
-        onOk={onAdd}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            name="name"
-            label="Tên món"
-            rules={[{ required: true, message: "Nhập tên món" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="image"
-            label="Ảnh đại diện (link hoặc upload)"
-            rules={[
-              { required: true, message: "Nhập link ảnh hoặc tải ảnh từ máy" },
-            ]}
-          >
-            <Input placeholder="https://... hoặc dùng nút tải ảnh bên dưới" />
-          </Form.Item>
-          <Form.Item label="Tải ảnh từ máy">
-            <input type="file" accept="image/*" onChange={onUploadImage} />
-          </Form.Item>
-          <Form.Item
-            name="additionalImages"
-            label="Ảnh phụ (mỗi dòng 1 link, hoặc ngăn cách bằng dấu phẩy)"
-          >
-            <Input.TextArea
-              rows={3}
-              placeholder="https://...&#10;https://... hoặc dùng nút tải ảnh phụ"
-            />
-          </Form.Item>
-          <Form.Item label="Tải ảnh phụ từ máy">
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={onUploadAdditionalImages}
-            />
-          </Form.Item>
-          <Form.Item shouldUpdate noStyle>
-            {() =>
-              form.getFieldValue("image") ? (
-                <div style={{ marginBottom: 12 }}>
-                  <FoodImage
-                    src={form.getFieldValue("image")}
-                    size={72}
-                    radius={12}
-                    textSize={28}
-                  />
-                </div>
-              ) : null
-            }
-          </Form.Item>
-          <Form.Item
-            name="category"
-            label="Danh mục"
-            rules={[{ required: true, message: "Chọn danh mục" }]}
-          >
-            <Select
-              options={categories.map((c) => ({ value: c.id, label: c.name }))}
-              placeholder="Chọn danh mục"
-            />
-          </Form.Item>
-          <Form.Item
-            name="priceInThousand"
-            label="Giá bán (nghìn đồng)"
-            rules={[{ required: true, message: "Nhập giá bán" }]}
-          >
-            <InputNumber
-              min={1}
-              style={{ width: "100%" }}
-              addonAfter=".000 đ"
-              placeholder="Ví dụ: 179"
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
-      <Modal
-        title="Sửa món ăn"
+        onSubmit={onAdd}
+        categories={categories}
+        form={form}
+      />
+      <EditFoodModal
         open={openEdit}
-        onCancel={() => setOpenEdit(false)}
-        onOk={onEdit}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            name="name"
-            label="Tên món"
-            rules={[{ required: true, message: "Nhập tên món" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="image"
-            label="Ảnh đại diện (link hoặc upload)"
-            rules={[
-              { required: true, message: "Nhập link ảnh hoặc tải ảnh từ máy" },
-            ]}
-          >
-            <Input placeholder="https://... hoặc dùng nút tải ảnh bên dưới" />
-          </Form.Item>
-          <Form.Item label="Tải ảnh từ máy">
-            <input type="file" accept="image/*" onChange={onUploadImage} />
-          </Form.Item>
-          <Form.Item
-            name="additionalImages"
-            label="Ảnh phụ (mỗi dòng 1 link, hoặc ngăn cách bằng dấu phẩy)"
-          >
-            <Input.TextArea
-              rows={3}
-              placeholder="https://...&#10;https://... hoặc dùng nút tải ảnh phụ"
-            />
-          </Form.Item>
-          <Form.Item label="Tải ảnh phụ từ máy">
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={onUploadAdditionalImages}
-            />
-          </Form.Item>
-          <Form.Item shouldUpdate noStyle>
-            {() =>
-              form.getFieldValue("image") ? (
-                <div style={{ marginBottom: 12 }}>
-                  <FoodImage
-                    src={form.getFieldValue("image")}
-                    size={72}
-                    radius={12}
-                    textSize={28}
-                  />
-                </div>
-              ) : null
-            }
-          </Form.Item>
-          <Form.Item
-            name="category"
-            label="Danh mục"
-            rules={[{ required: true, message: "Chọn danh mục" }]}
-          >
-            <Select
-              options={categories.map((c) => ({ value: c.id, label: c.name }))}
-              placeholder="Chọn danh mục"
-            />
-          </Form.Item>
-          <Form.Item
-            name="priceInThousand"
-            label="Giá bán (nghìn đồng)"
-            rules={[{ required: true, message: "Nhập giá bán" }]}
-          >
-            <InputNumber
-              min={1}
-              style={{ width: "100%" }}
-              addonAfter=".000 đ"
-              placeholder="Ví dụ: 179"
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
+        onCancel={() => {
+          setOpenEdit(false);
+          setEditingRecord(null);
+        }}
+        onSubmit={onEdit}
+        categories={categories}
+        form={form}
+        record={editingRecord}
+      />
       <Modal
         open={openDelete}
         title="Xác nhận xóa món"

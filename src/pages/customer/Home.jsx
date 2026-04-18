@@ -9,12 +9,12 @@ import Banner from "../../components/customer/Banner";
 import CustomerChatWidget from "../../components/customer/CustomerChatWidget";
 import UserHeader from "../../components/user/UserHeader";
 import AppPagination from "../../components/common/AppPagination";
+import { getBanner, getCategories } from "../../services/userService";
 import {
   loadSharedFoods,
-  loadSharedCategories,
   SHARED_DATA_UPDATED_EVENT,
 } from "../../utils/sharedData";
-import { confirmLoginWithToast } from "../../utils/authGuards";
+import { confirmLoginWithModal } from "../../utils/authGuards";
 import { useAuth } from "../../hooks/useAuth";
 import "../../assets/styles/CustomerHome.css";
 
@@ -24,7 +24,7 @@ const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 const Home = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
-
+  const [banners, setBanners] = useState([]);
   const [cart, setCart] = useState(() => {
     const saved = localStorage.getItem("cart");
     return saved ? JSON.parse(saved) : [];
@@ -38,8 +38,8 @@ const Home = () => {
     return saved ? JSON.parse(saved) : [];
   });
   const [foods, setFoods] = useState(() => loadSharedFoods());
-  const [categories, setCategories] = useState(() => loadSharedCategories());
-  const [activeCat, setActiveCat] = useState(1);
+  const [categories, setCategories] = useState([]);
+  const [activeCat, setActiveCat] = useState(0);
   const [greetingName, setGreetingName] = useState(
     () => localStorage.getItem("userFullName") || "Khách",
   );
@@ -49,8 +49,53 @@ const Home = () => {
   const [page, setPage] = useState(0);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const pageSize = 10;
+  // categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await getCategories();
+        const list = res.data?.data?.content || [];
 
+        const mapped = [
+          {
+            id: 0,
+            name: "Tất cả",
+          },
+          ...list.map((c, index) => ({
+            id: c.id,
+            name: c.name,
+          })),
+        ];
+
+        setCategories(mapped);
+      } catch (err) {
+        console.error("Lỗi load categories:", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
   /* ================= DEBOUNCE SEARCH ================= */
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const res = await getBanner();
+
+        const mapped = (res.data.data || []).map((b) => ({
+          id: b.id,
+          title: b.title,
+          desc: b.description,
+          image: b.imageUrl,
+        }));
+
+        setBanners(mapped);
+      } catch (err) {
+        console.error("Lỗi load banner:", err);
+      }
+    };
+
+    fetchBanners();
+  }, []);
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(t);
@@ -80,7 +125,6 @@ const Home = () => {
   useEffect(() => {
     const syncSharedData = () => {
       setFoods(loadSharedFoods());
-      setCategories(loadSharedCategories());
     };
     syncSharedData();
     window.addEventListener("focus", syncSharedData);
@@ -124,7 +168,7 @@ const Home = () => {
   const filtered = useMemo(() => {
     return foods.filter(
       (m) =>
-        (safeActiveCat === 1 || m.category_id === safeActiveCat) &&
+        (safeActiveCat === 0 || m.category_id === safeActiveCat) &&
         m.name.toLowerCase().includes(debouncedSearch.toLowerCase()),
     );
   }, [foods, safeActiveCat, debouncedSearch]);
@@ -151,7 +195,7 @@ const Home = () => {
   }, [cart]);
 
   const requireLoginAction = useCallback(() => {
-    confirmLoginWithToast(navigate);
+    confirmLoginWithModal(navigate);
   }, [navigate]);
 
   /* ================= ADD CART ================= */
@@ -216,7 +260,7 @@ const Home = () => {
   /* ================= UI ================= */
   return (
     <div className="customer-home-page" style={{ background: T.bg }}>
-      <Banner onViewMenu={scrollToMenu} />
+      <Banner data={banners} onViewMenu={scrollToMenu} />
 
       <div id="customer-menu-header" className="customer-home-header-wrap">
         {/* HEADER */}

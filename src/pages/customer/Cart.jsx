@@ -16,7 +16,7 @@ import {
   loadSharedVouchers,
   SHARED_DATA_UPDATED_EVENT,
 } from "../../utils/sharedData";
-import { confirmLoginWithToast } from "../../utils/authGuards";
+import { confirmLoginWithModal } from "../../utils/authGuards";
 import { useAuth } from "../../hooks/useAuth";
 import "../../assets/styles/CustomerCart.css";
 
@@ -46,7 +46,7 @@ const Cart = () => {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      confirmLoginWithToast(navigate, () => navigate("/customer"));
+      confirmLoginWithModal(navigate, () => navigate("/customer"));
     }
   }, [isLoggedIn, navigate]);
 

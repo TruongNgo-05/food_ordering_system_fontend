@@ -8,12 +8,13 @@ import {
   loadSharedFoods,
   SHARED_DATA_UPDATED_EVENT,
 } from "../../utils/sharedData";
-import { confirmLoginWithToast } from "../../utils/authGuards";
+import { confirmLoginWithModal } from "../../utils/authGuards";
 import { useAuth } from "../../hooks/useAuth";
 import "../../assets/styles/CustomerFavorites.css";
 
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
-const isSameArray = (a, b) => JSON.stringify(a || []) === JSON.stringify(b || []);
+const isSameArray = (a, b) =>
+  JSON.stringify(a || []) === JSON.stringify(b || []);
 
 const Favorites = () => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ const Favorites = () => {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      confirmLoginWithToast(navigate, () => navigate("/customer"));
+      confirmLoginWithModal(navigate, () => navigate("/customer"));
     }
   }, [isLoggedIn, navigate]);
 

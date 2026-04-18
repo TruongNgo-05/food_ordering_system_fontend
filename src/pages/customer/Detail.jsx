@@ -10,7 +10,7 @@ import {
   loadSharedFoods,
   SHARED_DATA_UPDATED_EVENT,
 } from "../../utils/sharedData";
-import { confirmLoginWithToast } from "../../utils/authGuards";
+import { confirmLoginWithModal } from "../../utils/authGuards";
 import { useAuth } from "../../hooks/useAuth";
 import "../../assets/styles/CustomerDetail.css";
 
@@ -78,17 +78,17 @@ const Detail = () => {
     if (!item) return;
     const saved = localStorage.getItem("recently-viewed-foods");
     const prev = saved ? JSON.parse(saved) : [];
-    const next = [item.id, ...(Array.isArray(prev) ? prev.filter((id) => id !== item.id) : [])].slice(
-      0,
-      8,
-    );
+    const next = [
+      item.id,
+      ...(Array.isArray(prev) ? prev.filter((id) => id !== item.id) : []),
+    ].slice(0, 8);
     localStorage.setItem("recently-viewed-foods", JSON.stringify(next));
   }, [item]);
 
   const [qty, setQty] = useState(1);
   const [activeImage, setActiveImage] = useState("");
   const requireLoginAction = () => {
-    confirmLoginWithToast(navigate);
+    confirmLoginWithModal(navigate);
   };
 
   useEffect(() => {
@@ -143,8 +143,10 @@ const Detail = () => {
   }, [item, customReviews, currentUserName]);
   const sortedReviews = useMemo(() => {
     const list = [...reviews];
-    if (reviewSort === "highest") return list.sort((a, b) => b.rating - a.rating);
-    if (reviewSort === "lowest") return list.sort((a, b) => a.rating - b.rating);
+    if (reviewSort === "highest")
+      return list.sort((a, b) => b.rating - a.rating);
+    if (reviewSort === "lowest")
+      return list.sort((a, b) => a.rating - b.rating);
     return list.sort((a, b) => (b.created_ts || 0) - (a.created_ts || 0));
   }, [reviews, reviewSort]);
   const avgReview = useMemo(() => {
@@ -164,7 +166,9 @@ const Detail = () => {
       (order) =>
         order?.status === "completed" &&
         Array.isArray(order.items) &&
-        order.items.some((it) => it.item_id === item.id || it.name === item.name),
+        order.items.some(
+          (it) => it.item_id === item.id || it.name === item.name,
+        ),
     );
   }, [orders, item]);
 
@@ -208,7 +212,9 @@ const Detail = () => {
       return;
     }
     setFavorites((prev) =>
-      prev.includes(foodId) ? prev.filter((f) => f !== foodId) : [...prev, foodId],
+      prev.includes(foodId)
+        ? prev.filter((f) => f !== foodId)
+        : [...prev, foodId],
     );
   };
 
@@ -439,7 +445,8 @@ const Detail = () => {
                 🔥 <strong style={{ color: T.text }}>{item.sold}</strong> đã bán
               </span>
               <span style={{ fontSize: 14, color: T.sub }}>
-                💬 <strong style={{ color: T.text }}>{reviews.length}</strong> đánh giá
+                💬 <strong style={{ color: T.text }}>{reviews.length}</strong>{" "}
+                đánh giá
               </span>
             </div>
 
@@ -583,7 +590,9 @@ const Detail = () => {
 
         {showReviews && (
           <div style={{ marginTop: 16 }}>
-            <SectionTitle count={reviews.length}>Đánh giá & comment</SectionTitle>
+            <SectionTitle count={reviews.length}>
+              Đánh giá & comment
+            </SectionTitle>
 
             <div
               style={{
@@ -648,7 +657,14 @@ const Detail = () => {
                   </div>
                 </div>
               )}
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  marginBottom: 10,
+                }}
+              >
                 {[1, 2, 3, 4, 5].map((s) => (
                   <button
                     key={s}
@@ -719,11 +735,24 @@ const Detail = () => {
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <p style={{ margin: 0, fontSize: 34, fontWeight: 900, color: T.text }}>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: 34,
+                    fontWeight: 900,
+                    color: T.text,
+                  }}
+                >
                   {avgReview}
                 </p>
                 <div>
-                  <p style={{ margin: "0 0 4px", color: "#F59E0B", fontSize: 16 }}>
+                  <p
+                    style={{
+                      margin: "0 0 4px",
+                      color: "#F59E0B",
+                      fontSize: 16,
+                    }}
+                  >
                     {"★".repeat(Math.max(1, Math.round(avgReview)))}
                     {"☆".repeat(Math.max(0, 5 - Math.round(avgReview)))}
                   </p>
@@ -772,7 +801,9 @@ const Detail = () => {
                 Chưa có comment cho món này.
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 12 }}
+              >
                 {sortedReviews.map((r) => (
                   <div
                     key={r.id}
@@ -792,14 +823,31 @@ const Detail = () => {
                         marginBottom: 6,
                       }}
                     >
-                      <p style={{ margin: 0, fontWeight: 800, color: T.text }}>{r.user}</p>
-                      <span style={{ fontSize: 12, color: T.sub }}>{r.created_at}</span>
+                      <p style={{ margin: 0, fontWeight: 800, color: T.text }}>
+                        {r.user}
+                      </p>
+                      <span style={{ fontSize: 12, color: T.sub }}>
+                        {r.created_at}
+                      </span>
                     </div>
-                    <p style={{ margin: "0 0 6px", color: "#F59E0B", fontSize: 13 }}>
+                    <p
+                      style={{
+                        margin: "0 0 6px",
+                        color: "#F59E0B",
+                        fontSize: 13,
+                      }}
+                    >
                       {"★".repeat(r.rating)}
                       {"☆".repeat(5 - r.rating)}
                     </p>
-                    <p style={{ margin: 0, color: T.sub, fontSize: 14, lineHeight: 1.6 }}>
+                    <p
+                      style={{
+                        margin: 0,
+                        color: T.sub,
+                        fontSize: 14,
+                        lineHeight: 1.6,
+                      }}
+                    >
                       {r.comment}
                     </p>
                     {r.user === currentUserName && (
@@ -875,7 +923,13 @@ const Detail = () => {
                         );
                       return [
                         ...prev,
-                        { item_id: it.id, name: it.name, price: it.price, image: it.image, qty: 1 },
+                        {
+                          item_id: it.id,
+                          name: it.name,
+                          price: it.price,
+                          image: it.image,
+                          qty: 1,
+                        },
                       ];
                     });
                   }}

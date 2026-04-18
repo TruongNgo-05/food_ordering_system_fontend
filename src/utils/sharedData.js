@@ -33,9 +33,7 @@ const normalizeFoods = (foods) => {
     .filter((f) => f && typeof f.id === "number" && f.name)
     .map((f) => {
       const primaryImage = f.image || "🍽️";
-      const images = Array.isArray(f.images)
-        ? f.images.filter(Boolean)
-        : [];
+      const images = Array.isArray(f.images) ? f.images.filter(Boolean) : [];
       const normalizedImages = images.length > 0 ? images : [primaryImage];
       return {
         id: f.id,
@@ -76,46 +74,6 @@ const normalizeVouchers = (vouchers) => {
     }));
 };
 
-const defaultBanners = [
-  {
-    id: 1,
-    image:
-      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1920&auto=format&fit=crop",
-    title: "Ăn gì hôm nay?",
-    desc: "Khám phá thực đơn món Việt đa dạng, giao tận nơi chỉ trong vài phút.",
-    active: true,
-  },
-  {
-    id: 2,
-    image:
-      "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?q=80&w=1920&auto=format&fit=crop",
-    title: "Món ngon mỗi ngày",
-    desc: "Từ bữa sáng đến bữa tối, luôn có món hợp vị cho bạn.",
-    active: true,
-  },
-  {
-    id: 3,
-    image:
-      "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?q=80&w=1920&auto=format&fit=crop",
-    title: "Đặt nhanh trong 1 chạm",
-    desc: "Ưu đãi hấp dẫn, thanh toán tiện lợi, giao hàng siêu tốc.",
-    active: true,
-  },
-];
-
-const normalizeBanners = (banners) => {
-  if (!Array.isArray(banners) || banners.length === 0) return clone(defaultBanners);
-  return banners
-    .filter((b) => b && b.image && b.title)
-    .map((b, idx) => ({
-      id: b.id || Date.now() + idx,
-      image: b.image,
-      title: b.title,
-      desc: b.desc || "",
-      active: b.active !== false,
-    }));
-};
-
 const read = (key, fallback, normalize) => {
   try {
     const raw = localStorage.getItem(key);
@@ -133,16 +91,21 @@ const write = (key, value, normalize) => {
   return normalized;
 };
 
-export const loadSharedCategories = () => read(KEYS.categories, mockCategories, normalizeCategories);
+export const loadSharedCategories = () =>
+  read(KEYS.categories, mockCategories, normalizeCategories);
 export const saveSharedCategories = (categories) =>
   write(KEYS.categories, categories, normalizeCategories);
 
-export const loadSharedFoods = () => read(KEYS.foods, mockMenuItems, normalizeFoods);
-export const saveSharedFoods = (foods) => write(KEYS.foods, foods, normalizeFoods);
+export const loadSharedFoods = () =>
+  read(KEYS.foods, mockMenuItems, normalizeFoods);
+export const saveSharedFoods = (foods) =>
+  write(KEYS.foods, foods, normalizeFoods);
 
-export const loadSharedVouchers = () => read(KEYS.vouchers, mockVouchers, normalizeVouchers);
+export const loadSharedVouchers = () =>
+  read(KEYS.vouchers, mockVouchers, normalizeVouchers);
 export const saveSharedVouchers = (vouchers) =>
   write(KEYS.vouchers, vouchers, normalizeVouchers);
 
-export const loadSharedBanners = () => read(KEYS.banners, defaultBanners, normalizeBanners);
-export const saveSharedBanners = (banners) => write(KEYS.banners, banners, normalizeBanners);
+export const loadSharedBanners = () => read(KEYS.banners, normalizeBanners);
+export const saveSharedBanners = (banners) =>
+  write(KEYS.banners, banners, normalizeBanners);

@@ -22,21 +22,14 @@ export const changePasswordApi = (data) => {
   return api.put("/users/change-password", data);
 };
 
-//Cho user hoạt động lại
-export const unlockUser = (id) => {
-  return api.put(`/auth/admin/account/unlock/${id}`);
-};
-//Khóa user
-export const lockUser = (id) => {
-  return api.put(`/auth/admin/account/lock/${id}`);
+export const createAccount = (data) => {
+  return api.post("v1/users", data);
 };
 
-export const getUserById = (id) => {
-  return api.get(`/users/${id}`);
+export const getBanner = () => {
+  return api.get("/v1/users/banner");
 };
 
-// Xóa user
-// DELETE /api/users/{id}
-export const deleteUser = (id) => {
-  return api.delete(`/users/${id}`);
+export const getCategories = (params) => {
+  return api.get("/v1/users/categories", { params });
 };
