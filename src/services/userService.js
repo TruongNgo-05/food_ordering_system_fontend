@@ -23,7 +23,7 @@ export const changePasswordApi = (data) => {
 };
 
 export const createAccount = (data) => {
-  return api.post("v1/users", data);
+  return api.post("/v1/users", data);
 };
 
 export const getBanner = () => {

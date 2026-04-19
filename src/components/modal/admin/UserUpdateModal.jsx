@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, Form, Input, Select } from "antd";
 
-const EditUserModal = ({ open, onCancel, onOk, form }) => {
+const UserUpdateModal = ({ open, onCancel, onOk, form }) => {
   return (
     <Modal title="Cập nhật vai trò" open={open} onCancel={onCancel} onOk={onOk}>
       <Form layout="vertical" form={form}>
@@ -11,7 +11,7 @@ const EditUserModal = ({ open, onCancel, onOk, form }) => {
         </Form.Item>
 
         <Form.Item name="email" label="Email">
-          <Input disabled />
+          <Input />
         </Form.Item>
 
         <Form.Item name="phone" label="Số điện thoại">
@@ -33,4 +33,4 @@ const EditUserModal = ({ open, onCancel, onOk, form }) => {
   );
 };
 
-export default EditUserModal;
+export default UserUpdateModal;

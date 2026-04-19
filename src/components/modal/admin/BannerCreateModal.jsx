@@ -1,25 +1,18 @@
 import { useState } from "react";
 import { Form, Input, Modal, Switch } from "antd";
 
-const AddBannerModal = ({ open, onCancel, onOk, form }) => {
+const BannerCreateModal = ({ open, onCancel, onSubmit, form }) => {
   const [imageUrl, setImageUrl] = useState("");
-
-  const handleCancel = () => {
-    setImageUrl("");
-    onCancel();
-  };
-
-  const handleOk = () => {
-    setImageUrl("");
-    onOk();
-  };
 
   return (
     <Modal
       title="Thêm banner"
       open={open}
-      onCancel={handleCancel}
-      onOk={handleOk}
+      onCancel={() => {
+        setImageUrl("");
+        onCancel();
+      }}
+      onOk={onSubmit}
     >
       <Form form={form} layout="vertical">
         <Form.Item
@@ -49,7 +42,6 @@ const AddBannerModal = ({ open, onCancel, onOk, form }) => {
           />
         </Form.Item>
 
-        {/* Preview ảnh */}
         {imageUrl && (
           <div style={{ marginTop: -12, marginBottom: 16 }}>
             <img
@@ -77,4 +69,4 @@ const AddBannerModal = ({ open, onCancel, onOk, form }) => {
   );
 };
 
-export default AddBannerModal;
+export default BannerCreateModal;

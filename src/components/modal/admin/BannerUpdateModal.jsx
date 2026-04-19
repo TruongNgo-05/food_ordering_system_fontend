@@ -1,10 +1,10 @@
 import { Form, Input, Modal, Switch } from "antd";
 
-const EditBannerModal = ({ open, onCancel, onOk, form }) => {
+const BannerUpdateModal = ({ open, onCancel, onSubmit, form }) => {
   const imageUrl = Form.useWatch("image", form);
 
   return (
-    <Modal title="Sửa banner" open={open} onCancel={onCancel} onOk={onOk}>
+    <Modal title="Sửa banner" open={open} onCancel={onCancel} onOk={onSubmit}>
       <Form form={form} layout="vertical">
         <Form.Item
           name="title"
@@ -27,10 +27,9 @@ const EditBannerModal = ({ open, onCancel, onOk, form }) => {
           label="Link ảnh"
           rules={[{ required: true, message: "Nhập link ảnh" }]}
         >
-          <Input placeholder="https://..." />
+          <Input />
         </Form.Item>
 
-        {/* Preview ảnh */}
         {imageUrl && (
           <div style={{ marginTop: -12, marginBottom: 16 }}>
             <img
@@ -49,7 +48,6 @@ const EditBannerModal = ({ open, onCancel, onOk, form }) => {
             />
           </div>
         )}
-
         <Form.Item name="active" label="Hiển thị" valuePropName="checked">
           <Switch />
         </Form.Item>
@@ -58,4 +56,4 @@ const EditBannerModal = ({ open, onCancel, onOk, form }) => {
   );
 };
 
-export default EditBannerModal;
+export default BannerUpdateModal;

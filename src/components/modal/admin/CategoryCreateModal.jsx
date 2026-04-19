@@ -1,8 +1,13 @@
-import { Form, Input, Modal } from "antd";
+import { Form, Input, InputNumber, Modal } from "antd";
 
-const EditCategoryModal = ({ open, onCancel, onSubmit, form }) => {
+const CategoryCreateModal = ({ open, onCancel, onSubmit, form }) => {
   return (
-    <Modal title="Sửa danh mục" open={open} onCancel={onCancel} onOk={onSubmit}>
+    <Modal
+      title="Thêm danh mục"
+      open={open}
+      onCancel={onCancel}
+      onOk={onSubmit}
+    >
       <Form form={form} layout="vertical">
         <Form.Item
           name="name"
@@ -24,4 +29,4 @@ const EditCategoryModal = ({ open, onCancel, onSubmit, form }) => {
   );
 };
 
-export default EditCategoryModal;
+export default CategoryCreateModal;

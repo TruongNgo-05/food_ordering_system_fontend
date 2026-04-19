@@ -1,7 +1,6 @@
 import React from "react";
-import "../../assets/styles/AdminPages.css";
+import "../../assets/styles/Dashboard.css";
 import UserHeader from "../../components/user/UserHeader";
-import CommonStats from "../../components/common/CommonStats";
 
 const statCards = [
   { label: "Đơn hàng hôm nay", value: "128" },
@@ -37,7 +36,7 @@ const Dashboard = () => {
         />
       </div>
 
-      <CommonStats stats={statCards} />
+  
 
       <div className="admin-dashboard-grid">
         <div className="admin-dashboard-card">

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Form, Input, InputNumber, Modal, Select, message } from "antd";
 import FoodImage from "../../common/FoodImage";
 
@@ -16,7 +16,28 @@ const parseAdditionalImages = (value) =>
     .map((s) => s.trim())
     .filter(Boolean);
 
-const AddFoodModal = ({ open, onCancel, onSubmit, categories, form }) => {
+const FoodUpdateModal = ({
+  open,
+  onCancel,
+  onSubmit,
+  categories,
+  form,
+  record,
+}) => {
+  useEffect(() => {
+    if (open && record) {
+      form.setFieldsValue({
+        name: record.name,
+        image: record.image || "",
+        additionalImages: (record.images || [])
+          .filter((img) => img && img !== record.image)
+          .join("\n"),
+        category: record.category_id,
+        priceInThousand: Math.round(record.price / 1000),
+      });
+    }
+  }, [open, record, form]);
+
   const handleUploadImage = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -62,14 +83,12 @@ const AddFoodModal = ({ open, onCancel, onSubmit, categories, form }) => {
 
   const handleCancel = () => {
     form.resetFields();
-    form.setFieldValue("image", "");
-    form.setFieldValue("additionalImages", "");
     onCancel();
   };
 
   return (
     <Modal
-      title="Thêm món ăn"
+      title="Sửa món ăn"
       open={open}
       onCancel={handleCancel}
       onOk={handleOk}
@@ -160,4 +179,4 @@ const AddFoodModal = ({ open, onCancel, onSubmit, categories, form }) => {
   );
 };
 
-export default AddFoodModal;
+export default FoodUpdateModal;
