@@ -40,7 +40,7 @@ const BannerTable = ({ data, loading, onEdit, onDelete, onToggle }) => {
           record={record}
           showView={false}
           onEdit={onEdit}
-          onDelete={() => onDelete(record)}
+          onDelete={onDelete}
         />
       ),
     },

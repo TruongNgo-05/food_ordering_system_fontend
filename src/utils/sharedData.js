@@ -32,16 +32,15 @@ const normalizeFoods = (foods) => {
   return foods
     .filter((f) => f && typeof f.id === "number" && f.name)
     .map((f) => {
-      const primaryImage = f.image || "🍽️";
+      const primaryImage = f.image || "";
       const images = Array.isArray(f.images) ? f.images.filter(Boolean) : [];
-      const normalizedImages = images.length > 0 ? images : [primaryImage];
       return {
         id: f.id,
         name: f.name,
         category_id: Number(f.category_id) || 1,
         price: Number(f.price) || 0,
         image: primaryImage,
-        images: normalizedImages,
+        images,
         rating: Number(f.rating) || 4.5,
         sold: Number(f.sold) || 0,
         desc: f.desc || "",

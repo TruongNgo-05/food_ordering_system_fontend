@@ -10,7 +10,7 @@ import UserHeader from "../../components/user/UserHeader";
 import StatsCards from "../../components/common/StatsCards";
 import "../../assets/styles/AdminPages.css";
 import UserCreateModal from "../../components/modal/admin/UserCreateModal";
-import UserUpdateModal from "../../components/modal/admin/UserUpdateModal"
+import UserUpdateModal from "../../components/modal/admin/UserUpdateModal";
 const pageSize = 5;
 
 const AdminUsers = () => {
@@ -21,7 +21,6 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
-  const [openDelete, setOpenDelete] = useState(false);
   const [openView, setOpenView] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [search, setSearch] = useState("");
@@ -113,12 +112,10 @@ const AdminUsers = () => {
   };
 
   // ================= DELETE =================
-  const handleDelete = async () => {
+  const handleDelete = async (id) => {
     try {
-      await adminUserService.deleteUser(editingRecord.id);
+      await adminUserService.deleteUser(id);
       message.success("Xóa thành công");
-      setOpenDelete(false);
-      setEditingRecord(null);
       fetchUsers();
     } catch (err) {
       message.error("Xóa thất bại");
@@ -218,10 +215,7 @@ const AdminUsers = () => {
             editForm.setFieldsValue(record);
             setOpenEdit(true);
           }}
-          onDelete={(record) => {
-            setEditingRecord(record);
-            setOpenDelete(true);
-          }}
+          onDelete={(id) => handleDelete(id)}
           onToggleLock={handleToggleLock}
         />
       </div>
@@ -248,16 +242,6 @@ const AdminUsers = () => {
         onOk={handleEdit}
         form={editForm}
       />
-      <Modal
-        title="Xác nhận xóa"
-        open={openDelete}
-        onCancel={() => setOpenDelete(false)}
-        onOk={handleDelete}
-        okText="Xóa"
-        okButtonProps={{ danger: true }}
-      >
-        <p>Bạn chắc chắn muốn xóa tài khoản này?</p>
-      </Modal>
       <AdminViewDrawer
         title="Thông tin người dùng"
         open={openView}

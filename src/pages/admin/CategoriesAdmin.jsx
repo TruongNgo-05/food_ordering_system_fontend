@@ -27,7 +27,6 @@ const AdminCategories = () => {
 
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
-  const [openDelete, setOpenDelete] = useState(false);
 
   const [editingRecord, setEditingRecord] = useState(null);
 
@@ -102,13 +101,10 @@ const AdminCategories = () => {
   };
 
   // ================= DELETE =================
-  const handleDelete = async () => {
+  const handleDelete = async (id) => {
     try {
-      await adminCategoriesService.deleteCategories(editingRecord.id);
-
+      await adminCategoriesService.deleteCategories(id);
       message.success("Xóa thành công");
-      setOpenDelete(false);
-      setEditingRecord(null);
       fetchCategories();
     } catch (err) {
       message.error("Xóa thất bại");
@@ -170,10 +166,7 @@ const AdminCategories = () => {
             editForm.setFieldsValue(record);
             setOpenEdit(true);
           }}
-          onDelete={(record) => {
-            setEditingRecord(record);
-            setOpenDelete(true);
-          }}
+          onDelete={(id) => handleDelete(id)}
         />
       </div>
 
@@ -202,17 +195,6 @@ const AdminCategories = () => {
         onSubmit={handleEdit}
         form={editForm}
       />
-
-      <Modal
-        title="Xác nhận xóa"
-        open={openDelete}
-        onCancel={() => setOpenDelete(false)}
-        onOk={handleDelete}
-        okText="Xóa"
-        okButtonProps={{ danger: true }}
-      >
-        <p>Bạn chắc chắn muốn xóa danh mục này?</p>
-      </Modal>
     </>
   );
 };

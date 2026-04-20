@@ -33,3 +33,11 @@ export const getBanner = () => {
 export const getCategories = (params) => {
   return api.get("/v1/users/categories", { params });
 };
+
+export const getFoods = (params) => {
+  return api.get("/v1/users/food", { params });
+};
+
+export const getFoodById = (id) => {
+  return api.get(`/v1/users/food/${id}`);
+};

@@ -19,7 +19,7 @@ const CategoryTable = ({ data, loading, onEdit, onDelete }) => {
           record={record}
           showView={false}
           onEdit={onEdit}
-          onDelete={() => onDelete(record)}
+          onDelete={onDelete}
         />
       ),
     },

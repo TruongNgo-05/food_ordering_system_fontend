@@ -22,7 +22,6 @@ const AdminBanners = () => {
 
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
-  const [openDelete, setOpenDelete] = useState(false);
 
   const [editingRecord, setEditingRecord] = useState(null);
 
@@ -104,15 +103,12 @@ const AdminBanners = () => {
   };
 
   // ================= DELETE =================
-  const handleDelete = async () => {
+  const handleDelete = async (id) => {
     try {
-      await bannerService.deleteBanner(editingRecord.id);
-
+      await bannerService.deleteBanner(id);
       message.success("Xóa thành công");
-      setOpenDelete(false);
-      setEditingRecord(null);
       fetchBanners();
-    } catch {
+    } catch (err) {
       message.error("Xóa thất bại");
     }
   };
@@ -195,10 +191,7 @@ const AdminBanners = () => {
             editForm.setFieldsValue(record);
             setOpenEdit(true);
           }}
-          onDelete={(record) => {
-            setEditingRecord(record);
-            setOpenDelete(true);
-          }}
+          onDelete={(id) => handleDelete(id)}
           onToggle={handleToggle}
         />
       </div>
@@ -228,17 +221,6 @@ const AdminBanners = () => {
         onSubmit={handleEdit}
         form={editForm}
       />
-
-      <Modal
-        title="Xác nhận xóa"
-        open={openDelete}
-        onCancel={() => setOpenDelete(false)}
-        onOk={handleDelete}
-        okText="Xóa"
-        okButtonProps={{ danger: true }}
-      >
-        <p>Bạn chắc chắn muốn xóa banner này?</p>
-      </Modal>
     </>
   );
 };

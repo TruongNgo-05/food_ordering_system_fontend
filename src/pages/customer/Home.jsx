@@ -9,22 +9,30 @@ import Banner from "../../components/customer/Banner";
 import CustomerChatWidget from "../../components/customer/CustomerChatWidget";
 import UserHeader from "../../components/user/UserHeader";
 import AppPagination from "../../components/common/AppPagination";
-import { getBanner, getCategories } from "../../services/userService";
-import {
-  loadSharedFoods,
-  SHARED_DATA_UPDATED_EVENT,
-} from "../../utils/sharedData";
+import { getBanner, getCategories, getFoods } from "../../services/userService";
 import { confirmLoginWithModal } from "../../utils/authGuards";
 import { useAuth } from "../../hooks/useAuth";
 import "../../assets/styles/CustomerHome.css";
 
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 
-/* ================= COMPONENT ================= */
 const Home = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
+
   const [banners, setBanners] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [activeCat, setActiveCat] = useState(0);
+
+  const [foods, setFoods] = useState([]);
+  const [totalFoods, setTotalFoods] = useState(0);
+  const [loadingFoods, setLoadingFoods] = useState(false);
+
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(0);
+  const pageSize = 10;
+
   const [cart, setCart] = useState(() => {
     const saved = localStorage.getItem("cart");
     return saved ? JSON.parse(saved) : [];
@@ -37,71 +45,102 @@ const Home = () => {
     const saved = localStorage.getItem("recently-viewed-foods");
     return saved ? JSON.parse(saved) : [];
   });
-  const [foods, setFoods] = useState(() => loadSharedFoods());
-  const [categories, setCategories] = useState([]);
-  const [activeCat, setActiveCat] = useState(0);
+
   const [greetingName, setGreetingName] = useState(
     () => localStorage.getItem("userFullName") || "Khách",
   );
-
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [page, setPage] = useState(0);
   const [showBackToTop, setShowBackToTop] = useState(false);
-  const pageSize = 10;
-  // categories
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await getCategories();
-        const list = res.data?.data?.content || [];
 
-        const mapped = [
-          {
-            id: 0,
-            name: "Tất cả",
-          },
-          ...list.map((c, index) => ({
-            id: c.id,
-            name: c.name,
-          })),
-        ];
-
-        setCategories(mapped);
-      } catch (err) {
-        console.error("Lỗi load categories:", err);
-      }
-    };
-
-    fetchCategories();
-  }, []);
-  /* ================= DEBOUNCE SEARCH ================= */
+  // ─── Fetch banners ───────────────────────────────────────────────
   useEffect(() => {
     const fetchBanners = async () => {
       try {
         const res = await getBanner();
-
         const mapped = (res.data.data || []).map((b) => ({
           id: b.id,
           title: b.title,
           desc: b.description,
           image: b.imageUrl,
         }));
-
         setBanners(mapped);
       } catch (err) {
         console.error("Lỗi load banner:", err);
       }
     };
-
     fetchBanners();
   }, []);
+
+  // ─── Fetch categories ────────────────────────────────────────────
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    const fetchCategories = async () => {
+      try {
+        const res = await getCategories();
+        const list = res.data?.data?.content || [];
+        setCategories([
+          { id: 0, name: "Tất cả" },
+          ...list.map((c) => ({ id: c.id, name: c.name })),
+        ]);
+      } catch (err) {
+        console.error("Lỗi load categories:", err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // ─── Debounce search ─────────────────────────────────────────────
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(0); // reset page khi search thay đổi
+    }, 300);
     return () => clearTimeout(t);
   }, [search]);
 
-  /* ================= PERSIST ================= */
+  // ─── Fetch foods (gọi lại khi page / category / search thay đổi) ─
+  // ─── Fetch foods ─────────────────────────────────────────────────
+  useEffect(() => {
+    const fetchFoods = async () => {
+      setLoadingFoods(true);
+      try {
+        const params = {
+          page,
+          size: pageSize,
+          ...(activeCat !== 0 && { categoryId: activeCat }),
+          ...(debouncedSearch && { name: debouncedSearch }), // ← "name" thay vì "keyword"
+        };
+
+        const res = await getFoods(params);
+        const data = res.data?.data; // res.data = { data: {...}, message: "..." }
+
+        const list = data?.content || [];
+        const total = data?.totalElements ?? 0;
+
+        const mapped = list.map((f) => ({
+          id: f.id,
+          name: f.name,
+          price: f.price,
+          image: f.image || null,
+          category_id: f.categoryId,
+          description: f.description,
+          rating: f.rating,
+          soldCount: f.soldCount,
+        }));
+
+        setFoods(mapped);
+        setTotalFoods(total);
+      } catch (err) {
+        console.error("Lỗi load foods:", err);
+        setFoods([]);
+        setTotalFoods(0);
+      } finally {
+        setLoadingFoods(false);
+      }
+    };
+
+    fetchFoods();
+  }, [page, activeCat, debouncedSearch]);
+
+  // ─── Persist cart & favorites ────────────────────────────────────
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
     window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
@@ -112,93 +151,58 @@ const Home = () => {
     window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
   }, [favorites]);
 
+  // ─── Sync recently viewed ────────────────────────────────────────
   useEffect(() => {
-    const syncRecentlyViewed = () => {
+    const sync = () => {
       const saved = localStorage.getItem("recently-viewed-foods");
       setRecentlyViewedIds(saved ? JSON.parse(saved) : []);
     };
-    syncRecentlyViewed();
-    window.addEventListener("focus", syncRecentlyViewed);
-    return () => window.removeEventListener("focus", syncRecentlyViewed);
+    sync();
+    window.addEventListener("focus", sync);
+    return () => window.removeEventListener("focus", sync);
   }, []);
 
+  // ─── Sync greeting name ──────────────────────────────────────────
   useEffect(() => {
-    const syncSharedData = () => {
-      setFoods(loadSharedFoods());
-    };
-    syncSharedData();
-    window.addEventListener("focus", syncSharedData);
-    window.addEventListener("storage", syncSharedData);
-    window.addEventListener(SHARED_DATA_UPDATED_EVENT, syncSharedData);
-    return () => {
-      window.removeEventListener("focus", syncSharedData);
-      window.removeEventListener("storage", syncSharedData);
-      window.removeEventListener(SHARED_DATA_UPDATED_EVENT, syncSharedData);
-    };
-  }, []);
-
-  useEffect(() => {
-    const syncGreetingName = () => {
+    const sync = () =>
       setGreetingName(localStorage.getItem("userFullName") || "Khách");
-    };
-    syncGreetingName();
-    window.addEventListener("focus", syncGreetingName);
-    window.addEventListener("storage", syncGreetingName);
+    sync();
+    window.addEventListener("focus", sync);
+    window.addEventListener("storage", sync);
     return () => {
-      window.removeEventListener("focus", syncGreetingName);
-      window.removeEventListener("storage", syncGreetingName);
+      window.removeEventListener("focus", sync);
+      window.removeEventListener("storage", sync);
     };
   }, []);
 
+  // ─── Back-to-top button ──────────────────────────────────────────
   useEffect(() => {
-    const onScroll = () => {
-      setShowBackToTop(window.scrollY > 280);
-    };
+    const onScroll = () => setShowBackToTop(window.scrollY > 280);
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const safeActiveCat = useMemo(
-    () => (categories.some((c) => c.id === activeCat) ? activeCat : 1),
-    [categories, activeCat],
-  );
-
-  /* ================= FILTER ================= */
-  const filtered = useMemo(() => {
-    return foods.filter(
-      (m) =>
-        (safeActiveCat === 0 || m.category_id === safeActiveCat) &&
-        m.name.toLowerCase().includes(debouncedSearch.toLowerCase()),
-    );
-  }, [foods, safeActiveCat, debouncedSearch]);
-  const maxPage = Math.max(0, Math.ceil(filtered.length / pageSize) - 1);
-  const currentPage = Math.min(page, maxPage);
-
-  const pagedItems = useMemo(() => {
-    const start = currentPage * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, currentPage]);
-
+  // ─── Recently viewed (dùng foods đã load) ───────────────────────
   const recentlyViewedItems = useMemo(() => {
-    if (!Array.isArray(recentlyViewedIds) || recentlyViewedIds.length === 0)
-      return [];
+    if (!recentlyViewedIds.length) return [];
     return recentlyViewedIds
       .map((id) => foods.find((m) => m.id === id))
       .filter(Boolean)
       .slice(0, 4);
   }, [recentlyViewedIds, foods]);
 
-  /* ================= CART MAP ================= */
-  const cartMap = useMemo(() => {
-    return Object.fromEntries(cart.map((c) => [c.item_id, c.qty]));
-  }, [cart]);
+  // ─── Cart map ────────────────────────────────────────────────────
+  const cartMap = useMemo(
+    () => Object.fromEntries(cart.map((c) => [c.item_id, c.qty])),
+    [cart],
+  );
 
   const requireLoginAction = useCallback(() => {
     confirmLoginWithModal(navigate);
   }, [navigate]);
 
-  /* ================= ADD CART ================= */
+  // ─── Add to cart ─────────────────────────────────────────────────
   const addToCart = useCallback(
     (item) => {
       if (!isLoggedIn) {
@@ -207,11 +211,10 @@ const Home = () => {
       }
       setCart((prev) => {
         const ex = prev.find((c) => c.item_id === item.id);
-        if (ex) {
+        if (ex)
           return prev.map((c) =>
             c.item_id === item.id ? { ...c, qty: c.qty + 1 } : c,
           );
-        }
         return [
           ...prev,
           {
@@ -227,7 +230,7 @@ const Home = () => {
     [isLoggedIn, requireLoginAction],
   );
 
-  /* ================= DEC CART ================= */
+  // ─── Dec cart ────────────────────────────────────────────────────
   const decCart = useCallback((item_id) => {
     setCart((prev) =>
       prev
@@ -236,7 +239,7 @@ const Home = () => {
     );
   }, []);
 
-  /* ================= FAVORITE ================= */
+  // ─── Toggle favorite ─────────────────────────────────────────────
   const toggleFav = useCallback(
     (id) => {
       if (!isLoggedIn) {
@@ -257,13 +260,12 @@ const Home = () => {
     window.scrollTo({ top: Math.max(0, bottom - 35), behavior: "smooth" });
   };
 
-  /* ================= UI ================= */
+  // ─── UI ──────────────────────────────────────────────────────────
   return (
     <div className="customer-home-page" style={{ background: T.bg }}>
       <Banner data={banners} onViewMenu={scrollToMenu} />
 
       <div id="customer-menu-header" className="customer-home-header-wrap">
-        {/* HEADER */}
         <UserHeader
           title="Thực đơn"
           description={`Xin chào ${greetingName} 👋`}
@@ -279,10 +281,7 @@ const Home = () => {
             >
               <input
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(0);
-                }}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Tìm món..."
                 style={{
                   width: "100%",
@@ -296,7 +295,7 @@ const Home = () => {
           }
         />
 
-        {/* CATEGORY */}
+        {/* Categories */}
         <div
           style={{
             display: "flex",
@@ -317,11 +316,11 @@ const Home = () => {
                 padding: "8px 16px",
                 borderRadius: 8,
                 border:
-                  safeActiveCat === cat.id
+                  activeCat === cat.id
                     ? `1px solid ${T.primary}`
                     : `1px solid ${T.border}`,
-                background: safeActiveCat === cat.id ? T.primary : T.card,
-                color: safeActiveCat === cat.id ? "#fff" : T.text,
+                background: activeCat === cat.id ? T.primary : T.card,
+                color: activeCat === cat.id ? "#fff" : T.text,
                 cursor: "pointer",
                 transition: "0.2s",
                 whiteSpace: "nowrap",
@@ -333,7 +332,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* LIST */}
+      {/* Menu list */}
       <div id="customer-menu-section" className="customer-home-content-wrap">
         {recentlyViewedItems.length > 0 && (
           <div className="customer-home-recent-section">
@@ -359,11 +358,15 @@ const Home = () => {
           </div>
         )}
 
-        {filtered.length === 0 ? (
+        {loadingFoods ? (
+          <div style={{ textAlign: "center", padding: 40, color: T.textSub }}>
+            Đang tải...
+          </div>
+        ) : foods.length === 0 ? (
           <EmptyState title="Không có món" desc="Thử lại nhé" />
         ) : (
           <div className="customer-home-menu-grid">
-            {pagedItems.map((item) => (
+            {foods.map((item) => (
               <MenuItemCard
                 key={item.id}
                 item={item}
@@ -378,20 +381,22 @@ const Home = () => {
           </div>
         )}
 
-        {filtered.length > 0 && (
+        {totalFoods > 0 && (
           <div
             style={{ marginTop: 18, display: "flex", justifyContent: "center" }}
           >
             <AppPagination
-              page={currentPage}
+              page={page}
               size={pageSize}
-              total={filtered.length}
+              total={totalFoods}
               onChange={(newPage) => setPage(newPage)}
             />
           </div>
         )}
       </div>
+
       <CustomerChatWidget />
+
       {showBackToTop && (
         <button
           type="button"
