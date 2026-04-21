@@ -1,0 +1,10 @@
+.customer-detail-page {
+  overflow-y: auto;
+  height: 100%;
+}
+
+.customer-detail-container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 36px;
+}

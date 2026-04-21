@@ -1,0 +1,424 @@
+.login-wrapper {
+  font-family: "Inter", sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(79, 70, 229, 0.12), transparent 34%),
+    radial-gradient(circle at 85% 78%, rgba(2, 6, 23, 0.06), transparent 30%),
+    linear-gradient(135deg, var(--bg), #eef2ff);
+  padding: 20px;
+}
+
+.login-container {
+  width: 1040px;
+  max-width: 100%;
+  min-height: 640px;
+  display: flex;
+  border-radius: 26px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: 0 30px 60px rgba(2, 6, 23, 0.18);
+  border: 1px solid var(--border);
+}
+
+.login-box {
+  flex: 1;
+  padding: 46px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.back-customer-link {
+  text-align: left;
+  margin-bottom: 8px;
+}
+
+.back-customer-link a {
+  color: var(--muted-2);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.back-customer-link a:hover {
+  color: var(--primary-600);
+}
+
+.logo {
+  width: 86px;
+  margin-bottom: 16px;
+}
+
+.login-header h1 {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+}
+
+.login-header p {
+  color: var(--muted-2);
+  margin-top: 7px;
+  font-size: 14px;
+}
+
+.login-form {
+  flex: 1;
+}
+
+.login-form .ant-form-item {
+  margin-bottom: 18px;
+}
+
+.login-form .ant-form-item-label > label {
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.login-form .ant-input,
+.login-form .ant-input-affix-wrapper {
+  height: 50px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+.login-form .ant-input {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.login-form .ant-input:hover,
+.login-form .ant-input-affix-wrapper:hover {
+  border-color: var(--border-2);
+}
+
+.login-form .ant-input:focus,
+.login-form .ant-input-affix-wrapper-focused {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.14);
+}
+
+.login-form .ant-input-affix-wrapper input {
+  border: none;
+  background: transparent;
+  height: 100%;
+  outline: none;
+  box-shadow: none;
+}
+
+.ant-input::placeholder {
+  color: rgba(100, 116, 139, 0.85);
+}
+
+.ant-input-affix-wrapper input::placeholder {
+  color: rgba(100, 116, 139, 0.85);
+}
+
+.login-form .ant-input-prefix {
+  margin-right: 10px;
+  color: var(--muted-2);
+  display: flex;
+  align-items: center;
+}
+
+.login-form .ant-input-prefix .anticon,
+.login-form .ant-input-prefix svg {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.login-form .ant-input-password-icon {
+  color: var(--muted-2);
+  transition: 0.3s;
+}
+
+.login-form .ant-input-password-icon:hover {
+  color: var(--primary-600);
+}
+
+.login-form .ant-form-item-explain-error {
+  font-size: 13px;
+}
+
+.form-options {
+  display: flex;
+  justify-content: flex-end;
+  margin: 2px 0 14px;
+}
+
+.forgot-password,
+.forgot-password:link,
+.forgot-password:visited {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primary-600);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.forgot-password:hover {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.login-form .ant-btn-primary {
+  height: 50px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-600));
+  border: none;
+  font-weight: 700;
+  font-size: 16px;
+  transition: 0.3s;
+  margin-top: 6px;
+}
+
+.login-form .ant-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(79, 70, 229, 0.22);
+  filter: brightness(1.03);
+}
+
+.social-divider {
+  margin: 14px 0 10px;
+  text-align: center;
+  position: relative;
+}
+
+.social-divider span {
+  display: inline-block;
+  padding: 0 10px;
+  color: var(--muted-2);
+  font-size: 13px;
+  background: var(--surface);
+  position: relative;
+  z-index: 2;
+}
+
+.social-divider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px solid var(--border);
+  z-index: 1;
+}
+
+.social-login-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.social-login-btn {
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.social-login-btn:hover {
+  transform: translateY(-1px);
+}
+
+.social-login-btn.google:hover {
+  border-color: #ef4444;
+  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.15);
+}
+
+.social-login-btn.facebook:hover {
+  border-color: #1877f2;
+  box-shadow: 0 8px 18px rgba(24, 119, 242, 0.15);
+}
+
+.social-login-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.social-login-btn.google .social-login-icon {
+  background: #ef4444;
+}
+
+.social-login-btn.facebook .social-login-icon {
+  background: #1877f2;
+  text-transform: lowercase;
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--muted-2);
+}
+
+.info-side {
+  width: 380px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-600));
+  padding: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.info-side::before {
+  content: "";
+  position: absolute;
+  top: -50px;
+  left: -50px;
+  width: 200px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.info-side::after {
+  content: "";
+  position: absolute;
+  bottom: -80px;
+  right: -80px;
+  width: 300px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+}
+
+.info-content {
+  text-align: center;
+  z-index: 1;
+}
+
+.info-content h2 {
+  font-size: 30px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.info-content p {
+  color: rgba(255, 255, 255, 0.93);
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .login-container {
+    flex-direction: column;
+    max-width: 480px;
+  }
+
+  .info-side {
+    width: 100%;
+    min-height: 180px;
+  }
+}
+
+@media (max-width: 500px) {
+  .login-box {
+    padding: 32px 24px;
+  }
+
+  .info-side {
+    padding: 32px 24px;
+  }
+
+  .login-header h1 {
+    font-size: 24px;
+  }
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 12px;
+  color: var(--muted-2);
+  font-size: 14px;
+}
+
+.auth-switch a {
+  color: var(--primary-600);
+  font-weight: 700;
+}
+
+.restaurant-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(79, 70, 229, 0.1);
+  color: var(--primary-600);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.restaurant-tag::before {
+  content: "🍽️";
+}
+
+.forgot-modal .ant-modal-content {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.forgot-modal .ant-modal-header {
+  padding-bottom: 8px;
+}
+
+.forgot-modal .ant-modal-title {
+  color: var(--text);
+  font-weight: 800;
+}
+
+.forgot-modal .ant-btn-primary {
+  height: 48px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  font-size: 15px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-600));
+  transition: all 0.25s ease;
+}
+
+.forgot-modal .ant-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+  filter: brightness(1.03);
+}

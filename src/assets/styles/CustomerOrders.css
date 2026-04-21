@@ -1,0 +1,10 @@
+.customer-orders-page {
+  overflow-y: auto;
+  height: 100%;
+}
+
+.customer-orders-container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 36px;
+}

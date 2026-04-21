@@ -1,0 +1,71 @@
+.table-qr-page {
+  min-height: 100%;
+}
+
+.table-qr-container {
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.table-qr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.table-qr-card {
+  background: var(--card, #fff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 0.9rem;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.table-qr-title {
+  margin: 0 0 0.55rem;
+  font-weight: 900;
+  color: var(--text, #0f172a);
+}
+
+.table-qr-image {
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 0.6rem;
+  border: 1px solid var(--border, #e2e8f0);
+}
+
+.table-qr-link {
+  margin: 0.55rem 0 0.75rem;
+  font-size: 0.72rem;
+  color: var(--muted, #64748b);
+  text-align: center;
+  word-break: break-all;
+}
+
+.table-qr-actions {
+  display: flex;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.table-qr-actions button {
+  flex: 1;
+  border: none;
+  border-radius: 0.55rem;
+  background: var(--primary, #4f46e5);
+  color: #fff;
+  padding: 0.5rem 0.65rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.table-qr-actions .ghost {
+  background: var(--surface, #fff);
+  color: var(--primary, #4f46e5);
+  border: 1px solid var(--primary, #4f46e5);
+}

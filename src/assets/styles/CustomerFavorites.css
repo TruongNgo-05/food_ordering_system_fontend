@@ -1,0 +1,17 @@
+.customer-favorites-page {
+  overflow-y: auto;
+  height: 100%;
+}
+
+.customer-favorites-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 36px;
+}
+
+.customer-favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 280px));
+  gap: 18px;
+  justify-content: center;
+}
