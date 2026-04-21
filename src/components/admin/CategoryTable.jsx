@@ -5,12 +5,12 @@ import TableActions from "../common/TableActions";
 const CategoryTable = ({ data, loading, onEdit, onDelete }) => {
   const columns = [
     {
-      title: "Tên danh mục",
-      dataIndex: "name",
+      title: "Mã danh mục",
+      dataIndex: "id",
     },
     {
-      title: "Mô tả",
-      dataIndex: "desc",
+      title: "Tên danh mục",
+      dataIndex: "name",
     },
     {
       title: "Thao tác",

@@ -11,14 +11,6 @@ const CategoryUpdateModal = ({ open, onCancel, onSubmit, form }) => {
         >
           <Input />
         </Form.Item>
-
-        <Form.Item
-          name="desc"
-          label="Mô tả"
-          rules={[{ required: true, message: "Nhập mô tả" }]}
-        >
-          <Input />
-        </Form.Item>
       </Form>
     </Modal>
   );

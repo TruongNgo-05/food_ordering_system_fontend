@@ -50,7 +50,6 @@ const AdminCategories = () => {
       const mapped = content.map((c) => ({
         id: c.id,
         name: c.name,
-        desc: c.description || `Danh mục ${c.name}`,
       }));
 
       setItems(mapped);
@@ -88,7 +87,6 @@ const AdminCategories = () => {
 
       await adminCategoriesService.updateCategories(editingRecord.id, {
         name: values.name,
-        description: values.desc,
       });
 
       message.success("Cập nhật thành công");

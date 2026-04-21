@@ -13,7 +13,20 @@ export const getCurrentUserApi = () => {
 export const updateProfileApi = (data) => {
   return api.put("/v1/users/me", data);
 };
+export const uploadAvatarApi = (id, file) => {
+  const formData = new FormData();
+  formData.append("file", file);
 
+  return axios.post(
+    `http://localhost:8080/api/v1/users/upload-avatar/${id}`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    },
+  );
+};
 /**
  * Đổi mật khẩu
  * POST /api/users/change-password
@@ -35,9 +48,9 @@ export const getCategories = (params) => {
 };
 
 export const getFoods = (params) => {
-  return api.get("/v1/users/food", { params });
+  return api.get("/v1/users/foods", { params });
 };
 
 export const getFoodById = (id) => {
-  return api.get(`/v1/users/food/${id}`);
+  return api.get(`/v1/users/foods/${id}`);
 };

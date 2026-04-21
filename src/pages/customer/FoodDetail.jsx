@@ -16,7 +16,7 @@ import "../../assets/styles/CustomerDetail.css";
 
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 
-const Detail = () => {
+const FoodDetail = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   const { id } = useParams();
@@ -945,4 +945,4 @@ const Detail = () => {
   );
 };
 
-export default Detail;
+export default FoodDetail;

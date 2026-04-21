@@ -2,25 +2,25 @@
 
 Ứng dụng web đặt hàng thực phẩm hiện đại với giao diện khách hàng và bảng điều khiển quản trị viên.
 
-## ✨ Tính Năng Chính
+## Tính Năng Chính
 
 ### Khách Hàng
 
-- 📱 Duyệt menu thực phẩm
-- 🛒 Quản lý giỏ hàng
-- 📦 Theo dõi đơn hàng
-- ❤️ Lưu yêu thích
-- 🪑 Đặt bàn tại nhà hàng
-- 💬 Chat hỗ trợ trực tiếp
+- Duyệt menu thực phẩm
+- Quản lý giỏ hàng
+- Theo dõi đơn hàng
+- Lưu yêu thích
+- Đặt bàn tại nhà hàng
+- Chat hỗ trợ trực tiếp
 
 ### Quản Trị Viên
 
-- 📊 Bảng điều khiển thống kê
-- 👥 Quản lý người dùng
-- 🍔 Quản lý menu thực phẩm
-- 📋 Quản lý đơn hàng
-- 🎟️ Quản lý voucher
-- ⭐ Xem đánh giá khách hàng
+- Bảng điều khiển thống kê
+- Quản lý người dùng
+- Quản lý menu thực phẩm
+- Quản lý đơn hàng
+- Quản lý voucher
+- Xem đánh giá khách hàng
 
 ## 🛠️ Công Nghệ
 
@@ -33,7 +33,7 @@
 | Axios        | 1.13.6    |
 | Bootstrap    | 5.3.8     |
 
-## 🚀 Cài Đặt Nhanh
+## Cài Đặt Nhanh
 
 ### Yêu Cầu
 
@@ -59,7 +59,6 @@
 
    ```env
    VITE_API_URL=http://localhost:8000/api
-   VITE_GOOGLE_CLIENT_ID=101891197501-b8sp0vq7f264d8st9k019i7jlrm88rhq.apps.googleusercontent.com
    ```
 
 4. **Khởi chạy**
@@ -68,7 +67,7 @@
    ```
    Truy cập: `http://localhost:5173`
 
-## 📋 Lệnh Chính
+## Lệnh Chính
 
 ```bash
 npm run dev      # Chế độ phát triển (hot reload)
@@ -77,28 +76,21 @@ npm run preview  # Xem trước bản build
 npm run lint     # Kiểm tra code
 ```
 
-## 🔐 Xác Thực
+## Xác Thực
 
 - **JWT Token**: Đăng nhập với email/password
 - **Google OAuth**: Đăng nhập bằng Google
 - **Role-based**: Kiểm soát truy cập Admin/Customer
 
-## 🎨 Giao Diện
-
-- ✅ Responsive (desktop, tablet, mobile)
-- ✅ UI professional với Ant Design
-- ✅ Dark/Light theme support
-- ✅ Thông báo real-time
-
-## 📱 Responsive Design
+## Responsive Design
 
 Ứng dụng hoạt động tốt trên:
 
-- 💻 Desktop
-- 📱 Mobile
-- 📲 Tablet
+- Desktop
+- Mobile
+- Tablet
 
-## 🚢 Triển Khai
+## Triển Khai
 
 - Cấu hình sẵn cho **Vercel**
 - Build: `npm run build`
@@ -108,3 +100,4 @@ npm run lint     # Kiểm tra code
 
 **Phiên bản**: 1.0.0  
 **Cập nhật**: Tháng 4, 2026
+**Design by**: Ngo Quang Truong

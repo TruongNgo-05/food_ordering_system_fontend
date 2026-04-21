@@ -5,6 +5,7 @@ import { AuthContext } from "../../../context/authContext";
 import {
   getCurrentUserApi,
   updateProfileApi,
+  uploadAvatarApi,
 } from "../../../services/userService";
 
 const fileToDataUrl = (file) =>
@@ -35,8 +36,6 @@ const Capnhatthongtin = ({
       loadCurrentUser();
     }
   }, [open]);
-
-  //  Lấy user hiện tại
   const loadCurrentUser = async () => {
     try {
       const res = await getCurrentUserApi();
@@ -88,27 +87,34 @@ const Capnhatthongtin = ({
 
   const onUploadAvatar = async (event) => {
     const file = event.target.files?.[0];
-
     if (!file) return;
 
-    // Giới hạn 10MB
+    // check size
     if (file.size > 10 * 1024 * 1024) {
-      alert("Ảnh phải nhỏ hơn 10MB");
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      message.error("Ảnh phải nhỏ hơn 10MB");
       return;
     }
 
     try {
-      const dataUrl = await fileToDataUrl(file);
-      setAvatarPreview(dataUrl);
-      // Reset input để có thể upload lại file cùng tên
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      setLoading(true);
+
+      // gọi backend upload
+      const userRes = await getCurrentUserApi();
+      const userId = userRes.data.data.id;
+
+      const res = await uploadAvatarApi(userId, file);
+
+      const avatarUrl = res.data; // backend trả string URL
+
+      setAvatarPreview(avatarUrl);
+
+      message.success("Upload avatar thành công!");
     } catch (error) {
       console.error(error);
+      message.error("Upload thất bại");
+    } finally {
+      setLoading(false);
+
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }

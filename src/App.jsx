@@ -23,10 +23,11 @@ import CustomerCart from "./pages/customer/Cart";
 import CustomerOrders from "./pages/customer/Orders";
 import CustomerFavorites from "./pages/customer/Favorites";
 import CustomerSupport from "./pages/customer/Support";
-import CustomerDetail from "./pages/customer/Detail";
+import CustomerFoodDetail from "./pages/customer/FoodDetail";
 import CustomerTableOrder from "./pages/customer/TableOrder";
 import CustomerTableQrSamples from "./pages/customer/TableQrSamples";
 import CustomerLayout from "./layouts/customer/UserLayout";
+import FoodDetail from "./pages/customer/FoodDetail";
 
 const App = () => {
   return (
@@ -62,7 +63,7 @@ const App = () => {
         {/* Customer routes (public) */}
         <Route path="/customer" element={<CustomerLayout />}>
           <Route index element={<CustomerHome />} />
-          <Route path="foods/:id" element={<CustomerDetail />} />
+          <Route path="foods/:id" element={<FoodDetail />} />
           <Route path="carts" element={<CustomerCart />} />
           <Route path="orders" element={<CustomerOrders />} />
           <Route path="favorites" element={<CustomerFavorites />} />
