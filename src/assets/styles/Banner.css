@@ -23,17 +23,6 @@
   );
 }
 
-.banner-glow {
-  position: absolute;
-  width: 460px;
-  height: 460px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(79, 70, 229, 0.22), transparent 68%);
-  right: -120px;
-  top: -110px;
-  pointer-events: none;
-}
-
 .banner-content {
   position: relative;
   z-index: 1;
@@ -87,6 +76,8 @@
   margin: 0 0 10px;
   font-size: clamp(32px, 5vw, 54px);
   line-height: 1.1;
+  color: #abbee2;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.6);
 }
 
 .banner-content p {
