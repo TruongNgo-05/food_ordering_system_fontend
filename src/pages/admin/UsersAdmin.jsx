@@ -81,7 +81,8 @@ const AdminUsers = () => {
         confirmPassword: values.confirmPassword,
         role: values.role,
       };
-      await adminUserService.createUser(payload);
+      console.log("=== values từ form:", values); // ← xem form trả gì
+      console.log("=== payload gửi lên:", payload);
       message.success("Thêm user thành công");
       setOpenAdd(false);
       addForm.resetFields();

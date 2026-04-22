@@ -4,6 +4,8 @@ const adminUserService = {
 
   getUserById: (id) => api.get(`/admin/users/${id}`),
 
+  createUser: (data) => api.post("/users", data),
+
   updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
 
   deleteUser: (id) => api.delete(`/admin/users/${id}`),

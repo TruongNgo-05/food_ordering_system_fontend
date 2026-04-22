@@ -110,7 +110,7 @@ const Home = () => {
         };
 
         const res = await getFoods(params);
-        const data = res.data?.data; // res.data = { data: {...}, message: "..." }
+        const data = res.data?.data;
 
         const list = data?.content || [];
         const total = data?.totalElements ?? 0;
@@ -121,7 +121,7 @@ const Home = () => {
           price: f.price,
           image: f.image || null,
           category_id: f.categoryId,
-          description: f.description,
+          description: f.description ?? "",
           rating: f.rating,
           soldCount: f.soldCount,
         }));
@@ -203,28 +203,25 @@ const Home = () => {
   }, [navigate]);
 
   // ─── Add to cart ─────────────────────────────────────────────────
-  const addToCart = useCallback(
-    (item) => {
-      setCart((prev) => {
-        const ex = prev.find((c) => c.item_id === item.id);
-        if (ex)
-          return prev.map((c) =>
-            c.item_id === item.id ? { ...c, qty: c.qty + 1 } : c,
-          );
-        return [
-          ...prev,
-          {
-            item_id: item.id,
-            name: item.name,
-            price: item.price,
-            image: item.image,
-            qty: 1,
-          },
-        ];
-      });
-    },
-    [],
-  );
+  const addToCart = useCallback((item) => {
+    setCart((prev) => {
+      const ex = prev.find((c) => c.item_id === item.id);
+      if (ex)
+        return prev.map((c) =>
+          c.item_id === item.id ? { ...c, qty: c.qty + 1 } : c,
+        );
+      return [
+        ...prev,
+        {
+          item_id: item.id,
+          name: item.name,
+          price: item.price,
+          image: item.image,
+          qty: 1,
+        },
+      ];
+    });
+  }, []);
 
   // ─── Dec cart ────────────────────────────────────────────────────
   const decCart = useCallback((item_id) => {

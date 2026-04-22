@@ -5,14 +5,14 @@ import { mockFoodReviews } from "../../data/mockFoodReviews";
 import { EmptyState, SectionTitle } from "../../components/customer/SharedUI";
 import MenuItemCard from "../../components/customer/MenuItemCard";
 import FoodImage from "../../components/common/FoodImage";
-import {
-  loadSharedCategories,
-  loadSharedFoods,
-  SHARED_DATA_UPDATED_EVENT,
-} from "../../utils/sharedData";
 import { confirmLoginWithModal } from "../../utils/authGuards";
 import { useAuth } from "../../hooks/useAuth";
 import "../../assets/styles/CustomerDetail.css";
+import {
+  getFoodByIdDetail,
+  getFoods,
+  getCategories,
+} from "../../services/userService";
 
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 
@@ -21,17 +21,51 @@ const FoodDetail = () => {
   const { isLoggedIn } = useAuth();
   const { id } = useParams();
   const itemId = Number(id);
-  const [foods, setFoods] = useState(() => loadSharedFoods());
-  const [categories, setCategories] = useState(() => loadSharedCategories());
+  const [item, setItem] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [foods, setFoods] = useState([]);
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await getCategories();
 
-  const item = useMemo(() => {
-    return foods.find((m) => m.id === itemId) || null;
-  }, [foods, itemId]);
+        const list = res?.data?.data?.content || [];
+        setCategories(list);
+      } catch (err) {
+        console.error("Lỗi load categories:", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+  useEffect(() => {
+    const fetchFoodDetail = async () => {
+      try {
+        setLoading(true);
+        const res = await getFoodByIdDetail(id);
+        setItem(res.data.data);
+      } catch (err) {
+        console.error("Lỗi load chi tiết món:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) fetchFoodDetail();
+  }, [id]);
   const galleryImages = useMemo(() => {
     if (!item) return [];
-    const images = Array.isArray(item.images) ? item.images : [];
-    const merged = [item.image, ...images].filter(Boolean);
-    return [...new Set(merged)];
+
+    const BASE_URL = "http://localhost:8080/uploads/";
+
+    const images = Array.isArray(item.images)
+      ? item.images.map((img) => BASE_URL + img)
+      : [];
+
+    const main = item.image ? BASE_URL + item.image : null;
+
+    return [...new Set([main, ...images].filter(Boolean))];
   }, [item]);
 
   const [cart, setCart] = useState(() => {
@@ -59,21 +93,17 @@ const FoodDetail = () => {
   }, [favorites]);
 
   useEffect(() => {
-    const syncSharedData = () => {
-      setFoods(loadSharedFoods());
-      setCategories(loadSharedCategories());
+    const fetchFoods = async () => {
+      try {
+        const res = await getFoods();
+        setFoods(res.data || []);
+      } catch (err) {
+        console.error("Lỗi load foods:", err);
+      }
     };
-    syncSharedData();
-    window.addEventListener("focus", syncSharedData);
-    window.addEventListener("storage", syncSharedData);
-    window.addEventListener(SHARED_DATA_UPDATED_EVENT, syncSharedData);
-    return () => {
-      window.removeEventListener("focus", syncSharedData);
-      window.removeEventListener("storage", syncSharedData);
-      window.removeEventListener(SHARED_DATA_UPDATED_EVENT, syncSharedData);
-    };
-  }, []);
 
+    fetchFoods();
+  }, []);
   useEffect(() => {
     if (!item) return;
     const saved = localStorage.getItem("recently-viewed-foods");
@@ -90,8 +120,9 @@ const FoodDetail = () => {
   const requireLoginAction = () => {
     confirmLoginWithModal(navigate);
   };
-
-  const displayImage = activeImage || galleryImages[0] || item?.image || "";
+  const BASE_URL = "http://localhost:8080/uploads/";
+  const displayImage =
+    activeImage || (item?.image ? BASE_URL + item.image : "");
 
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState("");
@@ -108,13 +139,26 @@ const FoodDetail = () => {
       return "Bạn";
     }
   }, []);
+  const [related, setRelated] = useState([]);
 
-  const related = useMemo(() => {
-    if (!item) return [];
-    return foods
-      .filter((m) => m.category_id === item.category_id && m.id !== item.id)
-      .slice(0, 4);
-  }, [foods, item]);
+  useEffect(() => {
+    const fetchRelated = async () => {
+      try {
+        const res = await getFoods();
+        const list = res.data || [];
+
+        const filtered = list
+          .filter((f) => f.category === item.category && f.id !== item.id)
+          .slice(0, 4);
+
+        setRelated(filtered);
+      } catch (err) {
+        console.error("Lỗi load related:", err);
+      }
+    };
+
+    if (item) fetchRelated();
+  }, [item]);
   const [customReviews, setCustomReviews] = useState(() => {
     const saved = localStorage.getItem("food-reviews");
     return saved ? JSON.parse(saved) : {};
@@ -396,7 +440,7 @@ const FoodDetail = () => {
                   borderRadius: 99,
                 }}
               >
-                {categories.find((c) => c.id === item.category_id)?.name}
+                {item.category}
               </span>
               <button
                 onClick={() => toggleFav(item.id)}
@@ -431,7 +475,8 @@ const FoodDetail = () => {
                 ⭐ <strong style={{ color: T.text }}>{avgReview}</strong>
               </span>
               <span style={{ fontSize: 14, color: T.sub }}>
-                🔥 <strong style={{ color: T.text }}>{item.sold}</strong> đã bán
+                🔥 <strong style={{ color: T.text }}>{item.soldCount}</strong>{" "}
+                đã bán
               </span>
               <span style={{ fontSize: 14, color: T.sub }}>
                 💬 <strong style={{ color: T.text }}>{reviews.length}</strong>{" "}
@@ -448,7 +493,7 @@ const FoodDetail = () => {
                 margin: "0 0 24px",
               }}
             >
-              {item.desc}
+              {item.description}
             </p>
 
             {/* Quantity */}

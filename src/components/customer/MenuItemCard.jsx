@@ -129,7 +129,9 @@ export default function MenuItemCard({
             {item.rating}
           </span>
           <span style={{ color: T.border }}>·</span>
-          <span style={{ fontSize: 12, color: T.sub }}>{item.sold} bán</span>
+          <span style={{ fontSize: 12, color: T.sub }}>
+            {item.soldCount ?? 0} Đã bán
+          </span>
         </div>
         <div
           style={{
@@ -139,7 +141,13 @@ export default function MenuItemCard({
             marginBottom: 10,
           }}
         >
-          <span style={{ fontWeight: 800, color: T.primary, fontSize: compact ? 16 : 18 }}>
+          <span
+            style={{
+              fontWeight: 800,
+              color: T.primary,
+              fontSize: compact ? 16 : 18,
+            }}
+          >
             {fmt(item.price)}
           </span>
           {inCart > 0 && (

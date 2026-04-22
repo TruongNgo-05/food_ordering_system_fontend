@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { loginApi } from "../services/authService";
 import { AuthContext } from "./authContext";
-import { getCurrentUserApi } from "../services/userService"; // ✅ thêm import
+import { getCurrentUserApi } from "../services/userService";
 
 const getFullName = (u) => {
   if (!u) return "";
