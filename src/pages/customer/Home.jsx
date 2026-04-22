@@ -96,8 +96,6 @@ const Home = () => {
     return () => clearTimeout(t);
   }, [search]);
 
-  // ─── Fetch foods (gọi lại khi page / category / search thay đổi) ─
-  // ─── Fetch foods ─────────────────────────────────────────────────
   useEffect(() => {
     const fetchFoods = async () => {
       setLoadingFoods(true);
@@ -106,7 +104,7 @@ const Home = () => {
           page,
           size: pageSize,
           ...(activeCat !== 0 && { categoryId: activeCat }),
-          ...(debouncedSearch && { name: debouncedSearch }), // ← "name" thay vì "keyword"
+          ...(debouncedSearch && { name: debouncedSearch }),
         };
 
         const res = await getFoods(params);
@@ -253,7 +251,6 @@ const Home = () => {
     window.scrollTo({ top: Math.max(0, bottom - 35), behavior: "smooth" });
   };
 
-  // ─── UI ──────────────────────────────────────────────────────────
   return (
     <div className="customer-home-page" style={{ background: T.bg }}>
       <Banner data={banners} onViewMenu={scrollToMenu} />
@@ -264,59 +261,37 @@ const Home = () => {
           description={`Xin chào ${greetingName} 👋`}
           extra={
             <div
-              style={{
-                background: T.card,
-                border: `1px solid ${T.border}`,
-                borderRadius: 12,
-                padding: "10px 12px",
-                width: 260,
-              }}
+              className="customer-search-box"
+              style={{ background: T.card, border: `1px solid ${T.border}` }}
             >
               <input
+                className="customer-search-input"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Tìm món..."
-                style={{
-                  width: "100%",
-                  border: "none",
-                  outline: "none",
-                  background: "transparent",
-                  color: T.text,
-                }}
+                style={{ color: T.text }}
               />
             </div>
           }
         />
 
         {/* Categories */}
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            overflowX: "auto",
-            paddingBottom: 8,
-            WebkitOverflowScrolling: "touch",
-          }}
-        >
+        <div className="customer-category-list">
           {categories.map((cat) => (
             <button
-              key={cat.id}
+              key={`cat-${cat.id}`}
+              className="customer-category-btn"
               onClick={() => {
                 setActiveCat(cat.id);
                 setPage(0);
               }}
               style={{
-                padding: "8px 16px",
-                borderRadius: 8,
                 border:
                   activeCat === cat.id
                     ? `1px solid ${T.primary}`
                     : `1px solid ${T.border}`,
                 background: activeCat === cat.id ? T.primary : T.card,
                 color: activeCat === cat.id ? "#fff" : T.text,
-                cursor: "pointer",
-                transition: "0.2s",
-                whiteSpace: "nowrap",
               }}
             >
               {cat.icon} {cat.name}
@@ -352,7 +327,7 @@ const Home = () => {
         )}
 
         {loadingFoods ? (
-          <div style={{ textAlign: "center", padding: 40, color: T.textSub }}>
+          <div className="customer-loading" style={{ color: T.textSub }}>
             Đang tải...
           </div>
         ) : foods.length === 0 ? (

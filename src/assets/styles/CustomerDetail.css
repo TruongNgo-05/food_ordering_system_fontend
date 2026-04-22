@@ -1,10 +1,454 @@
-.customer-detail-page {
-  overflow-y: auto;
-  height: 100%;
-}
-
 .customer-detail-container {
-  max-width: 860px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 36px;
+}
+.fd-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  padding: 0;
+}
+
+/* Main card grid */
+.fd-main-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+  border-radius: 24px;
+  border-width: 1px;
+  border-style: solid;
+  overflow: hidden;
+}
+
+/* Image panel */
+.fd-image-panel {
+  position: relative;
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+}
+
+.fd-image-main {
+  width: 100%;
+  min-height: 290px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Thumbnail strip */
+.fd-thumb-strip {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fd-thumb-btn {
+  border-radius: 10px;
+  padding: 0;
+  background: #fff;
+  cursor: pointer;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+}
+
+/* Info panel */
+.fd-info-panel {
+  padding: 36px 36px 36px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.fd-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.fd-category-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 99px;
+}
+
+.fd-fav-btn {
+  border: none;
+  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.fd-item-title {
+  margin: 10px 0 8px;
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.fd-stats-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.fd-stats-row span {
+  font-size: 14px;
+}
+
+.fd-description {
+  font-size: 14px;
+  line-height: 1.8;
+  flex: 1;
+  margin: 0 0 24px;
+}
+
+/* Quantity control */
+.fd-qty-box {
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fd-qty-label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.fd-qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.fd-qty-dec {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border-width: 1.5px;
+  border-style: solid;
+  background: #fff;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.fd-qty-value {
+  font-weight: 900;
+  font-size: 20px;
+  min-width: 28px;
+  text-align: center;
+}
+
+.fd-qty-inc {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Price + Add to cart row */
+.fd-action-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.fd-price-label {
+  margin: 0 0 2px;
+  font-size: 12px;
+}
+
+.fd-price-total {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.fd-add-btn {
+  flex: 1;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+}
+
+.fd-in-cart-msg {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Toggle reviews button */
+.fd-toggle-reviews-btn {
+  border-width: 1px;
+  border-style: solid;
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 36px;
+}
+
+/* Reviews section */
+.fd-reviews-section {
+  margin-top: 16px;
+}
+
+/* Write review box */
+.fd-write-review-box {
+  border-radius: 18px;
+  border-width: 1px;
+  border-style: solid;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.fd-write-review-title {
+  margin: 0 0 10px;
+  font-weight: 800;
+}
+
+.fd-own-review-notice {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-radius: 10px;
+  border-width: 1px;
+  border-style: solid;
+  padding: 8px 10px;
+}
+
+.fd-own-review-notice span {
+  font-size: 12px;
+}
+
+.fd-own-review-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.fd-own-review-edit-btn {
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.fd-own-review-delete-btn {
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+/* Star rating row */
+.fd-star-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.fd-star-btn {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  padding: 0;
+}
+
+/* Comment input row */
+.fd-comment-row {
+  display: flex;
+  gap: 8px;
+}
+
+.fd-comment-input {
+  flex: 1;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.fd-comment-submit-btn {
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 700;
+  padding: 0 16px;
+}
+
+/* Review summary box */
+.fd-review-summary-box {
+  border-radius: 18px;
+  border-width: 1px;
+  border-style: solid;
+  padding: 18px;
+  margin-bottom: 14px;
+}
+
+.fd-avg-score {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 900;
+}
+
+.fd-avg-stars {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.fd-star-display {
+  margin: 0 0 4px;
+  color: #f59e0b;
+  font-size: 16px;
+}
+
+.fd-review-count {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* Sort buttons */
+.fd-sort-row {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.fd-sort-btn {
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Empty reviews */
+.fd-no-reviews {
+  background: #fff;
+  border-width: 1px;
+  border-style: dashed;
+  border-radius: 14px;
+  padding: 14px;
+  font-size: 14px;
+}
+
+/* Review list */
+.fd-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Single review card */
+.fd-review-card {
+  background: #fff;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.fd-review-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.fd-review-user {
+  margin: 0;
+  font-weight: 800;
+}
+
+.fd-review-date {
+  font-size: 12px;
+}
+
+.fd-review-stars {
+  margin: 0 0 6px;
+  color: #f59e0b;
+  font-size: 13px;
+}
+
+.fd-review-comment {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.fd-review-own-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.fd-review-edit-btn {
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.fd-review-delete-btn {
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+/* Related section */
+.fd-related-section {
+  margin-top: 36px;
+}
+
+.fd-related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
 }

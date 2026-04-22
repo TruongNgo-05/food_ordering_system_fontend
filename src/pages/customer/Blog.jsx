@@ -1,6 +1,7 @@
 import React from "react";
 import UserHeader from "../../components/user/UserHeader";
 import { T } from "../../constants/customerTheme";
+import "../../assets/styles/Blog.css";
 
 const BLOG_POSTS = [
   {
@@ -40,91 +41,30 @@ const BLOG_POSTS = [
 
 const Blog = () => {
   return (
-    <div style={{ background: T.bg, minHeight: "100vh", padding: "24px 0 36px" }}>
-      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 20px" }}>
+    <div className="blog-page" style={{ background: T.bg }}>
+      <div className="blog-container">
         <UserHeader
           title="Blog Nhà Hàng"
-          description="Cập nhật mẹo nấu ăn, câu chuyện món ngon và cảm hứng ẩm thực mỗi tuần"
+          description="Cập nhật mẹo nấu ăn, câu chuyện món ngon và cảm hứng ẩm thực"
         />
 
-        <div
-          style={{
-            marginTop: 12,
-            background: T.primaryLight,
-            border: `1px solid ${T.primary}33`,
-            borderRadius: 16,
-            padding: "14px 16px",
-            color: T.text,
-            fontWeight: 600,
-          }}
-        >
-          Mới nhất: Chương trình ưu đãi theo mùa sẽ được cập nhật tại chuyên mục blog.
+        <div className="blog-notice">
+          Mới nhất: Ưu đãi theo mùa sẽ được cập nhật tại blog.
         </div>
 
-        <div
-          style={{
-            marginTop: 18,
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: 16,
-          }}
-        >
+        <div className="blog-grid">
           {BLOG_POSTS.map((post) => (
-            <article
-              key={post.id}
-              style={{
-                borderRadius: 16,
-                background: T.card,
-                border: `1px solid ${T.border}`,
-                overflow: "hidden",
-                boxShadow: "0 8px 22px rgba(14, 25, 40, .06)",
-              }}
-            >
-              <img
-                src={post.image}
-                alt={post.title}
-                style={{
-                  width: "100%",
-                  height: 190,
-                  objectFit: "cover",
-                  display: "block",
-                }}
-              />
-              <div style={{ padding: 16 }}>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: 12,
-                    color: T.primary,
-                    fontWeight: 800,
-                    textTransform: "uppercase",
-                    letterSpacing: 0.3,
-                  }}
-                >
-                  {post.category}
-                </p>
-                <h3 style={{ margin: "8px 0 6px", color: T.text, fontSize: 19 }}>
-                  {post.title}
-                </h3>
-                <p
-                  style={{
-                    margin: "0 0 12px",
-                    color: T.sub,
-                    lineHeight: 1.65,
-                    fontSize: 14,
-                  }}
-                >
-                  {post.excerpt}
-                </p>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    color: T.muted,
-                    fontSize: 12,
-                    fontWeight: 700,
-                  }}
-                >
+            <article key={post.id} className="blog-card">
+              <div className="blog-image-wrapper">
+                <img src={post.image} alt={post.title} />
+                <span className="blog-category">{post.category}</span>
+              </div>
+
+              <div className="blog-content">
+                <h3>{post.title}</h3>
+                <p>{post.excerpt}</p>
+
+                <div className="blog-footer">
                   <span>{post.date}</span>
                   <span>{post.readTime}</span>
                 </div>

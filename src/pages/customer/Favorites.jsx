@@ -36,7 +36,6 @@ const Favorites = () => {
     window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
   }, [favorites]);
 
-  // CART
   const [cart, setCart] = useState(() => {
     const saved = localStorage.getItem("cart");
     return saved ? JSON.parse(saved) : [];
@@ -112,7 +111,6 @@ const Favorites = () => {
         return prev.map((c) =>
           c.item_id === item.id ? { ...c, qty: c.qty + 1 } : c,
         );
-
       return [
         ...prev,
         {
@@ -149,40 +147,30 @@ const Favorites = () => {
           title="Món yêu thích"
           description="Những món bạn đã lưu"
           extra={
-            <div style={{ display: "flex", gap: 10 }}>
+            <div className="favorites-header-extra">
               <div
+                className="favorites-search-box"
                 style={{
                   background: T.card,
                   border: `1px solid ${T.border}`,
-                  borderRadius: 12,
-                  padding: "10px 12px",
-                  width: 250,
                 }}
               >
                 <input
+                  className="favorites-search-input"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Tìm trong yêu thích..."
-                  style={{
-                    width: "100%",
-                    border: "none",
-                    outline: "none",
-                    background: "transparent",
-                    color: T.text,
-                  }}
+                  style={{ color: T.text }}
                 />
               </div>
               <button
+                className="favorites-clear-btn"
                 onClick={clearAllFavorites}
                 disabled={favorites.length === 0}
                 style={{
                   border: `1px solid ${T.border}`,
                   background: favorites.length > 0 ? "#fff" : T.bg,
                   color: favorites.length > 0 ? T.red : T.muted,
-                  borderRadius: 10,
-                  padding: "0 12px",
-                  cursor: favorites.length > 0 ? "pointer" : "not-allowed",
-                  fontWeight: 700,
                 }}
               >
                 Xóa tất cả

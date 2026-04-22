@@ -104,39 +104,18 @@ const ResetPassword = () => {
           className="reset-password-form"
           form={form}
         >
-          <div style={{ marginBottom: "24px" }}>
-            <label
-              style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}
-            >
-              Mã OTP
-            </label>
-            <div
-              style={{
-                display: "flex",
-                gap: "8px",
-                justifyContent: "center",
-              }}
-            >
+          <div className="otp-section">
+            <label className="otp-label">Mã OTP</label>
+            <div className="otp-container">
               {otpValues.map((value, index) => (
                 <Input
                   key={index}
-                  ref={(el) => {
-                    otpInputRefs.current[index] = el;
-                  }}
+                  ref={(el) => (otpInputRefs.current[index] = el)}
                   value={value}
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                   onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                  maxLength="1"
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    textAlign: "center",
-                    fontSize: "20px",
-                    fontWeight: "bold",
-                    border: "2px solid #d1d5db",
-                    borderRadius: "8px",
-                    padding: "0",
-                  }}
+                  maxLength={1}
+                  className="otp-input"
                   inputMode="numeric"
                   placeholder="0"
                 />

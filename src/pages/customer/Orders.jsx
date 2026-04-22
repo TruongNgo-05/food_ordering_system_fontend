@@ -21,7 +21,9 @@ import { mockOrders } from "../../data/mockOrders";
 import { confirmLoginWithModal } from "../../utils/authGuards";
 import { useAuth } from "../../hooks/useAuth";
 import "../../assets/styles/CustomerOrders.css";
+
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
+
 const Orders = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
@@ -35,6 +37,7 @@ const Orders = () => {
 
   const [detail, setDetail] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all");
+
   const safeOrders = useMemo(
     () => (Array.isArray(orders) ? orders : []),
     [orders],
@@ -117,67 +120,36 @@ const Orders = () => {
             title="Chi tiết đơn hàng"
             description={`Mã đơn #${detail.id}`}
           />
+
           <button
             onClick={() => setDetail(null)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: T.sub,
-              fontWeight: 700,
-              fontSize: 14,
-              marginBottom: 14,
-              padding: 0,
-            }}
+            className="ord-back-btn"
+            style={{ color: T.sub }}
           >
             ← Quay lại
           </button>
 
+          {/* Order info card */}
           <div
-            style={{
-              background: T.card,
-              border: `1px solid ${T.border}`,
-              borderRadius: 18,
-              padding: 22,
-              marginBottom: 16,
-            }}
+            className="ord-detail-card"
+            style={{ background: T.card, borderColor: T.border }}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 16,
-              }}
-            >
+            <div className="ord-detail-card-top">
               <div>
-                <p style={{ margin: 0, fontSize: 12, color: T.sub }}>Mã đơn</p>
-                <p
-                  style={{
-                    margin: "2px 0 0",
-                    fontSize: 18,
-                    fontWeight: 900,
-                    color: T.text,
-                  }}
-                >
+                <p className="ord-detail-id-label" style={{ color: T.sub }}>
+                  Mã đơn
+                </p>
+                <p className="ord-detail-id-value" style={{ color: T.text }}>
                   #{detail.id}
                 </p>
-                <p style={{ margin: "8px 0 0", fontSize: 13, color: T.sub }}>
+                <p className="ord-detail-created" style={{ color: T.sub }}>
                   <FontAwesomeIcon icon={faClock} style={{ marginRight: 6 }} />
                   {detail.created_at}
                 </p>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-end",
-                }}
-              >
+              <div className="ord-detail-right">
                 <StatusBadge status={detail.status} />
-                <p style={{ margin: "10px 0 0", fontSize: 13, color: T.sub }}>
+                <p className="ord-detail-payment" style={{ color: T.sub }}>
                   <FontAwesomeIcon
                     icon={
                       detail.payment_method === "ONLINE"
@@ -194,28 +166,19 @@ const Orders = () => {
               </div>
             </div>
 
-            <div
-              style={{
-                marginTop: 16,
-                display: "flex",
-                gap: 8,
-                flexWrap: "wrap",
-              }}
-            >
+            {/* Step badges */}
+            <div className="ord-steps-strip">
               {steps.map((s, i) => {
                 const c = STATUS_CFG[s];
                 const active = i <= stepIdx;
                 return (
                   <span
                     key={s}
+                    className="ord-step-badge"
                     style={{
                       background: active ? c.bg : "#fff",
                       color: active ? c.color : T.muted,
-                      border: `1px solid ${active ? c.color + "33" : T.border}`,
-                      borderRadius: 99,
-                      padding: "6px 10px",
-                      fontSize: 12,
-                      fontWeight: 800,
+                      borderColor: active ? `${c.color}33` : T.border,
                     }}
                   >
                     {c.icon} {c.label}
@@ -225,29 +188,18 @@ const Orders = () => {
             </div>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 340px",
-              gap: 18,
-              alignItems: "start",
-            }}
-          >
+          {/* 2-col grid */}
+          <div className="ord-detail-grid">
+            {/* Items list */}
             <div
-              style={{
-                background: T.card,
-                border: `1px solid ${T.border}`,
-                borderRadius: 18,
-                overflow: "hidden",
-              }}
+              className="ord-items-card"
+              style={{ background: T.card, borderColor: T.border }}
             >
               <div
-                style={{
-                  padding: "16px 18px",
-                  borderBottom: `1px solid ${T.border}`,
-                }}
+                className="ord-items-card-header"
+                style={{ borderBottomColor: T.border }}
               >
-                <p style={{ margin: 0, fontWeight: 900, color: T.text }}>
+                <p style={{ color: T.text }}>
                   <FontAwesomeIcon
                     icon={faReceipt}
                     style={{ marginRight: 8 }}
@@ -259,29 +211,15 @@ const Orders = () => {
               {detail.items.map((it, i) => (
                 <div
                   key={i}
+                  className="ord-item-row"
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "14px 18px",
-                    borderBottom:
-                      i < detail.items.length - 1
-                        ? `1px solid ${T.border}`
-                        : "none",
+                    borderBottomColor:
+                      i < detail.items.length - 1 ? T.border : "transparent",
                   }}
                 >
                   <div
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 12,
-                      background: T.primaryLight,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 22,
-                      flexShrink: 0,
-                    }}
+                    className="ord-item-thumb"
+                    style={{ background: T.primaryLight }}
                   >
                     <FoodImage
                       src={it.image}
@@ -290,73 +228,46 @@ const Orders = () => {
                       textSize={20}
                     />
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontWeight: 800,
-                        color: T.text,
-                        overflow: "hidden",
-                        whiteSpace: "nowrap",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
+                  <div className="ord-item-info">
+                    <p className="ord-item-name" style={{ color: T.text }}>
                       {it.name}
                     </p>
-                    <p
-                      style={{ margin: "2px 0 0", fontSize: 12, color: T.sub }}
-                    >
+                    <p className="ord-item-sub" style={{ color: T.sub }}>
                       {fmt(it.price)} · x{it.qty}
                     </p>
                   </div>
-                  <p style={{ margin: 0, fontWeight: 900, color: T.text }}>
+                  <p className="ord-item-total" style={{ color: T.text }}>
                     {fmt(it.price * it.qty)}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {/* Sidebar */}
+            <div className="ord-sidebar">
+              {/* Address */}
               <div
-                style={{
-                  background: T.card,
-                  border: `1px solid ${T.border}`,
-                  borderRadius: 18,
-                  padding: 18,
-                }}
+                className="ord-sidebar-card"
+                style={{ background: T.card, borderColor: T.border }}
               >
-                <p
-                  style={{ margin: "0 0 10px", fontWeight: 900, color: T.text }}
-                >
+                <p className="ord-sidebar-card-title" style={{ color: T.text }}>
                   <FontAwesomeIcon
                     icon={faLocationDot}
                     style={{ marginRight: 8 }}
                   />
                   Giao đến
                 </p>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: 13,
-                    color: T.sub,
-                    lineHeight: 1.7,
-                  }}
-                >
+                <p className="ord-address-text" style={{ color: T.sub }}>
                   {detail.address || "—"}
                 </p>
               </div>
 
+              {/* Summary */}
               <div
-                style={{
-                  background: T.card,
-                  border: `1px solid ${T.border}`,
-                  borderRadius: 18,
-                  padding: 18,
-                }}
+                className="ord-sidebar-card"
+                style={{ background: T.card, borderColor: T.border }}
               >
-                <p
-                  style={{ margin: "0 0 10px", fontWeight: 900, color: T.text }}
-                >
+                <p className="ord-sidebar-card-title" style={{ color: T.text }}>
                   <FontAwesomeIcon
                     icon={faFileLines}
                     style={{ marginRight: 8 }}
@@ -371,15 +282,7 @@ const Orders = () => {
                     ? [["Giảm giá", `−${fmt(detail.discount)}`, T.green]]
                     : []),
                 ].map(([k, v, c]) => (
-                  <div
-                    key={k}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      fontSize: 13,
-                      padding: "4px 0",
-                    }}
-                  >
+                  <div key={k} className="ord-summary-row">
                     <span style={{ color: T.sub }}>{k}</span>
                     <span
                       style={{
@@ -393,15 +296,8 @@ const Orders = () => {
                 ))}
 
                 <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    fontWeight: 900,
-                    fontSize: 18,
-                    marginTop: 12,
-                    paddingTop: 12,
-                    borderTop: `2px solid ${T.border}`,
-                  }}
+                  className="ord-summary-total"
+                  style={{ borderTopColor: T.border }}
                 >
                   <span>Tổng</span>
                   <span style={{ color: T.primary }}>
@@ -410,57 +306,38 @@ const Orders = () => {
                 </div>
               </div>
 
+              {/* Voucher */}
               {detail.voucher && (
                 <div
+                  className="ord-voucher-badge"
                   style={{
                     background: T.primaryLight,
-                    borderRadius: 14,
-                    padding: "10px 12px",
-                    border: `1px dashed ${T.primary}66`,
+                    borderColor: `${T.primary}66`,
                   }}
                 >
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: 12,
-                      color: T.primary,
-                      fontWeight: 900,
-                    }}
-                  >
+                  <p style={{ color: T.primary }}>
                     <FontAwesomeIcon icon={faTags} style={{ marginRight: 6 }} />
                     Voucher: {detail.voucher}
                   </p>
                 </div>
               )}
 
+              {/* Cancel */}
               {detail.status === "pending" && (
                 <button
                   onClick={() => handleCancelOrder(detail.id)}
-                  style={{
-                    border: "none",
-                    borderRadius: 12,
-                    background: T.redBg,
-                    color: T.red,
-                    fontWeight: 800,
-                    padding: "10px 12px",
-                    cursor: "pointer",
-                  }}
+                  className="ord-cancel-btn"
+                  style={{ background: T.redBg, color: T.red }}
                 >
                   Hủy đơn
                 </button>
               )}
 
+              {/* Reorder */}
               <button
                 onClick={() => handleReorder(detail)}
-                style={{
-                  border: "none",
-                  borderRadius: 12,
-                  background: T.primary,
-                  color: "#fff",
-                  fontWeight: 800,
-                  padding: "10px 12px",
-                  cursor: "pointer",
-                }}
+                className="ord-reorder-btn"
+                style={{ background: T.primary }}
               >
                 <FontAwesomeIcon
                   icon={faRotateRight}
@@ -484,32 +361,19 @@ const Orders = () => {
           description={`${safeOrders.length} đơn`}
         />
 
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            flexWrap: "wrap",
-            marginBottom: 18,
-          }}
-        >
+        {/* Filter bar */}
+        <div className="ord-filter-bar">
           {filters.map((f) => {
             const active = filterStatus === f.key;
             return (
               <button
                 key={f.key}
                 onClick={() => setFilterStatus(f.key)}
+                className="ord-filter-btn"
                 style={{
-                  border: `1.5px solid ${active ? T.primary : T.border}`,
+                  borderColor: active ? T.primary : T.border,
                   background: active ? T.primaryLight : "#fff",
                   color: active ? T.primary : T.text,
-                  padding: "9px 14px",
-                  borderRadius: 999,
-                  cursor: "pointer",
-                  fontWeight: 800,
-                  fontSize: 13,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
                 }}
               >
                 <span>{f.icon}</span>
@@ -528,7 +392,7 @@ const Orders = () => {
             onBtn={() => (window.location.href = "/customer")}
           />
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div className="ord-list">
             {filtered.map((order) => {
               const first = order.items?.[0];
               const itemCount = Array.isArray(order.items)
@@ -539,17 +403,8 @@ const Orders = () => {
                 <div
                   key={order.id}
                   onClick={() => setDetail(order)}
-                  style={{
-                    background: T.card,
-                    border: `1px solid ${T.border}`,
-                    borderRadius: 16,
-                    padding: 16,
-                    cursor: "pointer",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 16,
-                    transition: "box-shadow .15s, border-color .15s",
-                  }}
+                  className="ord-card"
+                  style={{ background: T.card, borderColor: T.border }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.borderColor = T.primary;
                     e.currentTarget.style.boxShadow =
@@ -560,21 +415,11 @@ const Orders = () => {
                     e.currentTarget.style.boxShadow = "none";
                   }}
                 >
-                  <div
-                    style={{ display: "flex", gap: 12, alignItems: "center" }}
-                  >
+                  {/* Left */}
+                  <div className="ord-card-left">
                     <div
-                      style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 16,
-                        background: T.primaryLight,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 22,
-                        flexShrink: 0,
-                      }}
+                      className="ord-card-thumb"
+                      style={{ background: T.primaryLight }}
                     >
                       <FoodImage
                         src={first?.image || "🍽️"}
@@ -583,17 +428,11 @@ const Orders = () => {
                         textSize={22}
                       />
                     </div>
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ margin: 0, fontWeight: 900, color: T.text }}>
+                    <div className="ord-card-info">
+                      <p className="ord-card-title" style={{ color: T.text }}>
                         #{order.id} · {fmt(order.total ?? 0)}
                       </p>
-                      <p
-                        style={{
-                          margin: "4px 0 0",
-                          fontSize: 12,
-                          color: T.sub,
-                        }}
-                      >
+                      <p className="ord-card-meta" style={{ color: T.sub }}>
                         <FontAwesomeIcon
                           icon={faClock}
                           style={{ marginRight: 6 }}
@@ -602,15 +441,8 @@ const Orders = () => {
                       </p>
                       {first?.name && (
                         <p
-                          style={{
-                            margin: "6px 0 0",
-                            fontSize: 12,
-                            color: T.sub,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: 520,
-                          }}
+                          className="ord-card-preview"
+                          style={{ color: T.sub }}
                         >
                           {first.name}
                           {Array.isArray(order.items) && order.items.length > 1
@@ -621,17 +453,10 @@ const Orders = () => {
                     </div>
                   </div>
 
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "flex-end",
-                    }}
-                  >
+                  {/* Right */}
+                  <div className="ord-card-right">
                     <StatusBadge status={order.status} />
-                    <p
-                      style={{ margin: "10px 0 0", fontSize: 12, color: T.sub }}
-                    >
+                    <p className="ord-card-payment" style={{ color: T.sub }}>
                       <FontAwesomeIcon
                         icon={
                           order.payment_method === "ONLINE"
@@ -647,16 +472,11 @@ const Orders = () => {
                         e.stopPropagation();
                         handleReorder(order);
                       }}
+                      className="ord-card-reorder-btn"
                       style={{
-                        marginTop: 8,
-                        border: `1px solid ${T.primary}44`,
-                        borderRadius: 10,
+                        borderColor: `${T.primary}44`,
                         background: T.primaryLight,
                         color: T.primary,
-                        fontWeight: 800,
-                        fontSize: 12,
-                        padding: "6px 10px",
-                        cursor: "pointer",
                       }}
                     >
                       Đặt lại
@@ -667,16 +487,11 @@ const Orders = () => {
                           e.stopPropagation();
                           handleCancelOrder(order.id);
                         }}
+                        className="ord-card-cancel-btn"
                         style={{
-                          marginTop: 6,
-                          border: `1px solid ${T.red}33`,
-                          borderRadius: 10,
+                          borderColor: `${T.red}33`,
                           background: T.redBg,
                           color: T.red,
-                          fontWeight: 800,
-                          fontSize: 12,
-                          padding: "6px 10px",
-                          cursor: "pointer",
                         }}
                       >
                         Hủy đơn

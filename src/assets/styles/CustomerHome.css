@@ -2,14 +2,27 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 100vh;
 }
-
 .customer-home-header-wrap {
   padding: 28px 36px 0;
 }
-
 .customer-home-content-wrap {
   padding: 20px;
+}
+.customer-category-list {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+.customer-category-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap;
 }
 
 .customer-home-recent-grid,
@@ -25,34 +38,56 @@
   margin-bottom: 24px;
 }
 
+.customer-search-box {
+  border-radius: 12px;
+  padding: 10px 12px;
+  width: 260px;
+}
+
+.customer-search-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+
+.customer-loading {
+  text-align: center;
+  padding: 40px;
+}
+
 .back-to-top-btn {
   position: fixed;
   top: 50%;
   right: 0;
   transform: translateY(-50%);
   z-index: 1001;
+
   border: 1px solid rgba(156, 163, 175, 0.45);
   border-right: none;
   border-radius: 14px 0 0 14px;
+
   background: rgba(243, 244, 246, 0.42);
   color: #4b5563;
+
   width: 36px;
   min-height: 140px;
+
   padding: 7px 4px 8px;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   gap: 9px;
+
   font-size: 0.68rem;
   font-weight: 500;
   cursor: pointer;
+
   box-shadow: -1px 6px 14px rgba(17, 24, 39, 0.06);
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
+
+  transition: all 0.2s ease;
 }
 
 .back-to-top-btn:hover {
@@ -77,11 +112,24 @@
   white-space: nowrap;
 }
 
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .back-to-top-btn {
     min-height: 124px;
     width: 34px;
-    right: 0;
     top: 56%;
+  }
+
+  .customer-home-header-wrap {
+    padding: 20px 16px 0;
+  }
+
+  .customer-home-content-wrap {
+    padding: 16px;
+  }
+
+  .customer-home-recent-grid,
+  .customer-home-menu-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   }
 }

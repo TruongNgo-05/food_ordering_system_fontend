@@ -1,17 +1,36 @@
-.customer-favorites-page {
-  overflow-y: auto;
-  height: 100%;
+.favorites-header-extra {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
-.customer-favorites-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 36px;
+.favorites-search-box {
+  border-radius: 12px;
+  padding: 10px 12px;
+  width: 250px;
+}
+
+.favorites-search-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+
+.favorites-clear-btn {
+  border-radius: 10px;
+  padding: 0 12px;
+  font-weight: 700;
+  height: 40px;
+  cursor: pointer;
+}
+.favorites-clear-btn:disabled {
+  cursor: not-allowed;
 }
 
 .customer-favorites-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 280px));
-  gap: 18px;
-  justify-content: center;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
 }

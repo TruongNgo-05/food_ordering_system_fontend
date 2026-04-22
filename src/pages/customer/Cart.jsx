@@ -109,7 +109,6 @@ const Cart = () => {
       setVoucherError("Vui lòng nhập mã");
       return;
     }
-
     const v = vouchers.find((x) => x.code === code);
     if (!v) {
       setVoucherError("Mã không hợp lệ");
@@ -220,41 +219,19 @@ const Cart = () => {
 
   if (placed) {
     return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100%",
-          gap: 18,
-          background: T.bg,
-        }}
-      >
-        <div style={{ fontSize: 90 }}>🎉</div>
-        <h2
-          style={{ margin: 0, color: T.green, fontWeight: 900, fontSize: 26 }}
-        >
-          Đặt hàng thành công!
-        </h2>
-        <p style={{ margin: 0, color: T.sub, fontSize: 15 }}>
-          Đang chuyển đến trang đơn hàng...
-        </p>
+      <div className="cart-placed-screen" style={{ background: T.bg }}>
+        <div className="cart-placed-emoji">🎉</div>
+        <h2 className="cart-placed-title">Đặt hàng thành công!</h2>
+        <p className="cart-placed-sub">Đang chuyển đến trang đơn hàng...</p>
       </div>
     );
   }
 
   if (cart.length === 0) {
     return (
-      <div style={{ height: "100%", background: T.bg, padding: 36 }}>
+      <div className="cart-empty-page" style={{ background: T.bg }}>
         <UserHeader title="Giỏ hàng" description="Xem lại món bạn đã chọn" />
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+        <div className="cart-empty-center">
           <EmptyState
             icon="🛒"
             title="Giỏ hàng trống"
@@ -275,62 +252,33 @@ const Cart = () => {
           description={`${cart.length} món đã chọn`}
         />
 
-        <div
-          style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 28 }}
-        >
+        <div className="cart-layout">
           {/* Left */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div className="cart-left">
             {/* Items */}
             <div
+              className="cart-items-box"
               style={{
                 background: T.card,
-                borderRadius: 18,
                 border: `1px solid ${T.border}`,
-                overflow: "hidden",
               }}
             >
-              <div
-                style={{
-                  padding: "18px 22px 14px",
-                  borderBottom: `1px solid ${T.border}`,
-                }}
-              >
-                <p
-                  style={{
-                    margin: 0,
-                    fontWeight: 800,
-                    fontSize: 15,
-                    color: T.text,
-                  }}
-                >
-                  🛍️ Món đã chọn
-                </p>
+              <div className="cart-box-header">
+                <p className="cart-title">Món đã chọn</p>
               </div>
 
               {cart.map((item, i) => (
                 <div
                   key={item.item_id}
+                  className="cart-item-row"
                   style={{
-                    display: "flex",
-                    gap: 16,
-                    padding: "16px 22px",
                     borderBottom:
                       i < cart.length - 1 ? `1px solid ${T.border}` : "none",
-                    alignItems: "center",
                   }}
                 >
                   <div
-                    style={{
-                      fontSize: 44,
-                      background: T.primaryLight,
-                      width: 66,
-                      height: 66,
-                      borderRadius: 14,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
+                    className="cart-item-image-wrap"
+                    style={{ background: T.primaryLight }}
                   >
                     <FoodImage
                       src={item.image}
@@ -340,104 +288,43 @@ const Cart = () => {
                     />
                   </div>
 
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p
-                      style={{
-                        margin: "0 0 4px",
-                        fontWeight: 700,
-                        fontSize: 15,
-                        color: T.text,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
+                  <div className="cart-item-info">
+                    <p className="cart-item-name" style={{ color: T.text }}>
                       {item.name}
                     </p>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: 13,
-                        color: T.primary,
-                        fontWeight: 800,
-                      }}
-                    >
+                    <p className="cart-item-price" style={{ color: T.primary }}>
                       {fmt(item.price)} / phần
                     </p>
                   </div>
 
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 10 }}
-                  >
+                  <div className="cart-qty-controls">
                     <button
+                      className="cart-qty-btn-minus"
+                      style={{ border: `1.5px solid ${T.border}` }}
                       onClick={() => updateQty(item.item_id, -1)}
-                      style={{
-                        width: 30,
-                        height: 30,
-                        border: `1.5px solid ${T.border}`,
-                        background: "#fff",
-                        borderRadius: 8,
-                        cursor: "pointer",
-                        fontWeight: 700,
-                        fontSize: 16,
-                      }}
                     >
                       −
                     </button>
-                    <span
-                      style={{
-                        fontWeight: 800,
-                        minWidth: 20,
-                        textAlign: "center",
-                        fontSize: 16,
-                        color: T.text,
-                      }}
-                    >
+                    <span className="cart-qty-value" style={{ color: T.text }}>
                       {item.qty}
                     </span>
                     <button
+                      className="cart-qty-btn-plus"
+                      style={{ background: T.primary }}
                       onClick={() => updateQty(item.item_id, 1)}
-                      style={{
-                        width: 30,
-                        height: 30,
-                        border: "none",
-                        background: T.primary,
-                        color: "#fff",
-                        borderRadius: 8,
-                        cursor: "pointer",
-                        fontWeight: 700,
-                        fontSize: 16,
-                      }}
                     >
                       +
                     </button>
                   </div>
 
-                  <p
-                    style={{
-                      margin: 0,
-                      fontWeight: 900,
-                      color: T.text,
-                      fontSize: 16,
-                      minWidth: 90,
-                      textAlign: "right",
-                    }}
-                  >
+                  <p className="cart-item-total" style={{ color: T.text }}>
                     {fmt(item.price * item.qty)}
                   </p>
 
                   <button
+                    className="cart-item-remove-btn"
+                    style={{ background: T.redBg, color: T.red }}
                     onClick={() => removeItem(item.item_id)}
-                    style={{
-                      background: T.redBg,
-                      border: "none",
-                      color: T.red,
-                      borderRadius: 8,
-                      width: 30,
-                      height: 30,
-                      cursor: "pointer",
-                      fontSize: 14,
-                    }}
                     aria-label="Xóa"
                     title="Xóa"
                   >
@@ -449,21 +336,13 @@ const Cart = () => {
 
             {/* Address */}
             <div
+              className="cart-address-box"
               style={{
                 background: T.card,
-                borderRadius: 18,
                 border: `1px solid ${T.border}`,
-                padding: "18px 22px",
               }}
             >
-              <p
-                style={{
-                  margin: "0 0 12px",
-                  fontWeight: 800,
-                  color: T.text,
-                  fontSize: 15,
-                }}
-              >
+              <p className="cart-address-label" style={{ color: T.text }}>
                 <FontAwesomeIcon
                   icon={faLocationDot}
                   style={{ marginRight: 8 }}
@@ -471,20 +350,9 @@ const Cart = () => {
                 Địa chỉ giao hàng
               </p>
               <button
+                className="cart-address-btn"
                 type="button"
                 onClick={() => setOpenAddressModal(true)}
-                style={{
-                  width: "100%",
-                  padding: "11px 14px",
-                  borderRadius: 11,
-                  border: `1.5px solid ${T.border}`,
-                  fontSize: 14,
-                  color: T.text,
-                  textAlign: "left",
-                  background: "#fff",
-                  cursor: "pointer",
-                  boxSizing: "border-box",
-                }}
               >
                 {address || "Chọn địa chỉ giao hàng"}
               </button>
@@ -511,7 +379,7 @@ const Cart = () => {
           </div>
 
           {/* Right */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div className="cart-right">
             <PaymentMethodSection
               payMethod={payMethod}
               selectedBank={selectedBank}
@@ -548,48 +416,36 @@ const Cart = () => {
         onCancel={() => setOpenQrModal(false)}
         footer={null}
       >
-        <div style={{ textAlign: "center" }}>
-          <p style={{ marginBottom: 10, color: T.sub }}>
+        <div className="cart-qr-modal-body">
+          <p className="cart-qr-bank-label" style={{ color: T.sub }}>
             Ngân hàng:{" "}
             <strong>
               {BANK_OPTIONS.find((b) => b.code === selectedBank)?.name || "-"}
             </strong>
           </p>
           <img
+            className="cart-qr-image"
             src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(
               `BANK:${selectedBank}|AMOUNT:${total}|REF:${onlinePaymentRef}`,
             )}`}
             alt="QR thanh toán"
-            style={{
-              width: 220,
-              height: 220,
-              borderRadius: 12,
-              border: `1px solid ${T.border}`,
-            }}
+            style={{ border: `1px solid ${T.border}` }}
           />
-          <p style={{ marginTop: 10, color: T.sub, fontSize: 12 }}>
+          <p className="cart-qr-ref" style={{ color: T.sub }}>
             Nội dung chuyển khoản: <strong>{onlinePaymentRef}</strong>
           </p>
           <button
             type="button"
+            className="cart-qr-confirm-btn"
+            style={{ background: T.primary }}
             onClick={() => {
               setOpenQrModal(false);
               finalizeOrder("paid");
             }}
-            style={{
-              marginTop: 8,
-              border: "none",
-              borderRadius: 10,
-              background: T.primary,
-              color: "#fff",
-              fontWeight: 800,
-              padding: "10px 16px",
-              cursor: "pointer",
-            }}
           >
             Tôi đã quét và thanh toán thành công
           </button>
-          <p style={{ marginTop: 8, fontSize: 12, color: T.sub }}>
+          <p className="cart-qr-note" style={{ color: T.sub }}>
             Sau thanh toán, đơn sẽ ở trạng thái chờ xác nhận.
           </p>
         </div>

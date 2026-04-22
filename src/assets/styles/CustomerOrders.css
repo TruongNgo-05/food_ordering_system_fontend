@@ -1,10 +1,338 @@
-.customer-orders-page {
-  overflow-y: auto;
-  height: 100%;
+/* ---- Back button ---- */
+.ord-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 14px;
+  padding: 0;
 }
 
-.customer-orders-container {
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 36px;
+/* ---- Detail: order info card ---- */
+.ord-detail-card {
+  border-radius: 18px;
+  border-width: 1px;
+  border-style: solid;
+  padding: 22px;
+  margin-bottom: 16px;
+}
+
+.ord-detail-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ord-detail-id-label {
+  margin: 0;
+  font-size: 12px;
+}
+
+.ord-detail-id-value {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.ord-detail-created {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+
+.ord-detail-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.ord-detail-payment {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+/* Step badges strip */
+.ord-steps-strip {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ord-step-badge {
+  border-radius: 99px;
+  border-width: 1px;
+  border-style: solid;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* ---- Detail: 2-col layout ---- */
+.ord-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 18px;
+  align-items: start;
+}
+
+/* Items list card */
+.ord-items-card {
+  border-radius: 18px;
+  border-width: 1px;
+  border-style: solid;
+  overflow: hidden;
+}
+
+.ord-items-card-header {
+  padding: 16px 18px;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+}
+
+.ord-items-card-header p {
+  margin: 0;
+  font-weight: 900;
+}
+
+.ord-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+}
+
+.ord-item-row:last-child {
+  border-bottom: none;
+}
+
+.ord-item-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.ord-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ord-item-name {
+  margin: 0;
+  font-weight: 800;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ord-item-sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+}
+
+.ord-item-total {
+  margin: 0;
+  font-weight: 900;
+}
+
+/* ---- Detail: sidebar ---- */
+.ord-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ord-sidebar-card {
+  border-radius: 18px;
+  border-width: 1px;
+  border-style: solid;
+  padding: 18px;
+}
+
+.ord-sidebar-card-title {
+  margin: 0 0 10px;
+  font-weight: 900;
+}
+
+.ord-address-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* Summary rows */
+.ord-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 4px 0;
+}
+
+.ord-summary-total {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 900;
+  font-size: 18px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top-width: 2px;
+  border-top-style: solid;
+}
+
+/* Voucher badge */
+.ord-voucher-badge {
+  border-radius: 14px;
+  padding: 10px 12px;
+  border-width: 1px;
+  border-style: dashed;
+}
+
+.ord-voucher-badge p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+/* Cancel / Reorder buttons in detail sidebar */
+.ord-cancel-btn {
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.ord-reorder-btn {
+  border: none;
+  border-radius: 12px;
+  background: var(--ord-primary);
+  color: #fff;
+  font-weight: 800;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+/* ---- List: filter bar ---- */
+.ord-filter-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.ord-filter-btn {
+  border-width: 1.5px;
+  border-style: solid;
+  padding: 9px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- List: order card list ---- */
+.ord-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ord-card {
+  border-radius: 16px;
+  border-width: 1px;
+  border-style: solid;
+  padding: 16px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s;
+}
+
+.ord-card-left {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.ord-card-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.ord-card-info {
+  min-width: 0;
+}
+
+.ord-card-title {
+  margin: 0;
+  font-weight: 900;
+}
+
+.ord-card-meta {
+  margin: 4px 0 0;
+  font-size: 12px;
+}
+
+.ord-card-preview {
+  margin: 6px 0 0;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 520px;
+}
+
+.ord-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.ord-card-payment {
+  margin: 10px 0 0;
+  font-size: 12px;
+}
+
+.ord-card-reorder-btn {
+  margin-top: 8px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.ord-card-cancel-btn {
+  margin-top: 6px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 6px 10px;
+  cursor: pointer;
 }

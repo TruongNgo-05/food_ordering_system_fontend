@@ -25,20 +25,20 @@ const FoodDetail = () => {
   const [loading, setLoading] = useState(true);
   const [foods, setFoods] = useState([]);
   const [categories, setCategories] = useState([]);
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await getCategories();
-
         const list = res?.data?.data?.content || [];
         setCategories(list);
       } catch (err) {
         console.error("Lỗi load categories:", err);
       }
     };
-
     fetchCategories();
   }, []);
+
   useEffect(() => {
     const fetchFoodDetail = async () => {
       try {
@@ -51,20 +51,16 @@ const FoodDetail = () => {
         setLoading(false);
       }
     };
-
     if (id) fetchFoodDetail();
   }, [id]);
+
   const galleryImages = useMemo(() => {
     if (!item) return [];
-
     const BASE_URL = "http://localhost:8080/uploads/";
-
     const images = Array.isArray(item.images)
       ? item.images.map((img) => BASE_URL + img)
       : [];
-
     const main = item.image ? BASE_URL + item.image : null;
-
     return [...new Set([main, ...images].filter(Boolean))];
   }, [item]);
 
@@ -77,6 +73,7 @@ const FoodDetail = () => {
     const saved = localStorage.getItem("favorites");
     return saved ? JSON.parse(saved) : [];
   });
+
   const [orders] = useState(() => {
     const saved = localStorage.getItem("orders");
     return saved ? JSON.parse(saved) : [];
@@ -101,9 +98,9 @@ const FoodDetail = () => {
         console.error("Lỗi load foods:", err);
       }
     };
-
     fetchFoods();
   }, []);
+
   useEffect(() => {
     if (!item) return;
     const saved = localStorage.getItem("recently-viewed-foods");
@@ -130,6 +127,7 @@ const FoodDetail = () => {
   const [reviewSort, setReviewSort] = useState("newest");
   const [editingReviewId, setEditingReviewId] = useState(null);
   const isFav = item ? favorites.includes(item.id) : false;
+
   const currentUserName = useMemo(() => {
     try {
       const saved = localStorage.getItem("userInfo");
@@ -139,6 +137,7 @@ const FoodDetail = () => {
       return "Bạn";
     }
   }, []);
+
   const [related, setRelated] = useState([]);
 
   useEffect(() => {
@@ -146,19 +145,17 @@ const FoodDetail = () => {
       try {
         const res = await getFoods();
         const list = res.data || [];
-
         const filtered = list
           .filter((f) => f.category === item.category && f.id !== item.id)
           .slice(0, 4);
-
         setRelated(filtered);
       } catch (err) {
         console.error("Lỗi load related:", err);
       }
     };
-
     if (item) fetchRelated();
   }, [item]);
+
   const [customReviews, setCustomReviews] = useState(() => {
     const saved = localStorage.getItem("food-reviews");
     return saved ? JSON.parse(saved) : {};
@@ -174,11 +171,13 @@ const FoodDetail = () => {
     const localReviews = customReviews[item.id] || [];
     return [...localReviews, ...baseReviews];
   }, [item, customReviews]);
+
   const ownReview = useMemo(() => {
     if (!item) return null;
     const localReviews = customReviews[item.id] || [];
     return localReviews.find((r) => r.user === currentUserName) || null;
   }, [item, customReviews, currentUserName]);
+
   const sortedReviews = useMemo(() => {
     const list = [...reviews];
     if (reviewSort === "highest")
@@ -187,6 +186,7 @@ const FoodDetail = () => {
       return list.sort((a, b) => a.rating - b.rating);
     return list.sort((a, b) => (b.created_ts || 0) - (a.created_ts || 0));
   }, [reviews, reviewSort]);
+
   const avgReview = useMemo(() => {
     if (!reviews.length) return item?.rating || 0;
     const total = reviews.reduce((s, r) => s + r.rating, 0);
@@ -198,6 +198,7 @@ const FoodDetail = () => {
   }, [cart]);
 
   const inCart = item ? cart.find((c) => c.item_id === item.id)?.qty || 0 : 0;
+
   const canReview = useMemo(() => {
     if (!item || !Array.isArray(orders)) return false;
     return orders.some(
@@ -252,8 +253,7 @@ const FoodDetail = () => {
   };
 
   const handleSubmitComment = () => {
-    if (!item) return;
-    if (!canReview) return;
+    if (!item || !canReview) return;
     const content = newComment.trim();
     if (!content) return;
 
@@ -276,7 +276,6 @@ const FoodDetail = () => {
           [item.id]: list.map((r) => (r.id === targetId ? review : r)),
         };
       }
-
       return {
         ...prev,
         [item.id]: [review, ...list.filter((r) => r.user !== currentUserName)],
@@ -327,58 +326,23 @@ const FoodDetail = () => {
         {/* Back */}
         <button
           onClick={() => navigate(-1)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: T.sub,
-            fontSize: 14,
-            fontWeight: 600,
-            marginBottom: 24,
-            padding: 0,
-          }}
+          className="fd-back-btn"
+          style={{ color: T.sub }}
         >
           ← Quay lại thực đơn
         </button>
 
+        {/* Main card */}
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 36,
-            background: T.card,
-            borderRadius: 24,
-            border: `1px solid ${T.border}`,
-            overflow: "hidden",
-          }}
+          className="fd-main-card"
+          style={{ background: T.card, borderColor: T.border }}
         >
-          {/* Image */}
+          {/* Image panel */}
           <div
-            style={{
-              background: T.primaryLight,
-              position: "relative",
-              minHeight: 340,
-              display: "flex",
-              flexDirection: "column",
-              gap: 10,
-              padding: 14,
-            }}
+            className="fd-image-panel"
+            style={{ background: T.primaryLight }}
           >
-            <div
-              style={{
-                width: "100%",
-                minHeight: 290,
-                borderRadius: 18,
-                overflow: "hidden",
-                background: "#fff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
+            <div className="fd-image-main">
               <FoodImage
                 src={displayImage}
                 size="100%"
@@ -386,25 +350,20 @@ const FoodDetail = () => {
                 textSize={120}
               />
             </div>
+
             {galleryImages.length > 1 && (
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <div className="fd-thumb-strip">
                 {galleryImages.map((img, idx) => (
                   <button
                     key={`${item.id}-thumb-${idx}`}
                     type="button"
                     onClick={() => setActiveImage(img)}
+                    className="fd-thumb-btn"
                     style={{
                       border:
                         activeImage === img
                           ? `2px solid ${T.primary}`
                           : `1px solid ${T.border}`,
-                      borderRadius: 10,
-                      padding: 0,
-                      background: "#fff",
-                      cursor: "pointer",
-                      width: 56,
-                      height: 56,
-                      overflow: "hidden",
                     }}
                   >
                     <FoodImage src={img} size="100%" radius={0} textSize={24} />
@@ -414,302 +373,161 @@ const FoodDetail = () => {
             )}
           </div>
 
-          {/* Info */}
-          <div
-            style={{
-              padding: "36px 36px 36px 0",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                marginBottom: 8,
-              }}
-            >
+          {/* Info panel */}
+          <div className="fd-info-panel">
+            <div className="fd-info-header">
               <span
-                style={{
-                  background: T.bg,
-                  color: T.sub,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  padding: "4px 12px",
-                  borderRadius: 99,
-                }}
+                className="fd-category-badge"
+                style={{ background: T.bg, color: T.sub }}
               >
                 {item.category}
               </span>
               <button
                 onClick={() => toggleFav(item.id)}
-                style={{
-                  background: T.bg,
-                  border: "none",
-                  borderRadius: 10,
-                  width: 38,
-                  height: 38,
-                  fontSize: 18,
-                  cursor: "pointer",
-                }}
+                className="fd-fav-btn"
+                style={{ background: T.bg }}
               >
                 {isFav ? "❤️" : "🤍"}
               </button>
             </div>
 
-            <h1
-              style={{
-                margin: "10px 0 8px",
-                fontSize: 26,
-                fontWeight: 900,
-                color: T.text,
-                lineHeight: 1.2,
-              }}
-            >
+            <h1 className="fd-item-title" style={{ color: T.text }}>
               {item.name}
             </h1>
 
-            <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
-              <span style={{ fontSize: 14, color: T.sub }}>
+            <div className="fd-stats-row">
+              <span style={{ color: T.sub }}>
                 ⭐ <strong style={{ color: T.text }}>{avgReview}</strong>
               </span>
-              <span style={{ fontSize: 14, color: T.sub }}>
+              <span style={{ color: T.sub }}>
                 🔥 <strong style={{ color: T.text }}>{item.soldCount}</strong>{" "}
                 đã bán
               </span>
-              <span style={{ fontSize: 14, color: T.sub }}>
+              <span style={{ color: T.sub }}>
                 💬 <strong style={{ color: T.text }}>{reviews.length}</strong>{" "}
                 đánh giá
               </span>
             </div>
 
-            <p
-              style={{
-                fontSize: 14,
-                color: T.sub,
-                lineHeight: 1.8,
-                flex: 1,
-                margin: "0 0 24px",
-              }}
-            >
+            <p className="fd-description" style={{ color: T.sub }}>
               {item.description}
             </p>
 
             {/* Quantity */}
-            <div
-              style={{
-                background: T.bg,
-                borderRadius: 14,
-                padding: "14px 18px",
-                marginBottom: 24,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <span style={{ fontSize: 14, fontWeight: 700, color: T.text }}>
+            <div className="fd-qty-box" style={{ background: T.bg }}>
+              <span className="fd-qty-label" style={{ color: T.text }}>
                 Số lượng
               </span>
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <div className="fd-qty-controls">
                 <button
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 10,
-                    border: `1.5px solid ${T.border}`,
-                    background: "#fff",
-                    cursor: "pointer",
-                    fontSize: 18,
-                    fontWeight: 700,
-                  }}
+                  className="fd-qty-dec"
+                  style={{ borderColor: T.border }}
                 >
                   −
                 </button>
-                <span
-                  style={{
-                    fontWeight: 900,
-                    fontSize: 20,
-                    minWidth: 28,
-                    textAlign: "center",
-                  }}
-                >
-                  {qty}
-                </span>
+                <span className="fd-qty-value">{qty}</span>
                 <button
                   onClick={() => setQty((q) => q + 1)}
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 10,
-                    border: "none",
-                    background: T.primary,
-                    color: "#fff",
-                    cursor: "pointer",
-                    fontSize: 18,
-                    fontWeight: 700,
-                  }}
+                  className="fd-qty-inc"
+                  style={{ background: T.primary }}
                 >
                   +
                 </button>
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            {/* Price + Add to cart */}
+            <div className="fd-action-row">
               <div>
-                <p style={{ margin: "0 0 2px", fontSize: 12, color: T.sub }}>
+                <p className="fd-price-label" style={{ color: T.sub }}>
                   Tổng cộng
                 </p>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: 24,
-                    fontWeight: 900,
-                    color: T.primary,
-                  }}
-                >
+                <p className="fd-price-total" style={{ color: T.primary }}>
                   {fmt(item.price * qty)}
                 </p>
               </div>
               <button
                 onClick={addToCart}
-                style={{
-                  flex: 1,
-                  padding: "14px 24px",
-                  background: T.primary,
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: 14,
-                  fontSize: 15,
-                  fontWeight: 800,
-                  cursor: "pointer",
-                }}
+                className="fd-add-btn"
+                style={{ background: T.primary }}
               >
                 🛒 Thêm vào giỏ hàng
               </button>
             </div>
 
             {inCart > 0 && (
-              <p
-                style={{
-                  margin: "10px 0 0",
-                  fontSize: 13,
-                  color: T.green,
-                  fontWeight: 700,
-                }}
-              >
+              <p className="fd-in-cart-msg" style={{ color: T.green }}>
                 ✓ Đã có {inCart} trong giỏ hàng
               </p>
             )}
           </div>
         </div>
 
-        <div style={{ marginTop: 36 }}>
-          <button
-            onClick={() => setShowReviews((prev) => !prev)}
-            style={{
-              border: `1px solid ${T.border}`,
-              background: "#fff",
-              color: T.text,
-              borderRadius: 12,
-              padding: "10px 14px",
-              fontWeight: 800,
-              cursor: "pointer",
-            }}
-          >
-            {showReviews ? "Ẩn comment & đánh giá" : "Xem comment & đánh giá"}
-          </button>
-        </div>
+        {/* Toggle reviews */}
+        <button
+          onClick={() => setShowReviews((prev) => !prev)}
+          className="fd-toggle-reviews-btn"
+          style={{ borderColor: T.border, color: T.text }}
+        >
+          {showReviews ? "Ẩn comment & đánh giá" : "Xem comment & đánh giá"}
+        </button>
 
         {showReviews && (
-          <div style={{ marginTop: 16 }}>
+          <div className="fd-reviews-section">
             <SectionTitle count={reviews.length}>
               Đánh giá & comment
             </SectionTitle>
 
+            {/* Write review */}
             <div
-              style={{
-                background: T.card,
-                borderRadius: 18,
-                border: `1px solid ${T.border}`,
-                padding: 16,
-                marginBottom: 14,
-              }}
+              className="fd-write-review-box"
+              style={{ background: T.card, borderColor: T.border }}
             >
-              <p style={{ margin: "0 0 10px", fontWeight: 800, color: T.text }}>
+              <p className="fd-write-review-title" style={{ color: T.text }}>
                 Viết đánh giá của bạn
               </p>
+
               {ownReview && !editingReviewId && (
                 <div
+                  className="fd-own-review-notice"
                   style={{
-                    marginBottom: 10,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 8,
                     background: T.primaryLight,
-                    border: `1px solid ${T.primary}33`,
-                    borderRadius: 10,
-                    padding: "8px 10px",
+                    borderColor: `${T.primary}33`,
                   }}
                 >
-                  <span style={{ fontSize: 12, color: T.text }}>
+                  <span style={{ color: T.text }}>
                     Bạn đã đánh giá món này. Bạn có thể sửa hoặc xóa.
                   </span>
-                  <div style={{ display: "flex", gap: 6 }}>
+                  <div className="fd-own-review-actions">
                     <button
                       onClick={handleEditOwnReview}
-                      style={{
-                        border: "none",
-                        borderRadius: 8,
-                        background: "#fff",
-                        color: T.primary,
-                        fontSize: 12,
-                        fontWeight: 700,
-                        padding: "4px 8px",
-                        cursor: "pointer",
-                      }}
+                      className="fd-own-review-edit-btn"
+                      style={{ color: T.primary }}
                     >
                       Sửa
                     </button>
                     <button
                       onClick={handleDeleteOwnReview}
-                      style={{
-                        border: "none",
-                        borderRadius: 8,
-                        background: T.redBg,
-                        color: T.red,
-                        fontSize: 12,
-                        fontWeight: 700,
-                        padding: "4px 8px",
-                        cursor: "pointer",
-                      }}
+                      className="fd-own-review-delete-btn"
+                      style={{ background: T.redBg, color: T.red }}
                     >
                       Xóa
                     </button>
                   </div>
                 </div>
               )}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  marginBottom: 10,
-                }}
-              >
+
+              {/* Stars */}
+              <div className="fd-star-row">
                 {[1, 2, 3, 4, 5].map((s) => (
                   <button
                     key={s}
                     onClick={() => setNewRating(s)}
+                    className="fd-star-btn"
                     style={{
-                      border: "none",
-                      background: "transparent",
                       cursor: canReview ? "pointer" : "not-allowed",
-                      fontSize: 22,
                       color: s <= newRating ? "#F59E0B" : "#D1D5DB",
-                      padding: 0,
                       opacity: canReview ? 1 : 0.6,
                     }}
                     title={`${s} sao`}
@@ -719,7 +537,9 @@ const FoodDetail = () => {
                   </button>
                 ))}
               </div>
-              <div style={{ display: "flex", gap: 8 }}>
+
+              {/* Input */}
+              <div className="fd-comment-row">
                 <input
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
@@ -731,25 +551,18 @@ const FoodDetail = () => {
                       ? "Chia sẻ cảm nhận của bạn..."
                       : "Hoàn thành đơn hàng để mở tính năng bình luận"
                   }
+                  className="fd-comment-input"
                   style={{
-                    flex: 1,
-                    border: `1px solid ${T.border}`,
-                    borderRadius: 10,
-                    padding: "10px 12px",
-                    outline: "none",
+                    borderColor: T.border,
                     background: canReview ? "#fff" : "#F5F5F5",
                   }}
                   disabled={!canReview}
                 />
                 <button
                   onClick={handleSubmitComment}
+                  className="fd-comment-submit-btn"
                   style={{
-                    border: "none",
-                    borderRadius: 10,
                     background: canReview ? T.primary : T.muted,
-                    color: "#fff",
-                    fontWeight: 700,
-                    padding: "0 16px",
                     cursor: canReview ? "pointer" : "not-allowed",
                   }}
                   disabled={!canReview}
@@ -759,43 +572,27 @@ const FoodDetail = () => {
               </div>
             </div>
 
+            {/* Review summary */}
             <div
-              style={{
-                background: T.card,
-                borderRadius: 18,
-                border: `1px solid ${T.border}`,
-                padding: 18,
-                marginBottom: 14,
-              }}
+              className="fd-review-summary-box"
+              style={{ background: T.card, borderColor: T.border }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: 34,
-                    fontWeight: 900,
-                    color: T.text,
-                  }}
-                >
+              <div className="fd-avg-stars">
+                <p className="fd-avg-score" style={{ color: T.text }}>
                   {avgReview}
                 </p>
                 <div>
-                  <p
-                    style={{
-                      margin: "0 0 4px",
-                      color: "#F59E0B",
-                      fontSize: 16,
-                    }}
-                  >
+                  <p className="fd-star-display">
                     {"★".repeat(Math.max(1, Math.round(avgReview)))}
                     {"☆".repeat(Math.max(0, 5 - Math.round(avgReview)))}
                   </p>
-                  <p style={{ margin: 0, fontSize: 13, color: T.sub }}>
+                  <p className="fd-review-count" style={{ color: T.sub }}>
                     Dựa trên {reviews.length} nhận xét
                   </p>
                 </div>
               </div>
-              <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+
+              <div className="fd-sort-row">
                 {[
                   ["newest", "Mới nhất"],
                   ["highest", "Điểm cao"],
@@ -804,15 +601,11 @@ const FoodDetail = () => {
                   <button
                     key={key}
                     onClick={() => setReviewSort(key)}
+                    className="fd-sort-btn"
                     style={{
-                      border: `1px solid ${reviewSort === key ? T.primary : T.border}`,
+                      borderColor: reviewSort === key ? T.primary : T.border,
                       background: reviewSort === key ? T.primaryLight : "#fff",
                       color: reviewSort === key ? T.primary : T.text,
-                      borderRadius: 999,
-                      padding: "6px 10px",
-                      fontSize: 12,
-                      fontWeight: 700,
-                      cursor: "pointer",
                     }}
                   >
                     {label}
@@ -821,98 +614,53 @@ const FoodDetail = () => {
               </div>
             </div>
 
+            {/* Review list */}
             {reviews.length === 0 ? (
               <div
-                style={{
-                  background: "#fff",
-                  border: `1px dashed ${T.border}`,
-                  borderRadius: 14,
-                  padding: 14,
-                  color: T.sub,
-                  fontSize: 14,
-                }}
+                className="fd-no-reviews"
+                style={{ borderColor: T.border, color: T.sub }}
               >
                 Chưa có comment cho món này.
               </div>
             ) : (
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 12 }}
-              >
+              <div className="fd-review-list">
                 {sortedReviews.map((r) => (
                   <div
                     key={r.id}
-                    style={{
-                      background: "#fff",
-                      border: `1px solid ${T.border}`,
-                      borderRadius: 14,
-                      padding: "12px 14px",
-                    }}
+                    className="fd-review-card"
+                    style={{ borderColor: T.border }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        gap: 10,
-                        marginBottom: 6,
-                      }}
-                    >
-                      <p style={{ margin: 0, fontWeight: 800, color: T.text }}>
+                    <div className="fd-review-card-header">
+                      <p className="fd-review-user" style={{ color: T.text }}>
                         {r.user}
                       </p>
-                      <span style={{ fontSize: 12, color: T.sub }}>
+                      <span className="fd-review-date" style={{ color: T.sub }}>
                         {r.created_at}
                       </span>
                     </div>
-                    <p
-                      style={{
-                        margin: "0 0 6px",
-                        color: "#F59E0B",
-                        fontSize: 13,
-                      }}
-                    >
+                    <p className="fd-review-stars">
                       {"★".repeat(r.rating)}
                       {"☆".repeat(5 - r.rating)}
                     </p>
-                    <p
-                      style={{
-                        margin: 0,
-                        color: T.sub,
-                        fontSize: 14,
-                        lineHeight: 1.6,
-                      }}
-                    >
+                    <p className="fd-review-comment" style={{ color: T.sub }}>
                       {r.comment}
                     </p>
                     {r.user === currentUserName && (
-                      <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+                      <div className="fd-review-own-actions">
                         <button
                           onClick={handleEditOwnReview}
+                          className="fd-review-edit-btn"
                           style={{
-                            border: "none",
-                            borderRadius: 8,
                             background: T.primaryLight,
                             color: T.primary,
-                            fontSize: 12,
-                            fontWeight: 700,
-                            padding: "4px 8px",
-                            cursor: "pointer",
                           }}
                         >
                           Sửa
                         </button>
                         <button
                           onClick={handleDeleteOwnReview}
-                          style={{
-                            border: "none",
-                            borderRadius: 8,
-                            background: T.redBg,
-                            color: T.red,
-                            fontSize: 12,
-                            fontWeight: 700,
-                            padding: "4px 8px",
-                            cursor: "pointer",
-                          }}
+                          className="fd-review-delete-btn"
+                          style={{ background: T.redBg, color: T.red }}
                         >
                           Xóa
                         </button>
@@ -927,15 +675,9 @@ const FoodDetail = () => {
 
         {/* Related */}
         {related.length > 0 && (
-          <div style={{ marginTop: 36 }}>
+          <div className="fd-related-section">
             <SectionTitle>Món cùng danh mục</SectionTitle>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-                gap: 16,
-              }}
-            >
+            <div className="fd-related-grid">
               {related.map((r) => (
                 <MenuItemCard
                   key={r.id}

@@ -17,7 +17,12 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(2, 6, 23, 0.03) 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(2, 6, 23, 0.03) 50%,
+    transparent 100%
+  );
   pointer-events: none;
 }
 
@@ -147,7 +152,11 @@
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-600) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-600) 100%
+  );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -251,7 +260,11 @@
 }
 
 .form-actions .ant-btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-600) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-600) 100%
+  ) !important;
   box-shadow: 0 10px 22px rgba(79, 70, 229, 0.22) !important;
 }
 
@@ -274,15 +287,13 @@
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  display: inline-flex;
+  background: #fff; /* nền trắng */
+  border: 2px solid var(--primary);
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 900;
-  letter-spacing: 0.5px;
-  color: #fff;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-600) 100%);
-  box-shadow: 0 10px 22px rgba(79, 70, 229, 0.22);
-  flex: 0 0 auto;
+  overflow: hidden; /* chống tràn */
+  padding: 4px; /* tạo khoảng cách cho logo */
 }
 
 .header--customer .header-brand-text {
@@ -300,7 +311,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
+.header--customer .header-brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 .header--customer .header-brand-sub {
   font-weight: 600;
   font-size: 12px;
