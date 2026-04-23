@@ -36,9 +36,9 @@ const FoodUpdateModal = ({
 }) => {
   useEffect(() => {
     if (open && record) {
-      form.setFieldsValue({
+      form.setFieldsValues({
         name: record.name,
-        desc: record.desc || "",
+        desc: record.description || "", // ← đổi record.desc → record.description
         image: record.image || "",
         additionalImages: (record.images || [])
           .filter((img) => img && img !== record.image)
@@ -102,7 +102,10 @@ const FoodUpdateModal = ({
                 rules={[{ required: true, message: "Chọn danh mục" }]}
               >
                 <Select
-                  options={categories.map((c) => ({ value: c.id, label: c.name }))}
+                  options={categories.map((c) => ({
+                    value: c.id,
+                    label: c.name,
+                  }))}
                   placeholder="Chọn danh mục"
                 />
               </Form.Item>
@@ -146,12 +149,20 @@ const FoodUpdateModal = ({
               {() => {
                 const image = form.getFieldValue("image");
                 return (
-                  <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 16,
+                      alignItems: "flex-start",
+                    }}
+                  >
                     <div style={{ flex: 1 }}>
                       <Input
                         placeholder="Nhập link ảnh..."
                         value={image}
-                        onChange={(e) => form.setFieldValue("image", e.target.value)}
+                        onChange={(e) =>
+                          form.setFieldValue("image", e.target.value)
+                        }
                         style={{ marginBottom: 8 }}
                       />
                       <Upload
@@ -197,7 +208,9 @@ const FoodUpdateModal = ({
                           />
                         </>
                       ) : (
-                        <span style={{ color: "#9ca3af", fontSize: 12 }}>Preview</span>
+                        <span style={{ color: "#9ca3af", fontSize: 12 }}>
+                          Preview
+                        </span>
                       )}
                     </div>
                   </div>
@@ -232,7 +245,11 @@ const FoodUpdateModal = ({
                       {images.map((img, index) => (
                         <div
                           key={index}
-                          style={{ position: "relative", width: 80, height: 80 }}
+                          style={{
+                            position: "relative",
+                            width: 80,
+                            height: 80,
+                          }}
                         >
                           <Image
                             src={img}
@@ -248,7 +265,10 @@ const FoodUpdateModal = ({
                             onClick={() => {
                               const list = [...images];
                               list.splice(index, 1);
-                              form.setFieldValue("additionalImages", list.join("\n"));
+                              form.setFieldValue(
+                                "additionalImages",
+                                list.join("\n"),
+                              );
                             }}
                           />
                         </div>

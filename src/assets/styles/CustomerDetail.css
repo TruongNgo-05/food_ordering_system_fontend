@@ -39,13 +39,21 @@
 
 .fd-image-main {
   width: 100%;
-  min-height: 290px;
+  height: 340px;
   border-radius: 18px;
   overflow: hidden;
   background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Đảm bảo ảnh con luôn fill đúng kích thước */
+.fd-image-main img,
+.fd-image-main > * {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
 }
 
 /* Thumbnail strip */
@@ -63,6 +71,14 @@
   width: 56px;
   height: 56px;
   overflow: hidden;
+  flex-shrink: 0;
+}
+
+.fd-thumb-btn img,
+.fd-thumb-btn > * {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
 }
 
 /* Info panel */

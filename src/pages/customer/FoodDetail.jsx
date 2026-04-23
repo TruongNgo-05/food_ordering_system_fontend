@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { T, fmt } from "../../constants/customerTheme";
-import { mockFoodReviews } from "../../data/mockFoodReviews";
 import { EmptyState, SectionTitle } from "../../components/customer/SharedUI";
 import MenuItemCard from "../../components/customer/MenuItemCard";
 import FoodImage from "../../components/common/FoodImage";
@@ -13,6 +12,8 @@ import {
   getFoods,
   getCategories,
 } from "../../services/userService";
+import reviewService from "../../services/customer/customerSevice";
+import { toast } from "react-toastify";
 
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 
@@ -44,7 +45,7 @@ const FoodDetail = () => {
       try {
         setLoading(true);
         const res = await getFoodByIdDetail(id);
-        setItem(res.data.data);
+        setItem(res?.data?.data);
       } catch (err) {
         console.error("Lỗi load chi tiết món:", err);
       } finally {
@@ -56,11 +57,10 @@ const FoodDetail = () => {
 
   const galleryImages = useMemo(() => {
     if (!item) return [];
-    const BASE_URL = "http://localhost:8080/uploads/";
-    const images = Array.isArray(item.images)
-      ? item.images.map((img) => BASE_URL + img)
-      : [];
-    const main = item.image ? BASE_URL + item.image : null;
+
+    const images = Array.isArray(item.images) ? item.images : [];
+    const main = item.image;
+
     return [...new Set([main, ...images].filter(Boolean))];
   }, [item]);
 
@@ -89,17 +89,15 @@ const FoodDetail = () => {
     window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
   }, [favorites]);
 
-  useEffect(() => {
-    const fetchFoods = async () => {
-      try {
-        const res = await getFoods();
-        setFoods(res.data || []);
-      } catch (err) {
-        console.error("Lỗi load foods:", err);
-      }
-    };
-    fetchFoods();
-  }, []);
+  const fetchFoods = async () => {
+    try {
+      const res = await getFoods();
+      const list = res?.data?.data?.content || [];
+      setFoods(list);
+    } catch (err) {
+      console.error("Lỗi load foods:", err);
+    }
+  };
 
   useEffect(() => {
     if (!item) return;
@@ -118,8 +116,7 @@ const FoodDetail = () => {
     confirmLoginWithModal(navigate);
   };
   const BASE_URL = "http://localhost:8080/uploads/";
-  const displayImage =
-    activeImage || (item?.image ? BASE_URL + item.image : "");
+  const displayImage = activeImage || item?.image;
 
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState("");
@@ -127,7 +124,19 @@ const FoodDetail = () => {
   const [reviewSort, setReviewSort] = useState("newest");
   const [editingReviewId, setEditingReviewId] = useState(null);
   const isFav = item ? favorites.includes(item.id) : false;
+  const [reviews, setReviews] = useState([]);
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const res = await reviewService.getReviewByFood(itemId);
+        setReviews(res.data.data.content || []);
+      } catch (err) {
+        console.error("Lỗi load review:", err);
+      }
+    };
 
+    if (itemId) fetchReviews();
+  }, [itemId]);
   const currentUserName = useMemo(() => {
     try {
       const saved = localStorage.getItem("userInfo");
@@ -144,39 +153,29 @@ const FoodDetail = () => {
     const fetchRelated = async () => {
       try {
         const res = await getFoods();
-        const list = res.data || [];
+
+        const list = res?.data?.data?.content || [];
+
+        if (!Array.isArray(list)) {
+          console.warn("Expected array but got:", list);
+          return;
+        }
+
         const filtered = list
-          .filter((f) => f.category === item.category && f.id !== item.id)
+          .filter((f) => f.categoryId === item.categoryId && f.id !== item.id)
           .slice(0, 4);
+
         setRelated(filtered);
       } catch (err) {
         console.error("Lỗi load related:", err);
       }
     };
+
     if (item) fetchRelated();
   }, [item]);
-
-  const [customReviews, setCustomReviews] = useState(() => {
-    const saved = localStorage.getItem("food-reviews");
-    return saved ? JSON.parse(saved) : {};
-  });
-
-  useEffect(() => {
-    localStorage.setItem("food-reviews", JSON.stringify(customReviews));
-  }, [customReviews]);
-
-  const reviews = useMemo(() => {
-    if (!item) return [];
-    const baseReviews = mockFoodReviews[item.id] || [];
-    const localReviews = customReviews[item.id] || [];
-    return [...localReviews, ...baseReviews];
-  }, [item, customReviews]);
-
   const ownReview = useMemo(() => {
-    if (!item) return null;
-    const localReviews = customReviews[item.id] || [];
-    return localReviews.find((r) => r.user === currentUserName) || null;
-  }, [item, customReviews, currentUserName]);
+    return reviews.find((r) => r.username === currentUserName);
+  }, [reviews, currentUserName]);
 
   const sortedReviews = useMemo(() => {
     const list = [...reviews];
@@ -184,9 +183,16 @@ const FoodDetail = () => {
       return list.sort((a, b) => b.rating - a.rating);
     if (reviewSort === "lowest")
       return list.sort((a, b) => a.rating - b.rating);
-    return list.sort((a, b) => (b.created_ts || 0) - (a.created_ts || 0));
+    return list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [reviews, reviewSort]);
 
+  const handleEditOwnReview = () => {
+    if (!ownReview) return;
+
+    setEditingReviewId(ownReview.id);
+    setNewRating(ownReview.rating);
+    setNewComment(ownReview.comment);
+  };
   const avgReview = useMemo(() => {
     if (!reviews.length) return item?.rating || 0;
     const total = reviews.reduce((s, r) => s + r.rating, 0);
@@ -252,56 +258,62 @@ const FoodDetail = () => {
     );
   };
 
-  const handleSubmitComment = () => {
-    if (!item || !canReview) return;
-    const content = newComment.trim();
-    if (!content) return;
+  const handleSubmitComment = async () => {
+    if (!newComment.trim()) return;
 
-    setCustomReviews((prev) => {
-      const list = prev[item.id] || [];
-      const targetId = editingReviewId || ownReview?.id;
-      const now = Date.now();
-      const review = {
-        id: targetId || `local-${now}`,
-        user: currentUserName,
+    try {
+      const payload = {
+        foodId: itemId,
         rating: newRating,
-        comment: content,
-        created_at: "Vừa xong",
-        created_ts: now,
+        comment: newComment,
       };
 
-      if (targetId) {
-        return {
-          ...prev,
-          [item.id]: list.map((r) => (r.id === targetId ? review : r)),
-        };
-      }
-      return {
-        ...prev,
-        [item.id]: [review, ...list.filter((r) => r.user !== currentUserName)],
-      };
-    });
-    setNewComment("");
-    setNewRating(5);
-    setEditingReviewId(null);
+      await reviewService.createReview(payload);
+
+      toast.success("Đánh giá thành công!");
+
+      setNewComment("");
+      setNewRating(5);
+
+      // reload lại review
+      const res = await reviewService.getReviewByFood(itemId);
+      setReviews(res.data.data.content || []);
+    } catch (err) {
+      toast.error("Gửi đánh giá thất bại!");
+    }
   };
 
-  const handleEditOwnReview = () => {
-    if (!ownReview) return;
-    setEditingReviewId(ownReview.id);
-    setNewRating(ownReview.rating);
-    setNewComment(ownReview.comment);
+  const handleUpdateReview = async () => {
+    try {
+      await reviewService.updateReview(editingReviewId, {
+        rating: newRating,
+        comment: newComment,
+      });
+
+      toast.success("Cập nhật thành công!");
+
+      setEditingReviewId(null);
+      setNewComment("");
+      setNewRating(5);
+
+      const res = await reviewService.getReviewByFood(itemId);
+      setReviews(res.data.data.content || []);
+    } catch (err) {
+      toast.error("Cập nhật thất bại!");
+    }
   };
 
-  const handleDeleteOwnReview = () => {
-    if (!item || !ownReview) return;
-    setCustomReviews((prev) => {
-      const list = prev[item.id] || [];
-      return { ...prev, [item.id]: list.filter((r) => r.id !== ownReview.id) };
-    });
-    setEditingReviewId(null);
-    setNewComment("");
-    setNewRating(5);
+  const handleDeleteOwnReview = async () => {
+    try {
+      await reviewService.deleteReview(ownReview.id);
+
+      toast.success("Xóa thành công!");
+
+      const res = await reviewService.getReviewByFood(itemId);
+      setReviews(res.data.data.content || []);
+    } catch (err) {
+      toast.error("Xóa thất bại!");
+    }
   };
 
   if (!item) {
@@ -380,7 +392,7 @@ const FoodDetail = () => {
                 className="fd-category-badge"
                 style={{ background: T.bg, color: T.sub }}
               >
-                {item.category}
+                {item.categoryName}
               </span>
               <button
                 onClick={() => toggleFav(item.id)}
@@ -544,7 +556,11 @@ const FoodDetail = () => {
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSubmitComment();
+                    if (e.key === "Enter") {
+                      editingReviewId
+                        ? handleUpdateReview()
+                        : handleSubmitComment();
+                    }
                   }}
                   placeholder={
                     canReview
@@ -559,7 +575,9 @@ const FoodDetail = () => {
                   disabled={!canReview}
                 />
                 <button
-                  onClick={handleSubmitComment}
+                  onClick={
+                    editingReviewId ? handleUpdateReview : handleSubmitComment
+                  }
                   className="fd-comment-submit-btn"
                   style={{
                     background: canReview ? T.primary : T.muted,
@@ -632,10 +650,10 @@ const FoodDetail = () => {
                   >
                     <div className="fd-review-card-header">
                       <p className="fd-review-user" style={{ color: T.text }}>
-                        {r.user}
+                        {r.username}
                       </p>
                       <span className="fd-review-date" style={{ color: T.sub }}>
-                        {r.created_at}
+                        {new Date(r.createdAt).toLocaleString()}
                       </span>
                     </div>
                     <p className="fd-review-stars">
@@ -645,7 +663,7 @@ const FoodDetail = () => {
                     <p className="fd-review-comment" style={{ color: T.sub }}>
                       {r.comment}
                     </p>
-                    {r.user === currentUserName && (
+                    {r.username === currentUserName && (
                       <div className="fd-review-own-actions">
                         <button
                           onClick={handleEditOwnReview}

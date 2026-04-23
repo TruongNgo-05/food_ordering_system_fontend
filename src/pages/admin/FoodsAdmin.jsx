@@ -13,6 +13,11 @@ import { getCategories } from "../../services/userService";
 import adminFoodService from "../../services/admin/adminFoodService";
 
 const pageSize = 5;
+const parseAdditionalImages = (value) =>
+  String(value || "")
+    .split(/[\n,]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
 
 const AdminFoods = () => {
   const [items, setItems] = useState([]);
@@ -52,15 +57,15 @@ const AdminFoods = () => {
       const mapped = content.map((item) => ({
         id: item.id,
         name: item.name,
-        desc: item.description,
+        description: item.description, // ← đổi từ desc → description
         price: item.price,
         image: item.image || "",
         images: item.images || [],
         rating: item.rating,
-        sold: item.soldCount,
+        soldCount: item.soldCount, // ← đổi từ sold → soldCount
         status: item.status ? "active" : "inactive",
         category_id: item.categories?.id ?? null,
-        category_name: item.categories?.name || "—",
+        category_name: item.categoryName || "—",
         createdAt: item.createdAt,
       }));
 
@@ -108,18 +113,63 @@ const AdminFoods = () => {
       message.error("Cập nhật trạng thái thất bại");
     }
   };
+  const handleView = async (r) => {
+    try {
+      const res = await adminFoodService.getFoodDetailAdmin(r.id);
+      const d = res.data?.data;
 
+      setViewRecord({
+        ...d,
+        status: d.status ? "active" : "inactive",
+        category_name: d.categoryName || "—",
+      });
+      setOpenView(true);
+    } catch {
+      message.error("Không thể tải chi tiết món ăn");
+    }
+  };
   // ================= CRUD =================
   const handleAdd = async (values) => {
     try {
-      await adminFoodService.createFood({
-        name: values.name,
-        description: values.desc || "",
-        categoryId: Number(values.category),
-        price: (values.priceInThousand || 0) * 1000,
-        image: values.image || "",
-        status: true,
-      });
+      let imageUrl = "";
+
+      if (values.image?.startsWith("data:")) {
+        // base64 → File
+        const res = await fetch(values.image);
+        const blob = await res.blob();
+        imageFile = new File([blob], "image.jpg", { type: blob.type });
+      } else {
+        imageUrl = values.image || "";
+      }
+
+      // Ảnh phụ: tách base64 và URL
+      const additionalList = parseAdditionalImages(values.additionalImages);
+      const imageFiles = [];
+      const imageUrls = [];
+
+      for (const img of additionalList) {
+        if (img.startsWith("data:")) {
+          const res = await fetch(img);
+          const blob = await res.blob();
+          imageFiles.push(new File([blob], "img.jpg", { type: blob.type }));
+        } else {
+          imageUrls.push(img);
+        }
+      }
+
+      await adminFoodService.createFood(
+        {
+          name: values.name,
+          description: values.desc || "",
+          categoryId: Number(values.category),
+          price: (values.priceInThousand || 0) * 1000,
+          image: imageUrl, // URL ảnh đại diện (nếu có)
+          images: imageUrls, // URL ảnh phụ (nếu có)
+        },
+        imageFile, // File ảnh đại diện (nếu upload từ máy)
+        imageFiles, // File[] ảnh phụ (nếu upload từ máy)
+      );
+
       message.success("Thêm món thành công");
       setOpenAdd(false);
       createForm.resetFields();
@@ -131,13 +181,45 @@ const AdminFoods = () => {
 
   const handleEdit = async (values) => {
     try {
-      await adminFoodService.updateFood(editingRecord.id, {
-        name: values.name,
-        description: values.desc || "",
-        categoryId: Number(values.category),
-        price: (values.priceInThousand || 0) * 1000,
-        image: values.image || "",
-      });
+      let imageFile = undefined;
+      let imageUrl = "";
+
+      if (values.image?.startsWith("data:")) {
+        const res = await fetch(values.image);
+        const blob = await res.blob();
+        imageFile = new File([blob], "image.jpg", { type: blob.type });
+      } else {
+        imageUrl = values.image || "";
+      }
+
+      const additionalList = parseAdditionalImages(values.additionalImages);
+      const imageFiles = [];
+      const imageUrls = [];
+
+      for (const img of additionalList) {
+        if (img.startsWith("data:")) {
+          const res = await fetch(img);
+          const blob = await res.blob();
+          imageFiles.push(new File([blob], "img.jpg", { type: blob.type }));
+        } else {
+          imageUrls.push(img);
+        }
+      }
+
+      await adminFoodService.updateFood(
+        editingRecord.id,
+        {
+          name: values.name,
+          description: values.desc || "",
+          categoryId: Number(values.category),
+          price: (values.priceInThousand || 0) * 1000,
+          image: imageUrl,
+          images: imageUrls,
+        },
+        imageFile,
+        imageFiles,
+      );
+
       message.success("Cập nhật thành công");
       setOpenEdit(false);
       setEditingRecord(null);
@@ -217,10 +299,7 @@ const AdminFoods = () => {
           loading={loading}
           categories={categories}
           onToggleStatus={toggleStatus}
-          onView={(r) => {
-            setViewRecord(r);
-            setOpenView(true);
-          }}
+          onView={handleView}
           onEdit={(r) => {
             setEditingRecord(r);
             editForm.setFieldsValue({

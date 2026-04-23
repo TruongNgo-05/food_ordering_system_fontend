@@ -1,5 +1,4 @@
-/* STATS CARD */
-.ant-card {
+STATS CARD .ant-card {
   border-radius: 14px !important;
   border: 1px solid var(--border) !important;
   box-shadow: var(--shadow-sm) !important;
@@ -21,7 +20,7 @@
   color: var(--text);
 }
 
-/* FILTER BAR */
+
 .filter-bar {
   display: flex;
   gap: 10px;
@@ -110,7 +109,6 @@
   font-size: 13px;
 }
 
-/* ACTION BUTTON */
 .ant-table .ant-btn {
   border-radius: 8px;
   border: 1px solid var(--border);
@@ -123,7 +121,6 @@
   color: var(--text) !important;
 }
 
-/* TAG */
 .ant-tag {
   font-weight: 700;
   border-radius: 999px;
@@ -152,7 +149,6 @@
   color: var(--primary-600) !important;
 }
 
-/* PAGINATION - đứng yên, không làm layout nhảy */
 .question-pagination {
   display: flex;
   justify-content: center;
@@ -169,10 +165,13 @@
   color: var(--primary) !important;
 }
 
-/* BUTTON PRIMARY */
 .ant-btn-primary {
   border-radius: 10px !important;
-  background: linear-gradient(135deg, var(--primary), var(--primary-600)) !important;
+  background: linear-gradient(
+    135deg,
+    var(--primary),
+    var(--primary-600)
+  ) !important;
   border: none !important;
   font-weight: 700 !important;
 }
@@ -181,12 +180,10 @@
   filter: brightness(1.03);
 }
 
-/* HOVER TABLE ROW */
 .ant-table-tbody > tr:hover > td {
   background: rgba(79, 70, 229, 0.03) !important;
 }
 
-/* RESPONSIVE */
 @media (max-width: 768px) {
   .filter-bar {
     flex-direction: column;

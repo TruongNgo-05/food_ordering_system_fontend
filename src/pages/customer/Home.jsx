@@ -31,7 +31,7 @@ const Home = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(0);
-  const pageSize = 10;
+  const pageSize = 12;
 
   const [cart, setCart] = useState(() => {
     const saved = localStorage.getItem("cart");
@@ -39,10 +39,6 @@ const Home = () => {
   });
   const [favorites, setFavorites] = useState(() => {
     const saved = localStorage.getItem("favorites");
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [recentlyViewedIds, setRecentlyViewedIds] = useState(() => {
-    const saved = localStorage.getItem("recently-viewed-foods");
     return saved ? JSON.parse(saved) : [];
   });
 
@@ -91,11 +87,12 @@ const Home = () => {
   useEffect(() => {
     const t = setTimeout(() => {
       setDebouncedSearch(search);
-      setPage(0); // reset page khi search thay đổi
+      setPage(0);
     }, 300);
     return () => clearTimeout(t);
   }, [search]);
 
+  // ─── Fetch foods ─────────────────────────────────────────────────
   useEffect(() => {
     const fetchFoods = async () => {
       setLoadingFoods(true);
@@ -149,17 +146,6 @@ const Home = () => {
     window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
   }, [favorites]);
 
-  // ─── Sync recently viewed ────────────────────────────────────────
-  useEffect(() => {
-    const sync = () => {
-      const saved = localStorage.getItem("recently-viewed-foods");
-      setRecentlyViewedIds(saved ? JSON.parse(saved) : []);
-    };
-    sync();
-    window.addEventListener("focus", sync);
-    return () => window.removeEventListener("focus", sync);
-  }, []);
-
   // ─── Sync greeting name ──────────────────────────────────────────
   useEffect(() => {
     const sync = () =>
@@ -180,15 +166,6 @@ const Home = () => {
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  // ─── Recently viewed (dùng foods đã load) ───────────────────────
-  const recentlyViewedItems = useMemo(() => {
-    if (!recentlyViewedIds.length) return [];
-    return recentlyViewedIds
-      .map((id) => foods.find((m) => m.id === id))
-      .filter(Boolean)
-      .slice(0, 4);
-  }, [recentlyViewedIds, foods]);
 
   // ─── Cart map ────────────────────────────────────────────────────
   const cartMap = useMemo(
@@ -302,30 +279,6 @@ const Home = () => {
 
       {/* Menu list */}
       <div id="customer-menu-section" className="customer-home-content-wrap">
-        {recentlyViewedItems.length > 0 && (
-          <div className="customer-home-recent-section">
-            <UserHeader
-              title="Đã xem gần đây"
-              description="Xem lại món bạn vừa xem"
-            />
-            <div className="customer-home-recent-grid">
-              {recentlyViewedItems.map((item) => (
-                <MenuItemCard
-                  key={`recent-${item.id}`}
-                  item={item}
-                  isFav={favorites.includes(item.id)}
-                  inCart={cartMap[item.id] || 0}
-                  onToggleFav={toggleFav}
-                  onAdd={addToCart}
-                  onDec={decCart}
-                  compact
-                  onClick={() => navigate(`/customer/foods/${item.id}`)}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
         {loadingFoods ? (
           <div className="customer-loading" style={{ color: T.textSub }}>
             Đang tải...

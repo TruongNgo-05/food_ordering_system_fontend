@@ -1,23 +1,7 @@
-/* .customer-cart-page {
-  overflow-y: auto;
-  height: 100%;
-}
-
-.customer-cart-container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 36px;
-} */
-/* ===== CustomerCart Page ===== */
 .customer-cart-page {
   min-height: 100%;
 }
 
-.customer-cart-container {
-  /* wrapper dùng chung */
-}
-
-/* ===== Layout ===== */
 .cart-layout {
   display: flex;
   gap: 24px;

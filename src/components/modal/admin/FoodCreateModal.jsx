@@ -135,12 +135,20 @@ const FoodCreateModal = ({ open, onCancel, onSubmit, categories, form }) => {
                 const image = form.getFieldValue("image");
 
                 return (
-                  <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 16,
+                      alignItems: "flex-start",
+                    }}
+                  >
                     <div style={{ flex: 1 }}>
                       <Input
                         placeholder="Nhập link ảnh..."
                         value={image}
-                        onChange={(e) => form.setFieldValue("image", e.target.value)}
+                        onChange={(e) =>
+                          form.setFieldValue("image", e.target.value)
+                        }
                         style={{ marginBottom: 8 }}
                       />
 
@@ -148,7 +156,7 @@ const FoodCreateModal = ({ open, onCancel, onSubmit, categories, form }) => {
                         showUploadList={false}
                         beforeUpload={async (file) => {
                           const base64 = await fileToDataUrl(file);
-                          form.setFieldValue("image", base64);
+                          form.setFieldValue("image", base64); 
                           return false;
                         }}
                       >
@@ -187,7 +195,9 @@ const FoodCreateModal = ({ open, onCancel, onSubmit, categories, form }) => {
                           />
                         </>
                       ) : (
-                        <span style={{ color: "#9ca3af", fontSize: 12 }}>Preview</span>
+                        <span style={{ color: "#9ca3af", fontSize: 12 }}>
+                          Preview
+                        </span>
                       )}
                     </div>
                   </div>
@@ -223,7 +233,11 @@ const FoodCreateModal = ({ open, onCancel, onSubmit, categories, form }) => {
                       {images.map((img, index) => (
                         <div
                           key={index}
-                          style={{ position: "relative", width: 80, height: 80 }}
+                          style={{
+                            position: "relative",
+                            width: 80,
+                            height: 80,
+                          }}
                         >
                           <Image
                             src={img}
@@ -240,7 +254,10 @@ const FoodCreateModal = ({ open, onCancel, onSubmit, categories, form }) => {
                             onClick={() => {
                               const list = [...images];
                               list.splice(index, 1);
-                              form.setFieldValue("additionalImages", list.join("\n"));
+                              form.setFieldValue(
+                                "additionalImages",
+                                list.join("\n"),
+                              );
                             }}
                           />
                         </div>
@@ -249,12 +266,10 @@ const FoodCreateModal = ({ open, onCancel, onSubmit, categories, form }) => {
                       <Upload
                         multiple
                         showUploadList={false}
-                        beforeUpload={async (file) => {
-                          const base64 = await fileToDataUrl(file);
-                          form.setFieldValue(
-                            "additionalImages",
-                            [...images, base64].join("\n"),
-                          );
+                        beforeUpload={(file) => {
+                          const current =
+                            form.getFieldValue("imageFiles") || [];
+                          form.setFieldValue("imageFiles", [...current, file]);
                           return false;
                         }}
                       >

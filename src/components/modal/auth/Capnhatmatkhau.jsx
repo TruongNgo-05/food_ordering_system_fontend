@@ -13,18 +13,13 @@ const Capnhatmatkhau = ({
   const [loading, setLoading] = useState(false);
   const handleSubmit = async (values) => {
     try {
-      setLoading(true)
+      setLoading(true);
       await onChangePassword(values);
-      toast.success("Đổi mật khẩu thành công!");
       form.resetFields();
       onCancel();
     } catch (error) {
-      toast.error(
-        error?.message || "Đổi mật khẩu thất bại. Vui lòng thử lại."
-      );
     } finally {
       setLoading(false);
-
     }
   };
   const handleCancel = () => {
@@ -46,7 +41,6 @@ const Capnhatmatkhau = ({
         className="change-password-form"
         onFinish={handleSubmit}
       >
-
         <Form.Item
           label="Mật khẩu hiện tại"
           name="currentPassword"
@@ -63,7 +57,6 @@ const Capnhatmatkhau = ({
             size="large"
           />
         </Form.Item>
-
 
         <Form.Item
           label="Mật khẩu mới"
@@ -86,10 +79,9 @@ const Capnhatmatkhau = ({
           />
         </Form.Item>
 
-
         <Form.Item
           label="Xác nhận mật khẩu mới"
-          name="confirmPassword"
+          name="confirmNewPassword"
           dependencies={["newPassword"]}
           rules={[
             {
@@ -98,30 +90,25 @@ const Capnhatmatkhau = ({
             },
             ({ getFieldValue }) => ({
               validator(_, value) {
-
                 if (!value || getFieldValue("newPassword") === value) {
                   return Promise.resolve();
                 }
 
                 return Promise.reject(
-                  new Error("Mật khẩu xác nhận không khớp")
+                  new Error("Mật khẩu xác nhận không khớp"),
                 );
               },
             }),
           ]}
         >
-
           <Input.Password
             prefix={<FontAwesomeIcon icon={faLock} />}
             placeholder="Nhập lại mật khẩu mới"
             size="large"
           />
-
         </Form.Item>
 
-
         <Form.Item style={{ marginBottom: 0 }}>
-
           <div
             style={{
               display: "flex",
@@ -129,14 +116,9 @@ const Capnhatmatkhau = ({
               justifyContent: "flex-end",
             }}
           >
-
-            <Button
-              onClick={handleCancel}
-              size="large"
-            >
+            <Button onClick={handleCancel} size="large">
               Hủy
             </Button>
-
 
             <Button
               type="primary"
@@ -146,13 +128,9 @@ const Capnhatmatkhau = ({
             >
               Lưu
             </Button>
-
           </div>
-
         </Form.Item>
-
       </Form>
-
     </Modal>
   );
 };

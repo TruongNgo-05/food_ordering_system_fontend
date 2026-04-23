@@ -27,8 +27,8 @@ const FoodTable = ({
     },
     {
       title: "Danh mục",
-      dataIndex: "category_id",
-      render: (id) => categories.find((c) => c.id === id)?.name || "—",
+      dataIndex: "category_name",
+      render: (name) => name || "—",
     },
     {
       title: "Giá",

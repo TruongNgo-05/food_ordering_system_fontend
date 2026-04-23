@@ -9,20 +9,19 @@ const FoodViewModal = ({ open, onCancel, record, categories = [] }) => {
 
   const galleryImages = useMemo(() => {
     if (!record) return [];
-    const extra = Array.isArray(record.images) ? record.images : [];
-    const merged = [record.image, ...extra].filter(Boolean);
-    return [...new Set(merged)];
+
+    return [...(record.image ? [record.image] : []), ...(record.images || [])];
   }, [record]);
+  console.log("VIEW RECORD:", record);
 
   useEffect(() => {
-    setActiveImage(galleryImages[0] || "");
+    if (!record) return;
+    setActiveImage(record.image || "");
   }, [record?.id, open]);
 
   const displayImage = activeImage || galleryImages[0] || record?.image || "";
 
   if (!record) return null;
-
-  // Ưu tiên category_name map sẵn, fallback tìm trong categories prop
   const categoryName =
     record.category_name ||
     categories.find((c) => c.id === record.category_id)?.name ||
@@ -123,7 +122,7 @@ const FoodViewModal = ({ open, onCancel, record, categories = [] }) => {
           </h2>
 
           {/* Mô tả */}
-          {record.desc && (
+          {record.description && (
             <p
               style={{
                 margin: 0,
@@ -132,21 +131,20 @@ const FoodViewModal = ({ open, onCancel, record, categories = [] }) => {
                 lineHeight: 1.7,
               }}
             >
-              {record.desc}
+              {record.description}
             </p>
           )}
-
           {/* Rating + Sold */}
           <div style={{ display: "flex", gap: 16 }}>
             {record.rating != null && (
-              <span style={{ fontSize: 13, color: "#6B7280" }}>
-                ⭐ <strong style={{ color: "#111827" }}>{record.rating}</strong>
+              <span>
+                ⭐ <strong>{record.rating}</strong>
               </span>
             )}
-            {record.sold != null && (
-              <span style={{ fontSize: 13, color: "#6B7280" }}>
-                🔥 <strong style={{ color: "#111827" }}>{record.sold}</strong>{" "}
-                đã bán
+
+            {record.soldCount != null && (
+              <span>
+                🔥 <strong>{record.soldCount}</strong> đã bán
               </span>
             )}
           </div>
