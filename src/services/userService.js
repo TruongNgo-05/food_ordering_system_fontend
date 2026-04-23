@@ -29,7 +29,7 @@ export const uploadAvatarApi = (id, file) => {
  * POST /api/users/change-password
  */
 export const changePasswordApi = (data) => {
-  return api.put("/users/change-password", data);
+  return api.put("/users/changePassword", data);
 };
 
 export const createAccount = (data) => {

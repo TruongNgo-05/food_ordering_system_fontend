@@ -273,7 +273,6 @@
   box-shadow: 0 14px 28px rgba(79, 70, 229, 0.28) !important;
 }
 
-/* Customer: header brand + nav (replaces sider) */
 .header--customer .header-brand {
   display: flex;
   align-items: center;
@@ -287,13 +286,13 @@
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  background: #fff; /* nền trắng */
+  background: #fff;
   border: 2px solid var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden; /* chống tràn */
-  padding: 4px; /* tạo khoảng cách cho logo */
+  overflow: hidden;
+  padding: 4px;
 }
 
 .header--customer .header-brand-text {

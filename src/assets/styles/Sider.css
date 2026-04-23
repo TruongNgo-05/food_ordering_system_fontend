@@ -17,7 +17,11 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 20% 20%, rgba(79, 70, 229, 0.06), transparent 52%);
+  background: radial-gradient(
+    circle at 20% 20%,
+    rgba(79, 70, 229, 0.06),
+    transparent 52%
+  );
   pointer-events: none;
 }
 
@@ -43,7 +47,8 @@
   height: 44px;
   border-radius: 12px;
   object-fit: contain;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-600) 100%);
+  background: white;
+  border: 2px solid var(--primary);
   padding: 6px;
   box-shadow: 0 10px 22px rgba(79, 70, 229, 0.22);
   transition:

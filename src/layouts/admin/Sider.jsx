@@ -81,7 +81,7 @@ const Sider = ({ mobileOpen = false, onCloseMobile }) => {
       <div className="sider-content">
         <div className="sider-logo">
           <img src={logo} alt="Logo" className="logo-img" />
-          <span className="logo-text">Nhà Hàng NQT</span>
+          <span className="logo-text">Nhà Hàng NT</span>
         </div>
 
         <nav className="sider-menu">
