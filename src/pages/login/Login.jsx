@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "../../hooks/useAuth";
 import { GoogleLogin } from "@react-oauth/google";
 import api from "../../services/apiClient";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const Login = () => {
   const [loading, setLoading] = React.useState(false);
@@ -31,7 +32,23 @@ const Login = () => {
 
     return user;
   };
-
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        // Lấy access_token từ tokenResponse.access_token
+        const user = await loginWithGoogle(tokenResponse.access_token);
+        toast.success("Đăng nhập Google thành công!");
+        if (user.role === "ADMIN") {
+          navigate("/admin");
+        } else {
+          navigate("/customer");
+        }
+      } catch {
+        toast.error("Login Google thất bại");
+      }
+    },
+    onError: () => toast.error("Login Google thất bại"),
+  });
   const onFinish = async (values) => {
     setLoading(true);
 
@@ -87,7 +104,6 @@ const Login = () => {
             <div className="logo-container">
               <img src={logo} alt="Ngô Quang Trường" className="logo" />
             </div>
-            <div className="restaurant-tag">NQT Restaurant</div>
             <h1>Chào mừng trở lại</h1>
             <p>Đăng nhập để đặt món nhanh và theo dõi đơn hàng</p>
           </div>
@@ -146,27 +162,14 @@ const Login = () => {
             </div>
 
             <div className="social-login-group">
-              <div style={{ width: "100%" }}>
-                <GoogleLogin
-                  onSuccess={async (credentialResponse) => {
-                    try {
-                      const user = await loginWithGoogle(
-                        credentialResponse.credential,
-                      );
-
-                      toast.success("Đăng nhập Google thành công!");
-
-                      if (user.role === "ADMIN") {
-                        navigate("/admin");
-                      } else {
-                        navigate("/customer");
-                      }
-                    } catch {
-                      toast.error("Login Google thất bại");
-                    }
-                  }}
-                />
-              </div>
+              <button
+                type="button"
+                className="social-login-btn google"
+                onClick={() => handleGoogleLogin()}
+              >
+                <span className="social-login-icon">G</span>
+                <span>Google</span>
+              </button>
               <button
                 type="button"
                 className="social-login-btn facebook"

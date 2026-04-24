@@ -6,45 +6,34 @@ const adminFoodService = {
 
   getFoodDetailAdmin: (id) => api.get(`/admin/foods/${id}`),
 
-  // ================= CREATE =================
   createFood: (data, image, images) => {
     const formData = new FormData();
-
-    formData.append(
-      "data",
-      new Blob([JSON.stringify(data)], { type: "application/json" }),
-    );
-
-    if (image) {
-      formData.append("image", image);
-    }
-
-    if (images && images.length > 0) {
-      images.forEach((img) => {
-        formData.append("images", img);
-      });
-    }
-
-    return api.post("/admin/foods", formData);
-  },
-
-  // ================= UPDATE =================
-  updateFood: (id, data, image, images) => {
-    const formData = new FormData();
-
     formData.append("data", JSON.stringify(data));
 
-    if (image) {
-      formData.append("image", image);
-    }
+    if (image) formData.append("image", image);
 
     if (images && images.length > 0) {
-      images.forEach((img) => {
-        formData.append("images", img);
-      });
+      images.forEach((img) => formData.append("images", img));
     }
 
-    return api.put(`/admin/foods/${id}`, formData);
+    return api.post("/admin/foods", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+
+  updateFood: (id, data, image, images) => {
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(data));
+
+    if (image) formData.append("image", image);
+
+    if (images && images.length > 0) {
+      images.forEach((img) => formData.append("images", img));
+    }
+
+    return api.put(`/admin/foods/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
   },
 
   // ================= DELETE =================

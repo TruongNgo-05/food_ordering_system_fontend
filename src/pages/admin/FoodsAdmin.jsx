@@ -64,7 +64,7 @@ const AdminFoods = () => {
         rating: item.rating,
         soldCount: item.soldCount, // ← đổi từ sold → soldCount
         status: item.status ? "active" : "inactive",
-        category_id: item.categories?.id ?? null,
+        category_id: null,
         category_name: item.categoryName || "—",
         createdAt: item.createdAt,
       }));
@@ -101,11 +101,25 @@ const AdminFoods = () => {
   const toggleStatus = async (id) => {
     const target = items.find((it) => it.id === id);
     if (!target) return;
+
     const newStatus = target.status === "active" ? "inactive" : "active";
+
     try {
-      await adminFoodService.updateFood(id, {
-        status: newStatus === "active",
-      });
+      await adminFoodService.updateFood(
+        id,
+        {
+          name: target.name,
+          description: target.description,
+          categoryId: target.category_id,
+          price: target.price,
+          status: newStatus === "active",
+          imageUrl: target.image,
+          imageUrls: target.images || [],
+        },
+        null,
+        null,
+      );
+
       setItems((prev) =>
         prev.map((it) => (it.id === id ? { ...it, status: newStatus } : it)),
       );
@@ -131,81 +145,33 @@ const AdminFoods = () => {
   // ================= CRUD =================
   const handleAdd = async (values) => {
     try {
-      let imageUrl = "";
-
-      if (values.image?.startsWith("data:")) {
-        // base64 → File
-        const res = await fetch(values.image);
-        const blob = await res.blob();
-        imageFile = new File([blob], "image.jpg", { type: blob.type });
-      } else {
-        imageUrl = values.image || "";
-      }
-
-      // Ảnh phụ: tách base64 và URL
-      const additionalList = parseAdditionalImages(values.additionalImages);
-      const imageFiles = [];
-      const imageUrls = [];
-
-      for (const img of additionalList) {
-        if (img.startsWith("data:")) {
-          const res = await fetch(img);
-          const blob = await res.blob();
-          imageFiles.push(new File([blob], "img.jpg", { type: blob.type }));
-        } else {
-          imageUrls.push(img);
-        }
-      }
-
       await adminFoodService.createFood(
         {
           name: values.name,
           description: values.desc || "",
           categoryId: Number(values.category),
           price: (values.priceInThousand || 0) * 1000,
-          image: imageUrl, // URL ảnh đại diện (nếu có)
-          images: imageUrls, // URL ảnh phụ (nếu có)
+          imageUrl: values.image?.startsWith("http") ? values.image : "",
+          imageUrls: parseAdditionalImages(values.additionalImages),
         },
-        imageFile, // File ảnh đại diện (nếu upload từ máy)
-        imageFiles, // File[] ảnh phụ (nếu upload từ máy)
+        values.imageFile,
+        values.imageFiles || [],
       );
 
       message.success("Thêm món thành công");
       setOpenAdd(false);
       createForm.resetFields();
       fetchFoods();
-    } catch {
+      console.log("IMAGE FILE:", values.imageFile);
+      console.log("IMAGES FILE:", values.imageFiles);
+    } catch (err) {
+      console.error(err);
       message.error("Thêm món thất bại");
     }
   };
 
   const handleEdit = async (values) => {
     try {
-      let imageFile = undefined;
-      let imageUrl = "";
-
-      if (values.image?.startsWith("data:")) {
-        const res = await fetch(values.image);
-        const blob = await res.blob();
-        imageFile = new File([blob], "image.jpg", { type: blob.type });
-      } else {
-        imageUrl = values.image || "";
-      }
-
-      const additionalList = parseAdditionalImages(values.additionalImages);
-      const imageFiles = [];
-      const imageUrls = [];
-
-      for (const img of additionalList) {
-        if (img.startsWith("data:")) {
-          const res = await fetch(img);
-          const blob = await res.blob();
-          imageFiles.push(new File([blob], "img.jpg", { type: blob.type }));
-        } else {
-          imageUrls.push(img);
-        }
-      }
-
       await adminFoodService.updateFood(
         editingRecord.id,
         {
@@ -213,18 +179,19 @@ const AdminFoods = () => {
           description: values.desc || "",
           categoryId: Number(values.category),
           price: (values.priceInThousand || 0) * 1000,
-          image: imageUrl,
-          images: imageUrls,
+          imageUrl: values.image?.startsWith("http") ? values.image : "",
+          imageUrls: parseAdditionalImages(values.additionalImages),
         },
-        imageFile,
-        imageFiles,
+        values.imageFile,
+        values.imageFiles || [],
       );
 
       message.success("Cập nhật thành công");
       setOpenEdit(false);
       setEditingRecord(null);
       fetchFoods();
-    } catch {
+    } catch (err) {
+      console.error(err);
       message.error("Cập nhật thất bại");
     }
   };
