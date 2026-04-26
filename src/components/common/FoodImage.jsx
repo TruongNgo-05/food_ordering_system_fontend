@@ -50,11 +50,6 @@ export default function FoodImage({
 
   const imageUrl = getImageUrl(src);
   const shouldShowImage = isValidImageUrl(src) && !error;
-  
-  // Debug: check actual URL
-  if (src && src.trim()) {
-    console.log(`[FoodImage] src: "${src}" -> url: "${imageUrl}"`);
-  }
 
   if (shouldShowImage) {
     return (

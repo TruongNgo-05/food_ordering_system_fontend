@@ -64,8 +64,16 @@ const AdminFoods = () => {
         rating: item.rating,
         soldCount: item.soldCount, // ← đổi từ sold → soldCount
         status: item.status ? "active" : "inactive",
-        category_id: null,
-        category_name: item.categoryName || "—",
+        category_id:
+          item.categoryId ??
+          item.category_id ??
+          (item.category && item.category.id) ??
+          null,
+        category_name:
+          item.categoryName ||
+          (item.category && item.category.name) ||
+          item.categoryName ||
+          "—",
         createdAt: item.createdAt,
       }));
 

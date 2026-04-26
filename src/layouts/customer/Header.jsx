@@ -74,12 +74,15 @@ const Header = () => {
   const handleChangePassword = async (values) => {
     try {
       await changePasswordApi({
-        password: values.currentPassword,
+        currentPassword: values.currentPassword,
         newPassword: values.newPassword,
+        confirmNewPassword: values.confirmNewPassword,
       });
+      toast.success("Đổi mật khẩu thành công!");
+      setIsPasswordModalOpen(false);
     } catch (error) {
       const msg = error.response?.data?.message || "Đổi mật khẩu thất bại!";
-
+      toast.error(msg);
       throw new Error(msg);
     }
   };

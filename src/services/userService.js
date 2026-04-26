@@ -11,17 +11,17 @@ export const getCurrentUserApi = () => {
  * Cập nhật thông tin cá nhân
  * PUT /api/users/profile
  */
-export const updateProfileApi = (data) => {
-  return api.put("/users/me", data);
-};
-export const uploadAvatarApi = (id, file) => {
+export const updateProfileApi = (data, avatarFile) => {
   const formData = new FormData();
-  formData.append("file", file);
-
-  return api.post(`/users/upload-avatar/${id}`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
+  formData.append(
+    "data",
+    new Blob([JSON.stringify(data)], { type: "application/json" }),
+  );
+  if (avatarFile) {
+    formData.append("avatar", avatarFile);
+  }
+  return api.put("/users/me", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
   });
 };
 /**

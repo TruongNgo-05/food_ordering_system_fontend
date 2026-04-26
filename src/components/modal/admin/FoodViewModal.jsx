@@ -12,7 +12,7 @@ const FoodViewModal = ({ open, onCancel, record, categories = [] }) => {
 
     return [...(record.image ? [record.image] : []), ...(record.images || [])];
   }, [record]);
-  console.log("VIEW RECORD:", record);
+
 
   useEffect(() => {
     if (!record) return;

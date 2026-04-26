@@ -11,6 +11,25 @@ export default function UserViewDrawer({
   if (!user) return null;
   const avatar = user.avatar || "";
 
+  const getImageUrl = (src) => {
+    if (!src || typeof src !== "string") return "";
+    const trimmed = src.trim();
+    if (
+      trimmed.startsWith("data:image/") ||
+      trimmed.startsWith("http://") ||
+      trimmed.startsWith("https://") ||
+      trimmed.startsWith("blob:")
+    ) {
+      return trimmed;
+    }
+    // prepend backend base URL (remove /api suffix)
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+    const baseUrl = apiUrl.replace("/api", "");
+    if (trimmed.startsWith("/")) return baseUrl + trimmed;
+    return baseUrl + "/" + trimmed;
+  };
+  const avatarUrl = getImageUrl(avatar);
+
   const data = [
     { label: "Họ tên", value: user.fullName },
     { label: "Username", value: user.username },
@@ -50,7 +69,7 @@ export default function UserViewDrawer({
         >
           {avatar ? (
             <img
-              src={avatar}
+              src={avatarUrl}
               alt="avatar-user"
               style={{
                 width: 86,
@@ -58,6 +77,10 @@ export default function UserViewDrawer({
                 borderRadius: "50%",
                 objectFit: "cover",
                 border: "2px solid #e5e7eb",
+              }}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = "";
               }}
             />
           ) : (
