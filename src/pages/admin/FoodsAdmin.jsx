@@ -5,7 +5,6 @@ import UserHeader from "../../components/user/UserHeader";
 import StatsCards from "../../components/common/StatsCards";
 import AppPagination from "../../components/common/AppPagination";
 import FoodTable from "../../components/admin/FoodTable";
-
 import FoodCreateModal from "../../components/modal/admin/FoodCreateModal";
 import FoodUpdateModal from "../../components/modal/admin/FoodUpdateModal";
 import FoodViewModal from "../../components/modal/admin/FoodViewModal";
@@ -57,12 +56,15 @@ const AdminFoods = () => {
       const mapped = content.map((item) => ({
         id: item.id,
         name: item.name,
-        description: item.description, // ← đổi từ desc → description
+        description: item.description,
         price: item.price,
         image: item.image || "",
-        images: item.images || [],
+        images: (item.images || []).map((img) => ({
+          id: img.id,
+          url: img.url,
+        })),
         rating: item.rating,
-        soldCount: item.soldCount, // ← đổi từ sold → soldCount
+        soldCount: item.soldCount,
         status: item.status ? "active" : "inactive",
         category_id:
           item.categoryId ??
@@ -122,12 +124,12 @@ const AdminFoods = () => {
           price: target.price,
           status: newStatus === "active",
           imageUrl: target.image,
-          imageUrls: target.images || [],
+          imageUrls: (target.images || []).map((img) => img.url),
+          removeImage: false,
         },
         null,
         null,
       );
-
       setItems((prev) =>
         prev.map((it) => (it.id === id ? { ...it, status: newStatus } : it)),
       );
@@ -159,7 +161,11 @@ const AdminFoods = () => {
           description: values.desc || "",
           categoryId: Number(values.category),
           price: (values.priceInThousand || 0) * 1000,
-          imageUrl: values.image?.startsWith("http") ? values.image : "",
+          imageUrl: values.imageFile
+            ? null // ưu tiên file
+            : values.removeImage
+              ? ""
+              : values.image || "",
           imageUrls: parseAdditionalImages(values.additionalImages),
         },
         values.imageFile,
@@ -187,13 +193,17 @@ const AdminFoods = () => {
           description: values.desc || "",
           categoryId: Number(values.category),
           price: (values.priceInThousand || 0) * 1000,
-          imageUrl: values.image?.startsWith("http") ? values.image : "",
+          imageUrl: values.imageFile
+            ? null
+            : values.removeImage
+              ? ""
+              : values.image || "",
           imageUrls: parseAdditionalImages(values.additionalImages),
+          removeImage: values.removeImage || false,
         },
         values.imageFile,
         values.imageFiles || [],
       );
-
       message.success("Cập nhật thành công");
       setOpenEdit(false);
       setEditingRecord(null);
@@ -281,6 +291,8 @@ const AdminFoods = () => {
               ...r,
               category: r.category_id,
               priceInThousand: r.price / 1000,
+              imageFiles: [],
+              additionalImages: (r.images || []).map((i) => i.url).join("\n"),
             });
             setOpenEdit(true);
           }}

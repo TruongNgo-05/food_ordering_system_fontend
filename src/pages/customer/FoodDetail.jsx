@@ -12,7 +12,7 @@ import {
   getFoods,
   getCategories,
 } from "../../services/userService";
-import reviewService from "../../services/customer/customerSevice";
+import reviewService from "../../services/customer/reviewService";
 import { toast } from "react-toastify";
 
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
@@ -204,7 +204,17 @@ const FoodDetail = () => {
   }, [cart]);
 
   const inCart = item ? cart.find((c) => c.item_id === item.id)?.qty || 0 : 0;
-
+  // const DEBUG_ALLOW_REVIEW = false;
+  // const canReview =
+  //   DEBUG_ALLOW_REVIEW ||
+  //   useMemo(() => {
+  //     if (!item || !Array.isArray(orders)) return false;
+  //     return orders.some(
+  //       (order) =>
+  //         order?.status === "completed" &&
+  //         order.items?.some((it) => it.item_id === item.id),
+  //     );
+  //   }, [orders, item]);
   const canReview = useMemo(() => {
     if (!item || !Array.isArray(orders)) return false;
     return orders.some(
@@ -216,7 +226,6 @@ const FoodDetail = () => {
         ),
     );
   }, [orders, item]);
-
   const addToCart = () => {
     if (!item) return;
     setCart((prev) => {
@@ -274,12 +283,12 @@ const FoodDetail = () => {
 
       setNewComment("");
       setNewRating(5);
-
-      // reload lại review
       const res = await reviewService.getReviewByFood(itemId);
       setReviews(res.data.data.content || []);
     } catch (err) {
-      toast.error("Gửi đánh giá thất bại!");
+      const msg = err?.response?.data?.message || "Gửi đánh giá thất bại!";
+
+      toast.error(msg);
     }
   };
 

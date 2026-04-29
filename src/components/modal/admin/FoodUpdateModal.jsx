@@ -35,17 +35,21 @@ const FoodUpdateModal = ({
         name: record.name,
         desc: record.description || "",
         image: record.image || "",
+
         additionalImages: (record.images || [])
-          .filter((img) => img && img !== record.image)
+          .map((img) => img.url)
           .join("\n"),
+        existingImages: record.images || [],
+
         category: record.category_id,
         priceInThousand: Math.round(record.price / 1000),
 
         imageFile: null,
         imageFiles: [],
+        removeImage: false,
       });
     }
-  }, [open, record, form]);
+  }, [open, record]);
 
   const handleOk = async () => {
     try {
@@ -205,7 +209,11 @@ const FoodUpdateModal = ({
                             size="small"
                             icon={<DeleteOutlined />}
                             style={{ position: "absolute", top: 6, right: 6 }}
-                            onClick={() => form.setFieldValue("image", "")}
+                            onClick={() => {
+                              form.setFieldValue("image", null);
+                              form.setFieldValue("imageFile", null);
+                              form.setFieldValue("removeImage", true);
+                            }}
                           />
                         </>
                       ) : (
@@ -224,6 +232,21 @@ const FoodUpdateModal = ({
             <GalleryUpload form={form} />
           </Form.Item>
         </div>
+        <Form.Item name="image" hidden>
+          <Input />
+        </Form.Item>
+
+        <Form.Item name="removeImage" hidden>
+          <Input />
+        </Form.Item>
+
+        <Form.Item name="imageFile" hidden>
+          <Input />
+        </Form.Item>
+
+        <Form.Item name="imageFiles" hidden>
+          <Input />
+        </Form.Item>
       </Form>
     </Modal>
   );

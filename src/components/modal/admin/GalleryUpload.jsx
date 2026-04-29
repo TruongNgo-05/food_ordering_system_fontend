@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Input, Button, Image } from "antd";
+import { Input, Button, Image, Upload, message } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
-import { Upload } from "antd";
+import adminFoodService from "../../../services/admin/adminFoodService";
 
 const fileToDataUrl = (file) =>
   new Promise((resolve, reject) => {
@@ -21,7 +21,11 @@ const GalleryUpload = ({ form }) => {
   const imageUrls = parseAdditionalImages(
     form.getFieldValue("additionalImages") || "",
   );
+
   const imageFiles = form.getFieldValue("imageFiles") || [];
+
+  const existingImages = form.getFieldValue("existingImages") || [];
+
   const [imageFilePreviews, setImageFilePreviews] = useState({});
 
   useEffect(() => {
@@ -29,7 +33,7 @@ const GalleryUpload = ({ form }) => {
       const previews = {};
       for (let i = 0; i < imageFiles.length; i++) {
         const file = imageFiles[i];
-        if (file instanceof File && !previews[i]) {
+        if (file instanceof File) {
           previews[i] = await fileToDataUrl(file);
         }
       }
@@ -38,6 +42,37 @@ const GalleryUpload = ({ form }) => {
     generatePreviews();
   }, [imageFiles]);
 
+  // ================= DELETE IMAGE URL =================
+  const handleDeleteUrl = async (img, index) => {
+    try {
+      // 🔥 tìm imageId từ DB
+      const found = existingImages.find((it) => it.url === img);
+
+      // nếu có id → gọi API xoá
+      if (found?.id) {
+        await adminFoodService.deleteFoodSubImage(found.id);
+      }
+
+      // update UI
+      const list = [...imageUrls];
+      list.splice(index, 1);
+
+      form.setFieldValue("additionalImages", list.join("\n"));
+
+      message.success("Xóa ảnh thành công");
+    } catch (err) {
+      console.error(err);
+      message.error("Xóa ảnh thất bại");
+    }
+  };
+
+  // ================= DELETE FILE =================
+  const handleDeleteFile = (index) => {
+    const list = [...imageFiles];
+    list.splice(index, 1);
+    form.setFieldValue("imageFiles", list);
+  };
+
   return (
     <>
       <Input.Search
@@ -45,6 +80,7 @@ const GalleryUpload = ({ form }) => {
         enterButton="Thêm"
         onSearch={(value) => {
           if (!value.trim()) return;
+
           form.setFieldValue(
             "additionalImages",
             [...imageUrls, value].join("\n"),
@@ -54,6 +90,7 @@ const GalleryUpload = ({ form }) => {
       />
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+        {/* ================= URL IMAGES ================= */}
         {imageUrls.map((img, i) => (
           <div
             key={`url-${i}`}
@@ -68,22 +105,19 @@ const GalleryUpload = ({ form }) => {
               width={80}
               height={80}
               style={{ objectFit: "cover", borderRadius: 8 }}
-              preview={true}
             />
+
             <Button
               danger
               size="small"
               icon={<DeleteOutlined />}
               style={{ position: "absolute", top: 2, right: 2 }}
-              onClick={() => {
-                const list = [...imageUrls];
-                list.splice(i, 1);
-                form.setFieldValue("additionalImages", list.join("\n"));
-              }}
+              onClick={() => handleDeleteUrl(img, i)}
             />
           </div>
         ))}
 
+        {/* ================= FILE IMAGES ================= */}
         {imageFiles.map((file, i) => (
           <div
             key={`file-${i}`}
@@ -100,18 +134,14 @@ const GalleryUpload = ({ form }) => {
                   width={80}
                   height={80}
                   style={{ objectFit: "cover", borderRadius: 8 }}
-                  preview={true}
                 />
+
                 <Button
                   danger
                   size="small"
                   icon={<DeleteOutlined />}
                   style={{ position: "absolute", top: 2, right: 2 }}
-                  onClick={() => {
-                    const list = [...imageFiles];
-                    list.splice(i, 1);
-                    form.setFieldValue("imageFiles", list);
-                  }}
+                  onClick={() => handleDeleteFile(i)}
                 />
               </>
             ) : (
@@ -134,6 +164,7 @@ const GalleryUpload = ({ form }) => {
           </div>
         ))}
 
+        {/* ================= UPLOAD ================= */}
         <Upload
           multiple
           showUploadList={false}
@@ -154,7 +185,6 @@ const GalleryUpload = ({ form }) => {
               cursor: "pointer",
               borderRadius: 8,
               background: "#fafafa",
-              transition: "all 0.3s",
             }}
           >
             <PlusOutlined style={{ fontSize: 24, color: "#999" }} />

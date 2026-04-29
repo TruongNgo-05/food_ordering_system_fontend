@@ -15,7 +15,6 @@ const adminFoodService = {
     if (images && images.length > 0) {
       images.forEach((img) => formData.append("images", img));
     }
-
     return api.post("/admin/foods", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
@@ -24,13 +23,10 @@ const adminFoodService = {
   updateFood: (id, data, image, images) => {
     const formData = new FormData();
     formData.append("data", JSON.stringify(data));
-
     if (image) formData.append("image", image);
-
     if (images && images.length > 0) {
       images.forEach((img) => formData.append("images", img));
     }
-
     return api.put(`/admin/foods/${id}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
@@ -39,5 +35,4 @@ const adminFoodService = {
   // ================= DELETE =================
   deleteFood: (id) => api.delete(`/admin/foods/${id}`),
 };
-
 export default adminFoodService;
