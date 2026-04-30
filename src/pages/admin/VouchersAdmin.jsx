@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, InputNumber, Modal, message } from "antd";
-
+import { Form, Input, message } from "antd";
+import dayjs from "dayjs";
 import UserHeader from "../../components/user/UserHeader";
 import StatsCards from "../../components/common/StatsCards";
 import AppPagination from "../../components/common/AppPagination";
-import BaseTable from "../../components/common/BaseTable";
-import TableActions from "../../components/common/TableActions";
+import VoucherTable from "../../components/admin/VoucherTable";
+import adminVoucherService from "../../services/admin/adminVoucher";
+import VoucherCreateModal from "../../components/modal/admin/VoucherCreateModal";
+import VoucherEditModal from "../../components/modal/admin/VoucherUpdateModal";
+import VoucherDetailModal from "../../components/modal/admin/VoucherDetailModal";
 
 const pageSize = 5;
 
@@ -19,54 +22,65 @@ const AdminVouchers = () => {
 
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
-  const [openDelete, setOpenDelete] = useState(false);
+  const [openDetail, setOpenDetail] = useState(false);
 
+  const [detailRecord, setDetailRecord] = useState(null);
   const [editingRecord, setEditingRecord] = useState(null);
 
-  const [form] = Form.useForm();
+  const [createForm] = Form.useForm();
+  const [editForm] = Form.useForm();
 
-  // ================= MOCK LOAD =================
+  // ================= FETCH =================
+  const fetchVouchers = async () => {
+    try {
+      setLoading(true);
+
+      const res = await adminVoucherService.getAllVoucher({
+        page,
+        size: pageSize,
+        code: search,
+      });
+
+      const data = res.data?.data;
+
+      setItems(data?.content || []);
+      setTotal(data?.totalElements || 0);
+    } catch (e) {
+      message.error("Load voucher thất bại");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fake = [
-      {
-        id: 1,
-        code: "SALE10",
-        percent: 10,
-        used: 5,
-      },
-      {
-        id: 2,
-        code: "SALE20",
-        percent: 20,
-        used: 2,
-      },
-    ];
+    const timer = setTimeout(() => {
+      fetchVouchers();
+    }, 300);
 
-    setItems(fake);
-    setTotal(fake.length);
-  }, []);
+    return () => clearTimeout(timer);
+  }, [page, search]);
 
   // ================= ADD =================
   const handleAdd = async () => {
     try {
-      const values = await form.validateFields();
+      const values = await createForm.validateFields();
 
-      const newItem = {
-        id: Date.now(),
-        code: values.code,
-        percent: values.percent,
-        used: values.used || 0,
+      const payload = {
+        ...values,
+        discount: (values.discount || 0) * 1000,
+        minOrderValue: (values.minOrderValue || 0) * 1000,
+        startDate: values.startDate?.format("YYYY-MM-DDTHH:mm:ss"),
+        endDate: values.endDate?.format("YYYY-MM-DDTHH:mm:ss"),
       };
 
-      const newList = [newItem, ...items];
-
-      setItems(newList);
-      setTotal(newList.length);
+      await adminVoucherService.createVoucher(payload);
 
       message.success("Thêm voucher thành công");
       setOpenAdd(false);
-      form.resetFields();
-    } catch {
+      createForm.resetFields();
+
+      fetchVouchers();
+    } catch (e) {
       message.error("Thêm thất bại");
     }
   };
@@ -74,68 +88,38 @@ const AdminVouchers = () => {
   // ================= EDIT =================
   const handleEdit = async () => {
     try {
-      const values = await form.validateFields();
+      const values = await editForm.validateFields();
 
-      const newList = items.map((it) =>
-        it.id === editingRecord.id
-          ? {
-              ...it,
-              code: values.code,
-              percent: values.percent,
-              used: values.used,
-            }
-          : it,
-      );
+      const payload = {
+        ...values,
+        discount: (values.discount || 0) * 1000,
+        minOrderValue: (values.minOrderValue || 0) * 1000,
+        startDate: values.startDate?.format("YYYY-MM-DDTHH:mm:ss"),
+        endDate: values.endDate?.format("YYYY-MM-DDTHH:mm:ss"),
+      };
 
-      setItems(newList);
+      await adminVoucherService.updateVoucher(editingRecord.id, payload);
 
       message.success("Cập nhật thành công");
       setOpenEdit(false);
       setEditingRecord(null);
-    } catch {
+
+      fetchVouchers();
+    } catch (e) {
       message.error("Cập nhật thất bại");
     }
   };
 
   // ================= DELETE =================
-  const handleDelete = async () => {
-    const newList = items.filter((it) => it.id !== editingRecord.id);
-
-    setItems(newList);
-    setTotal(newList.length);
-
-    message.success("Xóa thành công");
-    setOpenDelete(false);
-    setEditingRecord(null);
+  const handleDelete = async (id) => {
+    try {
+      await adminVoucherService.deleteVoucher(id);
+      message.success("Xóa thành công");
+      fetchVouchers();
+    } catch (e) {
+      message.error("Xóa thất bại");
+    }
   };
-
-  // ================= TABLE =================
-  const columns = [
-    { title: "Mã", dataIndex: "code" },
-    {
-      title: "Giảm (%)",
-      dataIndex: "percent",
-      render: (v) => `${v}%`,
-    },
-    { title: "Số lượt dùng", dataIndex: "used" },
-    {
-      title: "Thao tác",
-      render: (_, record) => (
-        <TableActions
-          record={record}
-          onEdit={(r) => {
-            setEditingRecord(r);
-            form.setFieldsValue(r);
-            setOpenEdit(true);
-          }}
-          onDelete={() => {
-            setEditingRecord(record);
-            setOpenDelete(true);
-          }}
-        />
-      ),
-    },
-  ];
 
   return (
     <>
@@ -145,7 +129,7 @@ const AdminVouchers = () => {
         description="Quản lý mã giảm giá"
         buttonText="Thêm voucher"
         handleAdd={() => {
-          form.resetFields();
+          createForm.resetFields();
           setOpenAdd(true);
         }}
       />
@@ -166,14 +150,40 @@ const AdminVouchers = () => {
         <Input
           placeholder="Tìm voucher..."
           allowClear
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setPage(0);
+            setSearch(e.target.value);
+          }}
         />
       </div>
 
       {/* TABLE */}
-      <div className="admin-table-wrapper">
-        <BaseTable columns={columns} data={items} loading={loading} />
-      </div>
+      <VoucherTable
+        data={items}
+        onView={async (record) => {
+          try {
+            const res = await adminVoucherService.getVoucherDetail(record.id);
+            const data = res.data?.data;
+
+            setDetailRecord(data);
+            setOpenDetail(true);
+          } catch (e) {
+            message.error("Không thể tải chi tiết voucher");
+          }
+        }}
+        onEdit={(record) => {
+          setEditingRecord(record);
+          editForm.setFieldsValue({
+            ...record,
+            discount: record.discount / 1000,
+            minOrderValue: record.minOrderValue / 1000,
+            startDate: record.startDate ? dayjs(record.startDate) : null,
+            endDate: record.endDate ? dayjs(record.endDate) : null,
+          });
+          setOpenEdit(true);
+        }}
+        onDelete={handleDelete}
+      />
 
       {/* PAGINATION */}
       <AppPagination
@@ -183,76 +193,28 @@ const AdminVouchers = () => {
         onChange={(p) => setPage(p)}
       />
 
-      {/* ADD */}
-      <Modal
-        title="Thêm voucher"
+      {/* DETAIL */}
+      <VoucherDetailModal
+        open={openDetail}
+        onCancel={() => setOpenDetail(false)}
+        data={detailRecord}
+      />
+
+      {/* CREATE */}
+      <VoucherCreateModal
+        form={createForm}
         open={openAdd}
         onCancel={() => setOpenAdd(false)}
         onOk={handleAdd}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            name="code"
-            label="Mã voucher"
-            rules={[{ required: true, message: "Nhập mã" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="percent"
-            label="Giảm (%)"
-            rules={[{ required: true, message: "Nhập %" }]}
-          >
-            <InputNumber min={1} max={100} style={{ width: "100%" }} />
-          </Form.Item>
-
-          <Form.Item name="used" label="Số lượt dùng">
-            <InputNumber min={0} style={{ width: "100%" }} />
-          </Form.Item>
-        </Form>
-      </Modal>
+      />
 
       {/* EDIT */}
-      <Modal
-        title="Sửa voucher"
+      <VoucherEditModal
+        form={editForm}
         open={openEdit}
         onCancel={() => setOpenEdit(false)}
         onOk={handleEdit}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            name="code"
-            label="Mã voucher"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="percent"
-            label="Giảm (%)"
-            rules={[{ required: true }]}
-          >
-            <InputNumber min={1} max={100} style={{ width: "100%" }} />
-          </Form.Item>
-
-          <Form.Item name="used" label="Số lượt dùng">
-            <InputNumber min={0} style={{ width: "100%" }} />
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      {/* DELETE */}
-      <Modal
-        title="Xác nhận xóa"
-        open={openDelete}
-        onCancel={() => setOpenDelete(false)}
-        onOk={handleDelete}
-        okButtonProps={{ danger: true }}
-      >
-        <p>Bạn chắc chắn muốn xóa voucher này?</p>
-      </Modal>
+      />
     </>
   );
 };

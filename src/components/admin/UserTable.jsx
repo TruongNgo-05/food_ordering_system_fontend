@@ -14,23 +14,9 @@ const UserTable = ({
 }) => {
   const columns = [
     {
-      title: "Ảnh",
-      dataIndex: "image",
-      render: (img) =>
-        img ? (
-          <img
-            src={img}
-            alt="avatar"
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              objectFit: "cover",
-            }}
-          />
-        ) : (
-          "—"
-        ),
+      title: "ID",
+      dataIndex: "id",
+      render: (id) => id || "—",
     },
     { title: "Họ Tên", dataIndex: "name" },
     { title: "Email", dataIndex: "email" },

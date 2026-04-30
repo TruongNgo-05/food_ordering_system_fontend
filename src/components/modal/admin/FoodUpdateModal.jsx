@@ -11,6 +11,7 @@ import {
 } from "antd";
 import { Upload, Image, Button } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import GalleryUpload from "./GalleryUpload";
 
 const fileToDataUrl = (file) =>
   new Promise((resolve, reject) => {
@@ -19,12 +20,6 @@ const fileToDataUrl = (file) =>
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
-
-const parseAdditionalImages = (value) =>
-  String(value || "")
-    .split(/[\n,]/)
-    .map((s) => s.trim())
-    .filter(Boolean);
 
 const FoodUpdateModal = ({
   open,
@@ -36,18 +31,25 @@ const FoodUpdateModal = ({
 }) => {
   useEffect(() => {
     if (open && record) {
-      form.setFieldsValues({
+      form.setFieldsValue({
         name: record.name,
-        desc: record.description || "", // ← đổi record.desc → record.description
+        desc: record.description || "",
         image: record.image || "",
+
         additionalImages: (record.images || [])
-          .filter((img) => img && img !== record.image)
+          .map((img) => img.url)
           .join("\n"),
+        existingImages: record.images || [],
+
         category: record.category_id,
         priceInThousand: Math.round(record.price / 1000),
+
+        imageFile: null,
+        imageFiles: [],
+        removeImage: false,
       });
     }
-  }, [open, record, form]);
+  }, [open, record]);
 
   const handleOk = async () => {
     try {
@@ -169,7 +171,10 @@ const FoodUpdateModal = ({
                         showUploadList={false}
                         beforeUpload={async (file) => {
                           const base64 = await fileToDataUrl(file);
+
                           form.setFieldValue("image", base64);
+                          form.setFieldValue("imageFile", file);
+
                           return false;
                         }}
                       >
@@ -204,7 +209,11 @@ const FoodUpdateModal = ({
                             size="small"
                             icon={<DeleteOutlined />}
                             style={{ position: "absolute", top: 6, right: 6 }}
-                            onClick={() => form.setFieldValue("image", "")}
+                            onClick={() => {
+                              form.setFieldValue("image", null);
+                              form.setFieldValue("imageFile", null);
+                              form.setFieldValue("removeImage", true);
+                            }}
                           />
                         </>
                       ) : (
@@ -220,95 +229,24 @@ const FoodUpdateModal = ({
           </Form.Item>
 
           <Form.Item label="Ảnh phụ">
-            <Form.Item shouldUpdate noStyle>
-              {() => {
-                const images = parseAdditionalImages(
-                  form.getFieldValue("additionalImages"),
-                );
-                return (
-                  <>
-                    <Input.Search
-                      placeholder="Nhập link ảnh phụ rồi nhấn Enter"
-                      enterButton="Thêm"
-                      onSearch={(value) => {
-                        const trimmed = value.trim();
-                        if (!trimmed) return;
-                        form.setFieldValue(
-                          "additionalImages",
-                          [...images, trimmed].join("\n"),
-                        );
-                      }}
-                      style={{ marginBottom: 10 }}
-                    />
-
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                      {images.map((img, index) => (
-                        <div
-                          key={index}
-                          style={{
-                            position: "relative",
-                            width: 80,
-                            height: 80,
-                          }}
-                        >
-                          <Image
-                            src={img}
-                            width={80}
-                            height={80}
-                            style={{ objectFit: "cover", borderRadius: 8 }}
-                          />
-                          <Button
-                            danger
-                            size="small"
-                            icon={<DeleteOutlined />}
-                            style={{ position: "absolute", top: 2, right: 2 }}
-                            onClick={() => {
-                              const list = [...images];
-                              list.splice(index, 1);
-                              form.setFieldValue(
-                                "additionalImages",
-                                list.join("\n"),
-                              );
-                            }}
-                          />
-                        </div>
-                      ))}
-
-                      <Upload
-                        multiple
-                        showUploadList={false}
-                        beforeUpload={async (file) => {
-                          const base64 = await fileToDataUrl(file);
-                          form.setFieldValue(
-                            "additionalImages",
-                            [...images, base64].join("\n"),
-                          );
-                          return false;
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: 80,
-                            height: 80,
-                            border: "1px dashed #d1d5db",
-                            borderRadius: 8,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            cursor: "pointer",
-                            background: "#f9fafb",
-                          }}
-                        >
-                          <PlusOutlined />
-                        </div>
-                      </Upload>
-                    </div>
-                  </>
-                );
-              }}
-            </Form.Item>
+            <GalleryUpload form={form} />
           </Form.Item>
         </div>
+        <Form.Item name="image" hidden>
+          <Input />
+        </Form.Item>
+
+        <Form.Item name="removeImage" hidden>
+          <Input />
+        </Form.Item>
+
+        <Form.Item name="imageFile" hidden>
+          <Input />
+        </Form.Item>
+
+        <Form.Item name="imageFiles" hidden>
+          <Input />
+        </Form.Item>
       </Form>
     </Modal>
   );

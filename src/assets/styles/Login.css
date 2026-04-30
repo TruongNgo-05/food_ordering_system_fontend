@@ -5,7 +5,11 @@
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(circle at 12% 18%, rgba(79, 70, 229, 0.12), transparent 34%),
+    radial-gradient(
+      circle at 12% 18%,
+      rgba(79, 70, 229, 0.12),
+      transparent 34%
+    ),
     radial-gradient(circle at 85% 78%, rgba(2, 6, 23, 0.06), transparent 30%),
     linear-gradient(135deg, var(--bg), #eef2ff);
   padding: 20px;
@@ -373,23 +377,6 @@
 .auth-switch a {
   color: var(--primary-600);
   font-weight: 700;
-}
-
-.restaurant-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  background: rgba(79, 70, 229, 0.1);
-  color: var(--primary-600);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.restaurant-tag::before {
-  content: "🍽️";
 }
 
 .forgot-modal .ant-modal-content {

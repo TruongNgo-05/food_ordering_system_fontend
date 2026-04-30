@@ -5,7 +5,6 @@ import { AuthContext } from "../../../context/authContext";
 import {
   getCurrentUserApi,
   updateProfileApi,
-  uploadAvatarApi,
 } from "../../../services/userService";
 
 const fileToDataUrl = (file) =>
@@ -27,9 +26,41 @@ const Capnhatthongtin = ({
 
   const [loading, setLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState("");
+  const [avatarLoadError, setAvatarLoadError] = useState(false);
   const [avatarUrlInput, setAvatarUrlInput] = useState("");
-  const [avatarTab, setAvatarTab] = useState("upload"); // "upload" | "url"
+  const [avatarTab, setAvatarTab] = useState("upload");
   const [urlError, setUrlError] = useState("");
+
+  const getImageUrl = (src) => {
+    if (!src || typeof src !== "string") return "";
+
+    const trimmed = src.trim();
+
+    if (
+      trimmed.startsWith("data:image/") ||
+      trimmed.startsWith("http://") ||
+      trimmed.startsWith("https://") ||
+      trimmed.startsWith("blob:")
+    ) {
+      return trimmed;
+    }
+
+    if (trimmed.startsWith("/")) {
+      const apiUrl =
+        import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+      const baseUrl = apiUrl.replace("/api", "");
+      return baseUrl + trimmed;
+    }
+
+    if (trimmed) {
+      const apiUrl =
+        import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+      const baseUrl = apiUrl.replace("/api", "");
+      return baseUrl + "/" + trimmed;
+    }
+
+    return "";
+  };
 
   useEffect(() => {
     if (open) {
@@ -47,6 +78,9 @@ const Capnhatthongtin = ({
       });
 
       setAvatarPreview(user.avatar || "");
+      // prefill URL input so user can easily edit the saved avatar
+      setAvatarUrlInput(user.avatar || "");
+      setAvatarLoadError(false);
     } catch (error) {
       console.error("Load user failed", error);
     }
@@ -56,20 +90,35 @@ const Capnhatthongtin = ({
     try {
       setLoading(true);
 
-      const res = await updateProfileApi({
-        fullName: values.fullName,
-        email: values.email,
-        phone: values.phone,
-        avatar: avatarPreview,
-      });
-      const msg = res.data.message;
-      message.success(msg);
+      let avatarFile = null;
+      let avatarUrl = "";
+
+      if (avatarPreview?.startsWith("data:")) {
+        const res = await fetch(avatarPreview);
+        const blob = await res.blob();
+        avatarFile = new File([blob], "avatar.jpg", { type: blob.type });
+      } else {
+        avatarUrl = avatarPreview;
+      }
+
+      await updateProfileApi(
+        {
+          fullName: values.fullName,
+          email: values.email,
+          phone: values.phone,
+          avatar: avatarUrl,
+        },
+        avatarFile,
+      );
+
+      message.success("Cập nhật thành công");
+
       await refreshUser();
       await loadCurrentUser();
 
       onCancel();
     } catch (error) {
-      console.error("Update failed", error);
+      console.error(error);
       message.error(error.response?.data?.message || "Cập nhật thất bại");
     } finally {
       setLoading(false);
@@ -82,6 +131,7 @@ const Capnhatthongtin = ({
     setAvatarUrlInput("");
     setUrlError("");
     setAvatarTab("upload");
+    setAvatarLoadError(false);
     onCancel();
   };
 
@@ -89,35 +139,22 @@ const Capnhatthongtin = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // check size
     if (file.size > 10 * 1024 * 1024) {
       message.error("Ảnh phải nhỏ hơn 10MB");
       return;
     }
 
     try {
-      setLoading(true);
+      const base64 = await fileToDataUrl(file);
+      setAvatarPreview(base64);
+      setAvatarUrlInput("");
+      setAvatarLoadError(false);
+    } catch {
+      message.error("Không thể đọc file");
+    }
 
-      // gọi backend upload
-      const userRes = await getCurrentUserApi();
-      const userId = userRes.data.data.id;
-
-      const res = await uploadAvatarApi(userId, file);
-
-      const avatarUrl = res.data; // backend trả string URL
-
-      setAvatarPreview(avatarUrl);
-
-      message.success("Upload avatar thành công!");
-    } catch (error) {
-      console.error(error);
-      message.error("Upload thất bại");
-    } finally {
-      setLoading(false);
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -138,6 +175,7 @@ const Capnhatthongtin = ({
     }
 
     setAvatarPreview(trimmed);
+    setAvatarLoadError(false);
     message.success("Đã áp dụng ảnh từ URL!");
   };
 
@@ -151,6 +189,7 @@ const Capnhatthongtin = ({
   const handleDeleteAvatar = () => {
     setAvatarPreview("");
     setAvatarUrlInput("");
+    setAvatarLoadError(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -289,19 +328,38 @@ const Capnhatthongtin = ({
                       overflow: "hidden",
                     }}
                   >
-                    <img
-                      src={avatarPreview}
-                      alt="avatar-preview"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                      onError={() => {
-                        message.error("Không thể tải ảnh từ URL này!");
-                        setAvatarPreview("");
-                      }}
-                    />
+                    {!avatarLoadError ? (
+                      <img
+                        src={getImageUrl(avatarPreview)}
+                        alt="avatar-preview"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                        onLoad={() => setAvatarLoadError(false)}
+                        onError={() => {
+                          message.error("Không thể tải ảnh từ URL này!");
+                          setAvatarLoadError(true);
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 11,
+                          color: "#9ca3af",
+                          padding: 4,
+                          textAlign: "center",
+                        }}
+                      >
+                        Không thể tải ảnh
+                      </div>
+                    )}
                   </div>
                   <button
                     type="button"

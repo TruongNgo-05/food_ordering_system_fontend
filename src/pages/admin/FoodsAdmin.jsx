@@ -5,7 +5,6 @@ import UserHeader from "../../components/user/UserHeader";
 import StatsCards from "../../components/common/StatsCards";
 import AppPagination from "../../components/common/AppPagination";
 import FoodTable from "../../components/admin/FoodTable";
-
 import FoodCreateModal from "../../components/modal/admin/FoodCreateModal";
 import FoodUpdateModal from "../../components/modal/admin/FoodUpdateModal";
 import FoodViewModal from "../../components/modal/admin/FoodViewModal";
@@ -57,15 +56,26 @@ const AdminFoods = () => {
       const mapped = content.map((item) => ({
         id: item.id,
         name: item.name,
-        description: item.description, // ← đổi từ desc → description
+        description: item.description,
         price: item.price,
         image: item.image || "",
-        images: item.images || [],
+        images: (item.images || []).map((img) => ({
+          id: img.id,
+          url: img.url,
+        })),
         rating: item.rating,
-        soldCount: item.soldCount, // ← đổi từ sold → soldCount
+        soldCount: item.soldCount,
         status: item.status ? "active" : "inactive",
-        category_id: item.categories?.id ?? null,
-        category_name: item.categoryName || "—",
+        category_id:
+          item.categoryId ??
+          item.category_id ??
+          (item.category && item.category.id) ??
+          null,
+        category_name:
+          item.categoryName ||
+          (item.category && item.category.name) ||
+          item.categoryName ||
+          "—",
         createdAt: item.createdAt,
       }));
 
@@ -101,11 +111,25 @@ const AdminFoods = () => {
   const toggleStatus = async (id) => {
     const target = items.find((it) => it.id === id);
     if (!target) return;
+
     const newStatus = target.status === "active" ? "inactive" : "active";
+
     try {
-      await adminFoodService.updateFood(id, {
-        status: newStatus === "active",
-      });
+      await adminFoodService.updateFood(
+        id,
+        {
+          name: target.name,
+          description: target.description,
+          categoryId: target.category_id,
+          price: target.price,
+          status: newStatus === "active",
+          imageUrl: target.image,
+          imageUrls: (target.images || []).map((img) => img.url),
+          removeImage: false,
+        },
+        null,
+        null,
+      );
       setItems((prev) =>
         prev.map((it) => (it.id === id ? { ...it, status: newStatus } : it)),
       );
@@ -131,81 +155,37 @@ const AdminFoods = () => {
   // ================= CRUD =================
   const handleAdd = async (values) => {
     try {
-      let imageUrl = "";
-
-      if (values.image?.startsWith("data:")) {
-        // base64 → File
-        const res = await fetch(values.image);
-        const blob = await res.blob();
-        imageFile = new File([blob], "image.jpg", { type: blob.type });
-      } else {
-        imageUrl = values.image || "";
-      }
-
-      // Ảnh phụ: tách base64 và URL
-      const additionalList = parseAdditionalImages(values.additionalImages);
-      const imageFiles = [];
-      const imageUrls = [];
-
-      for (const img of additionalList) {
-        if (img.startsWith("data:")) {
-          const res = await fetch(img);
-          const blob = await res.blob();
-          imageFiles.push(new File([blob], "img.jpg", { type: blob.type }));
-        } else {
-          imageUrls.push(img);
-        }
-      }
-
       await adminFoodService.createFood(
         {
           name: values.name,
           description: values.desc || "",
           categoryId: Number(values.category),
           price: (values.priceInThousand || 0) * 1000,
-          image: imageUrl, // URL ảnh đại diện (nếu có)
-          images: imageUrls, // URL ảnh phụ (nếu có)
+          imageUrl: values.imageFile
+            ? null // ưu tiên file
+            : values.removeImage
+              ? ""
+              : values.image || "",
+          imageUrls: parseAdditionalImages(values.additionalImages),
         },
-        imageFile, // File ảnh đại diện (nếu upload từ máy)
-        imageFiles, // File[] ảnh phụ (nếu upload từ máy)
+        values.imageFile,
+        values.imageFiles || [],
       );
 
       message.success("Thêm món thành công");
       setOpenAdd(false);
       createForm.resetFields();
       fetchFoods();
-    } catch {
+      console.log("IMAGE FILE:", values.imageFile);
+      console.log("IMAGES FILE:", values.imageFiles);
+    } catch (err) {
+      console.error(err);
       message.error("Thêm món thất bại");
     }
   };
 
   const handleEdit = async (values) => {
     try {
-      let imageFile = undefined;
-      let imageUrl = "";
-
-      if (values.image?.startsWith("data:")) {
-        const res = await fetch(values.image);
-        const blob = await res.blob();
-        imageFile = new File([blob], "image.jpg", { type: blob.type });
-      } else {
-        imageUrl = values.image || "";
-      }
-
-      const additionalList = parseAdditionalImages(values.additionalImages);
-      const imageFiles = [];
-      const imageUrls = [];
-
-      for (const img of additionalList) {
-        if (img.startsWith("data:")) {
-          const res = await fetch(img);
-          const blob = await res.blob();
-          imageFiles.push(new File([blob], "img.jpg", { type: blob.type }));
-        } else {
-          imageUrls.push(img);
-        }
-      }
-
       await adminFoodService.updateFood(
         editingRecord.id,
         {
@@ -213,18 +193,23 @@ const AdminFoods = () => {
           description: values.desc || "",
           categoryId: Number(values.category),
           price: (values.priceInThousand || 0) * 1000,
-          image: imageUrl,
-          images: imageUrls,
+          imageUrl: values.imageFile
+            ? null
+            : values.removeImage
+              ? ""
+              : values.image || "",
+          imageUrls: parseAdditionalImages(values.additionalImages),
+          removeImage: values.removeImage || false,
         },
-        imageFile,
-        imageFiles,
+        values.imageFile,
+        values.imageFiles || [],
       );
-
       message.success("Cập nhật thành công");
       setOpenEdit(false);
       setEditingRecord(null);
       fetchFoods();
-    } catch {
+    } catch (err) {
+      console.error(err);
       message.error("Cập nhật thất bại");
     }
   };
@@ -306,6 +291,8 @@ const AdminFoods = () => {
               ...r,
               category: r.category_id,
               priceInThousand: r.price / 1000,
+              imageFiles: [],
+              additionalImages: (r.images || []).map((i) => i.url).join("\n"),
             });
             setOpenEdit(true);
           }}
