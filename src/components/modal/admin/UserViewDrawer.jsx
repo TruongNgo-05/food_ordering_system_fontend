@@ -1,4 +1,5 @@
 import { Drawer, Typography, Divider, List, Card, Tag } from "antd";
+import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
@@ -9,11 +10,13 @@ export default function UserViewDrawer({
   user,
 }) {
   if (!user) return null;
+
   const avatar = user.avatar || "";
 
   const getImageUrl = (src) => {
     if (!src || typeof src !== "string") return "";
     const trimmed = src.trim();
+
     if (
       trimmed.startsWith("data:image/") ||
       trimmed.startsWith("http://") ||
@@ -22,13 +25,19 @@ export default function UserViewDrawer({
     ) {
       return trimmed;
     }
-    // prepend backend base URL (remove /api suffix)
+
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
     const baseUrl = apiUrl.replace("/api", "");
+
     if (trimmed.startsWith("/")) return baseUrl + trimmed;
     return baseUrl + "/" + trimmed;
   };
+
   const avatarUrl = getImageUrl(avatar);
+
+  // 👉 format date dùng dayjs
+  const formatDate = (date) =>
+    date ? dayjs(date).format("DD/MM/YYYY HH:mm") : "—";
 
   const data = [
     { label: "Họ tên", value: user.fullName },
@@ -36,6 +45,7 @@ export default function UserViewDrawer({
     { label: "Email", value: user.email },
     { label: "SĐT", value: user.phone },
     { label: "Vai trò", value: user.role },
+
     {
       label: "Trạng thái",
       value:
@@ -45,10 +55,15 @@ export default function UserViewDrawer({
           <Tag color="red">Khóa</Tag>
         ),
     },
-    { label: "Ngày tạo", value: user.createdDate },
+
+    {
+      label: "Ngày tạo",
+      value: formatDate(user.createdDate),
+    },
+
     {
       label: "Lock time",
-      value: user.lockTime || "—",
+      value: formatDate(user.lockTime),
     },
   ];
 
@@ -56,15 +71,16 @@ export default function UserViewDrawer({
     <Drawer title={title} open={open} onClose={onClose} width={500}>
       <Card
         style={{
-          borderRadius: 10,
+          borderRadius: 12,
           background: "#fafafa",
         }}
       >
+        {/* Avatar */}
         <div
           style={{
             display: "flex",
             justifyContent: "center",
-            marginBottom: 14,
+            marginBottom: 16,
           }}
         >
           {avatar ? (
@@ -72,8 +88,8 @@ export default function UserViewDrawer({
               src={avatarUrl}
               alt="avatar-user"
               style={{
-                width: 86,
-                height: 86,
+                width: 90,
+                height: 90,
                 borderRadius: "50%",
                 objectFit: "cover",
                 border: "2px solid #e5e7eb",
@@ -86,8 +102,8 @@ export default function UserViewDrawer({
           ) : (
             <div
               style={{
-                width: 86,
-                height: 86,
+                width: 90,
+                height: 90,
                 borderRadius: "50%",
                 border: "2px dashed #d1d5db",
                 background: "#fff",
@@ -116,9 +132,7 @@ export default function UserViewDrawer({
             <List.Item>
               <div style={{ width: "100%" }}>
                 <Text type="secondary">{item.label}</Text>
-
                 <br />
-
                 <Text strong>{item.value || "—"}</Text>
               </div>
             </List.Item>

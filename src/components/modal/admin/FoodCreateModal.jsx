@@ -83,28 +83,28 @@ const FoodCreateModal = ({ open, onCancel, onSubmit, categories, form }) => {
             </Col>
           </Row>
 
-          <Row gutter={12}>
-            <Col span={12}>
-              <Form.Item
-                name="priceInThousand"
-                label="Giá (nghìn)"
-                rules={[{ required: true, message: "Nhập giá" }]}
-              >
-                <InputNumber
-                  min={1}
-                  style={{ width: "100%" }}
-                  addonAfter=".000 đ"
-                />
-              </Form.Item>
-            </Col>
+            <Row gutter={12}>
+              <Col span={12}>
+                <Form.Item
+                  name="priceInThousand"
+                  label="Giá (nghìn)"
+                  rules={[{ required: true, message: "Nhập giá" }]}
+                >
+                  <InputNumber
+                    min={1}
+                    style={{ width: "100%" }}
+                    addonAfter=".000 đ"
+                  />
+                </Form.Item>
+              </Col>
 
-            <Col span={12}>
-              <Form.Item name="desc" label="Mô tả">
-                <Input.TextArea rows={3} />
-              </Form.Item>
-            </Col>
-          </Row>
-        </div>
+              <Col span={12}>
+                <Form.Item name="desc" label="Mô tả">
+                  <Input.TextArea rows={3} />
+                </Form.Item>
+              </Col>
+            </Row>
+          </div>
 
         {/* ================= IMAGE ================= */}
         <div

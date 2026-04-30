@@ -36,9 +36,9 @@ const AdminVouchers = () => {
       setLoading(true);
 
       const res = await adminVoucherService.getAllVoucher({
-        page: page - 1, // FIX: backend bắt đầu từ 0
+        page,
         size: pageSize,
-        keyword: search,
+        code: search,
       });
 
       const data = res.data?.data;
@@ -67,6 +67,8 @@ const AdminVouchers = () => {
 
       const payload = {
         ...values,
+        discount: (values.discount || 0) * 1000,
+        minOrderValue: (values.minOrderValue || 0) * 1000,
         startDate: values.startDate?.format("YYYY-MM-DDTHH:mm:ss"),
         endDate: values.endDate?.format("YYYY-MM-DDTHH:mm:ss"),
       };
@@ -90,6 +92,8 @@ const AdminVouchers = () => {
 
       const payload = {
         ...values,
+        discount: (values.discount || 0) * 1000,
+        minOrderValue: (values.minOrderValue || 0) * 1000,
         startDate: values.startDate?.format("YYYY-MM-DDTHH:mm:ss"),
         endDate: values.endDate?.format("YYYY-MM-DDTHH:mm:ss"),
       };
@@ -147,7 +151,7 @@ const AdminVouchers = () => {
           placeholder="Tìm voucher..."
           allowClear
           onChange={(e) => {
-            setPage(1); // reset page khi search
+            setPage(0);
             setSearch(e.target.value);
           }}
         />
@@ -156,14 +160,23 @@ const AdminVouchers = () => {
       {/* TABLE */}
       <VoucherTable
         data={items}
-        onView={(record) => {
-          setDetailRecord(record);
-          setOpenDetail(true);
+        onView={async (record) => {
+          try {
+            const res = await adminVoucherService.getVoucherDetail(record.id);
+            const data = res.data?.data;
+
+            setDetailRecord(data);
+            setOpenDetail(true);
+          } catch (e) {
+            message.error("Không thể tải chi tiết voucher");
+          }
         }}
         onEdit={(record) => {
           setEditingRecord(record);
           editForm.setFieldsValue({
             ...record,
+            discount: record.discount / 1000,
+            minOrderValue: record.minOrderValue / 1000,
             startDate: record.startDate ? dayjs(record.startDate) : null,
             endDate: record.endDate ? dayjs(record.endDate) : null,
           });
