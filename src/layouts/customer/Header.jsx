@@ -1,4 +1,10 @@
-import React, { useContext } from "react";
+import React, {
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+} from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Dropdown, Modal, message } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -20,6 +26,7 @@ import {
   updateProfileApi,
   changePasswordApi,
 } from "../../services/userService";
+import cartService from "../../services/customer/cartService";
 import "../../assets/styles/Header.css";
 import { toast } from "react-toastify";
 import Capnhatthongtin from "../../components/modal/auth/Capnhatthongtin";
@@ -129,20 +136,12 @@ const Header = () => {
   const displayName = userFullName || "Khách hàng";
   const avatarSrc = user?.avatar || "";
   const requireAuthPaths = new Set(["/customer/orders", "/customer/favorites"]);
-  const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 
-  const [cartOpen, setCartOpen] = React.useState(false);
-  const [cart, setCart] = React.useState(() => {
-    try {
-      const saved = localStorage.getItem("cart");
-      const parsed = saved ? JSON.parse(saved) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  });
+  const [cartOpen, setCartOpen] = useState(false);
+  const [cart, setCart] = useState([]);
+  const [loadingCart, setLoadingCart] = useState(false);
 
-  const [favorites, setFavorites] = React.useState(() => {
+  const [favorites, setFavorites] = useState(() => {
     try {
       const saved = localStorage.getItem("favorites");
       const parsed = saved ? JSON.parse(saved) : [];
@@ -152,28 +151,35 @@ const Header = () => {
     }
   });
 
-  React.useEffect(() => {
-    const syncCart = () => {
+  // ─── Load cart from API on mount and when cart modal opens ────────
+  useEffect(() => {
+    const loadCart = async () => {
       try {
-        const saved = localStorage.getItem("cart");
-        const parsed = saved ? JSON.parse(saved) : [];
-        setCart(Array.isArray(parsed) ? parsed : []);
-      } catch {
+        setLoadingCart(true);
+        const res = await cartService.getCart();
+        const data = res.data?.data;
+
+        const mapped = (data?.items || []).map((i) => ({
+          item_id: i.itemId,
+          name: i.foodName,
+          price: i.price,
+          image: i.image,
+          qty: i.quantity,
+        }));
+
+        setCart(mapped);
+      } catch (err) {
+        console.error("Load cart error:", err);
         setCart([]);
+      } finally {
+        setLoadingCart(false);
       }
     };
-    syncCart();
-    window.addEventListener("focus", syncCart);
-    window.addEventListener("storage", syncCart);
-    window.addEventListener(CUSTOMER_DATA_UPDATED_EVENT, syncCart);
-    return () => {
-      window.removeEventListener("focus", syncCart);
-      window.removeEventListener("storage", syncCart);
-      window.removeEventListener(CUSTOMER_DATA_UPDATED_EVENT, syncCart);
-    };
-  }, []);
 
-  React.useEffect(() => {
+    loadCart();
+  }, [cartOpen]);
+
+  useEffect(() => {
     const syncFav = () => {
       try {
         const saved = localStorage.getItem("favorites");
@@ -186,48 +192,82 @@ const Header = () => {
     syncFav();
     window.addEventListener("focus", syncFav);
     window.addEventListener("storage", syncFav);
-    window.addEventListener(CUSTOMER_DATA_UPDATED_EVENT, syncFav);
     return () => {
       window.removeEventListener("focus", syncFav);
       window.removeEventListener("storage", syncFav);
-      window.removeEventListener(CUSTOMER_DATA_UPDATED_EVENT, syncFav);
     };
   }, []);
 
-  const cartCount = React.useMemo(() => {
+  const cartCount = useMemo(() => {
     return cart.reduce((s, c) => s + (c?.qty || 0), 0);
   }, [cart]);
 
-  const favCount = React.useMemo(() => {
+  const favCount = useMemo(() => {
     return Array.isArray(favorites) ? favorites.length : 0;
   }, [favorites]);
 
-  const cartSubtotal = React.useMemo(() => {
+  const cartSubtotal = useMemo(() => {
     return cart.reduce(
       (s, c) => s + (Number(c?.price) || 0) * (c?.qty || 0),
       0,
     );
   }, [cart]);
 
-  const persistCart = (nextCart) => {
-    setCart(nextCart);
-    localStorage.setItem("cart", JSON.stringify(nextCart));
-    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
-  };
+  const updateQty = useCallback(
+    async (id, delta) => {
+      try {
+        const item = cart.find((c) => c.item_id === id);
+        if (!item) return;
 
-  const updateQty = (id, delta) => {
-    const next = cart
-      .map((c) =>
-        c.item_id === id ? { ...c, qty: Math.max(0, (c.qty || 0) + delta) } : c,
-      )
-      .filter((c) => (c?.qty || 0) > 0);
-    persistCart(next);
-  };
+        const newQty = Math.max(0, (item.qty || 0) + delta);
 
-  const removeItem = (id) => {
-    const next = cart.filter((c) => c.item_id !== id);
-    persistCart(next);
-  };
+        if (newQty <= 0) {
+          // Remove item if quantity becomes 0
+          await cartService.deleteCart(id);
+        } else {
+          // Update quantity via API (send only quantity)
+          await cartService.updateCart(id, { quantity: newQty });
+        }
+
+        // Reload cart from API
+        const res = await cartService.getCart();
+        const data = res.data?.data;
+        const mapped = (data?.items || []).map((i) => ({
+          item_id: i.itemId,
+          name: i.foodName,
+          price: i.price,
+          image: i.image,
+          qty: i.quantity,
+        }));
+        setCart(mapped);
+      } catch (err) {
+        console.error("Update cart error:", err);
+        toast.error("Cập nhật giỏ hàng thất bại");
+      }
+    },
+    [cart],
+  );
+
+  const removeItem = useCallback(async (id) => {
+    try {
+      await cartService.deleteCart(id);
+
+      // Reload cart from API
+      const res = await cartService.getCart();
+      const data = res.data?.data;
+      const mapped = (data?.items || []).map((i) => ({
+        item_id: i.itemId,
+        name: i.foodName,
+        price: i.price,
+        image: i.image,
+        qty: i.quantity,
+      }));
+      setCart(mapped);
+    } catch (err) {
+      console.error("Remove cart item error:", err);
+      toast.error("Xóa món thất bại");
+    }
+  }, []);
 
   return (
     <header className="header header--customer">

@@ -62,7 +62,6 @@ export default function DeliveryAddressModal({ open, onCancel, onSave }) {
       );
 
       onSave(item.address);
-      toast.success("Đã đặt làm địa chỉ mặc định");
     } catch {
       toast.error("Không thể đặt mặc định");
     }

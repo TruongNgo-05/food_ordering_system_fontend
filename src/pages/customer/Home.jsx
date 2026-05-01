@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
+import { toast } from "react-toastify";
 import { T } from "../../constants/customerTheme";
 import { EmptyState } from "../../components/customer/SharedUI";
 import MenuItemCard from "../../components/customer/MenuItemCard";
@@ -10,11 +11,10 @@ import CustomerChatWidget from "../../components/customer/CustomerChatWidget";
 import UserHeader from "../../components/user/UserHeader";
 import AppPagination from "../../components/common/AppPagination";
 import { getBanner, getCategories, getFoods } from "../../services/userService";
+import cartService from "../../services/customer/cartService";
 import { confirmLoginWithModal } from "../../utils/authGuards";
 import { useAuth } from "../../hooks/useAuth";
 import "../../assets/styles/CustomerHome.css";
-
-const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -135,15 +135,31 @@ const Home = () => {
     fetchFoods();
   }, [page, activeCat, debouncedSearch]);
 
-  // ─── Persist cart & favorites ────────────────────────────────────
+  // ─── Load cart from API on mount ─────────────────────────────────
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
-  }, [cart]);
+    const loadCartFromAPI = async () => {
+      try {
+        const res = await cartService.getCart();
+        const data = res.data?.data;
+        const mapped = (data?.items || []).map((i) => ({
+          item_id: i.itemId,
+          name: i.foodName,
+          price: i.price,
+          image: i.image,
+          qty: i.quantity,
+        }));
+        setCart(mapped);
+      } catch (err) {
+        console.error("Load cart error:", err);
+      }
+    };
 
+    loadCartFromAPI();
+  }, []);
+
+  // ─── Persist favorites ───────────────────────────────────────────
   useEffect(() => {
     localStorage.setItem("favorites", JSON.stringify(favorites));
-    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
   }, [favorites]);
 
   // ─── Sync greeting name ──────────────────────────────────────────
@@ -178,34 +194,70 @@ const Home = () => {
   }, [navigate]);
 
   // ─── Add to cart ─────────────────────────────────────────────────
-  const addToCart = useCallback((item) => {
-    setCart((prev) => {
-      const ex = prev.find((c) => c.item_id === item.id);
-      if (ex)
-        return prev.map((c) =>
-          c.item_id === item.id ? { ...c, qty: c.qty + 1 } : c,
-        );
-      return [
-        ...prev,
-        {
-          item_id: item.id,
-          name: item.name,
-          price: item.price,
-          image: item.image,
-          qty: 1,
-        },
-      ];
-    });
-  }, []);
+  const addToCart = useCallback(
+    async (item) => {
+      if (!isLoggedIn) {
+        requireLoginAction();
+        return;
+      }
+      try {
+        // API addToCart only sends quantity
+        await cartService.addToCart({
+          foodId: item.id,
+          quantity: 1,
+        });
+
+        // Reload cart from API
+        const res = await cartService.getCart();
+        const data = res.data?.data;
+        const mapped = (data?.items || []).map((i) => ({
+          item_id: i.itemId,
+          name: i.foodName,
+          price: i.price,
+          image: i.image,
+          qty: i.quantity,
+        }));
+        setCart(mapped);
+      } catch (err) {
+        console.error("Add to cart error:", err);
+        toast.error("Thêm vào giỏ hàng thất bại");
+      }
+    },
+    [isLoggedIn, requireLoginAction],
+  );
 
   // ─── Dec cart ────────────────────────────────────────────────────
-  const decCart = useCallback((item_id) => {
-    setCart((prev) =>
-      prev
-        .map((c) => (c.item_id === item_id ? { ...c, qty: c.qty - 1 } : c))
-        .filter((c) => c.qty > 0),
-    );
-  }, []);
+  const decCart = useCallback(
+    async (item) => {
+      try {
+        if (item.qty <= 1) {
+          // Remove item if quantity is 1
+          await cartService.deleteCart(item.item_id);
+        } else {
+          // Update quantity via API (send only quantity)
+          await cartService.updateCart(item.item_id, {
+            quantity: item.qty - 1,
+          });
+        }
+
+        // Reload cart from API
+        const res = await cartService.getCart();
+        const data = res.data?.data;
+        const mapped = (data?.items || []).map((i) => ({
+          item_id: i.itemId,
+          name: i.foodName,
+          price: i.price,
+          image: i.image,
+          qty: i.quantity,
+        }));
+        setCart(mapped);
+      } catch (err) {
+        console.error("Dec cart error:", err);
+        toast.error("Cập nhật giỏ hàng thất bại");
+      }
+    },
+    [],
+  );
 
   // ─── Toggle favorite ─────────────────────────────────────────────
   const toggleFav = useCallback(

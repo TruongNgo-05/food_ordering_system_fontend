@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "antd";
 import { toast } from "react-toastify";
@@ -12,12 +12,12 @@ import DeliveryAddressModal from "../../components/customer/DeliveryAddressModal
 import VoucherSection from "../../components/customer/cart/VoucherSection";
 import PaymentMethodSection from "../../components/customer/cart/PaymentMethodSection";
 import OrderSummarySection from "../../components/customer/cart/OrderSummarySection";
+import cartService from "../../services/customer/cartService";
 import {
   loadSharedVouchers,
   SHARED_DATA_UPDATED_EVENT,
 } from "../../utils/sharedData";
 import "../../assets/styles/CustomerCart.css";
-
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 const BANK_OPTIONS = [
   { code: "VCB", name: "Vietcombank" },
@@ -41,10 +41,8 @@ const calcVoucherDiscount = (voucher, subtotal) => {
 const Cart = () => {
   const navigate = useNavigate();
 
-  const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem("cart");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [cart, setCart] = useState([]);
+  const [loadingCart, setLoadingCart] = useState(false);
 
   const [voucherInput, setVoucherInput] = useState("");
   const [appliedVouchers, setAppliedVouchers] = useState([]);
@@ -59,10 +57,32 @@ const Cart = () => {
   const [openQrModal, setOpenQrModal] = useState(false);
   const [onlinePaymentRef, setOnlinePaymentRef] = useState("");
 
+  // ─── Load cart from API on mount ─────────────────────────────────
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
-  }, [cart]);
+    const loadCart = async () => {
+      try {
+        setLoadingCart(true);
+        const res = await cartService.getCart();
+        const data = res.data?.data;
+
+        const mapped = (data?.items || []).map((i) => ({
+          item_id: i.itemId,
+          name: i.foodName,
+          price: i.price,
+          image: i.image,
+          qty: i.quantity,
+        }));
+
+        setCart(mapped);
+      } catch (err) {
+        console.error("Load cart error:", err);
+      } finally {
+        setLoadingCart(false);
+      }
+    };
+
+    loadCart();
+  }, []);
 
   useEffect(() => {
     const syncVouchers = () => setVouchers(loadSharedVouchers());
@@ -77,15 +97,63 @@ const Cart = () => {
     };
   }, []);
 
-  const updateQty = (id, d) =>
-    setCart((prev) =>
-      prev
-        .map((c) => (c.item_id === id ? { ...c, qty: c.qty + d } : c))
-        .filter((c) => c.qty > 0),
-    );
+  const updateQty = useCallback(
+    async (id, delta) => {
+      try {
+        const item = cart.find((c) => c.item_id === id);
+        if (!item) return;
 
-  const removeItem = (id) =>
-    setCart((prev) => prev.filter((c) => c.item_id !== id));
+        const newQty = item.qty + delta;
+        if (newQty <= 0) {
+          // Remove item if quantity becomes 0
+          await cartService.deleteCart(id);
+        } else {
+          // Update quantity via API
+          await cartService.updateCart(id, { quantity: newQty });
+        }
+
+        // Reload cart from API
+        const res = await cartService.getCart();
+        const data = res.data?.data;
+        const mapped = (data?.items || []).map((i) => ({
+          item_id: i.itemId,
+          name: i.foodName,
+          price: i.price,
+          image: i.image,
+          qty: i.quantity,
+        }));
+        setCart(mapped);
+      } catch (err) {
+        console.error("Update cart error:", err);
+        toast.error("Cập nhật giỏ hàng thất bại");
+      }
+    },
+    [cart],
+  );
+
+  const removeItem = useCallback(
+    async (id) => {
+      try {
+        await cartService.deleteCart(id);
+
+        // Reload cart from API
+        const res = await cartService.getCart();
+        const data = res.data?.data;
+        const mapped = (data?.items || []).map((i) => ({
+          item_id: i.itemId,
+          name: i.foodName,
+          price: i.price,
+          image: i.image,
+          qty: i.quantity,
+        }));
+        setCart(mapped);
+      } catch (err) {
+        console.error("Remove cart item error:", err);
+        toast.error("Xóa món thất bại");
+      }
+    },
+    [],
+  );
 
   const subtotal = useMemo(
     () => cart.reduce((s, c) => s + c.price * c.qty, 0),
