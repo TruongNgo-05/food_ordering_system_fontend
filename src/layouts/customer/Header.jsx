@@ -27,6 +27,7 @@ import {
   changePasswordApi,
 } from "../../services/userService";
 import cartService from "../../services/customer/cartService";
+import favoriteService from "../../services/customer/favoriteService";
 import "../../assets/styles/Header.css";
 import { toast } from "react-toastify";
 import Capnhatthongtin from "../../components/modal/auth/Capnhatthongtin";
@@ -35,6 +36,8 @@ import CartModal from "../../components/user/CartModal";
 import { confirmLoginWithModal } from "../../utils/authGuards";
 import { fmt } from "../../constants/customerTheme";
 import logo from "../../assets/images/logo.png";
+
+const CART_UPDATED_EVENT = "cart-updated-event";
 
 const navItems = [
   { to: "/customer", label: "Thực đơn", icon: faHouse, end: true },
@@ -141,15 +144,8 @@ const Header = () => {
   const [cart, setCart] = useState([]);
   const [loadingCart, setLoadingCart] = useState(false);
 
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      const saved = localStorage.getItem("favorites");
-      const parsed = saved ? JSON.parse(saved) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  });
+  const [favorites, setFavorites] = useState([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
 
   // ─── Load cart from API on mount and when cart modal opens ────────
   useEffect(() => {
@@ -177,26 +173,39 @@ const Header = () => {
     };
 
     loadCart();
-  }, [cartOpen]);
 
-  useEffect(() => {
-    const syncFav = () => {
-      try {
-        const saved = localStorage.getItem("favorites");
-        const parsed = saved ? JSON.parse(saved) : [];
-        setFavorites(Array.isArray(parsed) ? parsed : []);
-      } catch {
-        setFavorites([]);
-      }
-    };
-    syncFav();
-    window.addEventListener("focus", syncFav);
-    window.addEventListener("storage", syncFav);
+    // Listen for cart updates from Home.jsx
+    window.addEventListener(CART_UPDATED_EVENT, loadCart);
     return () => {
-      window.removeEventListener("focus", syncFav);
-      window.removeEventListener("storage", syncFav);
+      window.removeEventListener(CART_UPDATED_EVENT, loadCart);
     };
   }, []);
+
+  // Load favorites from API on mount and when user logs in
+  useEffect(() => {
+    const loadFavorites = async () => {
+      try {
+        setLoadingFavorites(true);
+        const res = await favoriteService.getMyFavorite();
+        const data = res.data?.data;
+        const favIds = Array.isArray(data)
+          ? data.map((item) => item.foodId || item.id)
+          : [];
+        setFavorites(favIds);
+      } catch (err) {
+        console.error("Load favorites error:", err);
+        setFavorites([]);
+      } finally {
+        setLoadingFavorites(false);
+      }
+    };
+
+    if (isLoggedIn) {
+      loadFavorites();
+    } else {
+      setFavorites([]);
+    }
+  }, [isLoggedIn]);
 
   const cartCount = useMemo(() => {
     return cart.reduce((s, c) => s + (c?.qty || 0), 0);

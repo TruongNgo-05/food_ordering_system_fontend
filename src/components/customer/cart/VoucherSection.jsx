@@ -6,14 +6,12 @@ import { T, fmt } from "../../../constants/customerTheme";
 export default function VoucherSection({
   voucherInput,
   voucherError,
-  appliedVouchers,
-  vouchers,
-  subtotal,
+  voucherResult,
+  vouchers = [],
   onVoucherInputChange,
   onApplyVoucher,
   onPickVoucherCode,
-  onRemoveAppliedVoucher,
-  calcVoucherDiscount,
+  onRemoveVoucher,
 }) {
   return (
     <div
@@ -36,6 +34,7 @@ export default function VoucherSection({
         Mã giảm giá
       </p>
 
+      {/* INPUT */}
       <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
         <input
           value={voucherInput}
@@ -46,7 +45,7 @@ export default function VoucherSection({
             padding: "11px 14px",
             borderRadius: 11,
             border: `1.5px solid ${
-              voucherError ? T.red : appliedVouchers.length > 0 ? T.green : T.border
+              voucherError ? T.red : voucherResult ? T.green : T.border
             }`,
             fontSize: 14,
             outline: "none",
@@ -68,53 +67,51 @@ export default function VoucherSection({
         </button>
       </div>
 
+      {/* ERROR */}
       {voucherError && (
-        <p style={{ margin: "0 0 8px", fontSize: 13, color: T.red }}>{voucherError}</p>
+        <p style={{ margin: "0 0 8px", fontSize: 13, color: T.red }}>
+          {voucherError}
+        </p>
       )}
 
-      {appliedVouchers.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 8 }}>
-          {appliedVouchers.map((voucher) => (
-            <div
-              key={voucher.code}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 8,
-                background: T.greenBg,
-                color: T.green,
-                borderRadius: 10,
-                padding: "8px 10px",
-                fontSize: 13,
-                fontWeight: 700,
-              }}
-            >
-              <span>
-                <FontAwesomeIcon icon={faCircleCheck} style={{ marginRight: 6 }} />
-                {voucher.code} — Tiết kiệm{" "}
-                {fmt(calcVoucherDiscount(voucher, subtotal))}
-              </span>
-              <button
-                type="button"
-                onClick={() => onRemoveAppliedVoucher(voucher.code)}
-                style={{
-                  border: "none",
-                  background: "transparent",
-                  color: T.green,
-                  cursor: "pointer",
-                  fontWeight: 800,
-                }}
-              >
-                Xóa
-              </button>
-            </div>
-          ))}
+      {/* APPLIED */}
+      {voucherResult && (
+        <div
+          style={{
+            background: T.greenBg,
+            color: T.green,
+            borderRadius: 10,
+            padding: "8px 10px",
+            fontSize: 13,
+            fontWeight: 700,
+            marginBottom: 10,
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <span>
+            <FontAwesomeIcon icon={faCircleCheck} style={{ marginRight: 6 }} />
+            Đã áp dụng — tiết kiệm {fmt(voucherResult.discount)}
+          </span>
+
+          <button
+            onClick={onRemoveVoucher}
+            style={{
+              border: "none",
+              background: "transparent",
+              color: T.green,
+              cursor: "pointer",
+              fontWeight: 800,
+            }}
+          >
+            Xóa
+          </button>
         </div>
       )}
 
+      {/* LIST */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {vouchers.map((voucher) => (
+        {(vouchers || []).map((voucher) => (
           <button
             key={voucher.id}
             onClick={() => onPickVoucherCode(voucher.code)}

@@ -81,7 +81,8 @@ const AdminVouchers = () => {
 
       fetchVouchers();
     } catch (e) {
-      message.error("Thêm thất bại");
+      const errMsg = e.response?.data?.message || "Thêm thất bại";
+      message.error(errMsg);
     }
   };
 
@@ -106,7 +107,8 @@ const AdminVouchers = () => {
 
       fetchVouchers();
     } catch (e) {
-      message.error("Cập nhật thất bại");
+      const errMsg = e.response?.data?.message || "Cập nhật thất bại";
+      message.error(errMsg);
     }
   };
 
@@ -117,7 +119,8 @@ const AdminVouchers = () => {
       message.success("Xóa thành công");
       fetchVouchers();
     } catch (e) {
-      message.error("Xóa thất bại");
+      const errMsg = e.response?.data?.message || "Xóa thất bại";
+      message.error(errMsg);
     }
   };
 

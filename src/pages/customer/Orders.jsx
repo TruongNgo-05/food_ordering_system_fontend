@@ -81,15 +81,7 @@ const Orders = () => {
   const handleReorder = (order) => {
     if (!order || !Array.isArray(order.items) || order.items.length === 0)
       return;
-    const nextCart = order.items.map((it) => ({
-      item_id: it.item_id || `${it.name}-${it.price}`,
-      name: it.name,
-      price: it.price,
-      image: it.image,
-      qty: it.qty || 1,
-    }));
-    localStorage.setItem("cart", JSON.stringify(nextCart));
-    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
+    // Navigate to cart - cart will be loaded from API
     navigate("/customer/carts");
   };
 

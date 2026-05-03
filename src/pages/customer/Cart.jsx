@@ -17,16 +17,10 @@ import {
   loadSharedVouchers,
   SHARED_DATA_UPDATED_EVENT,
 } from "../../utils/sharedData";
+import icon from "../../assets/images/icon.png";
 import "../../assets/styles/CustomerCart.css";
+
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
-const BANK_OPTIONS = [
-  { code: "VCB", name: "Vietcombank" },
-  { code: "BIDV", name: "BIDV" },
-  { code: "TCB", name: "Techcombank" },
-  { code: "MB", name: "MB Bank" },
-  { code: "ACB", name: "ACB" },
-  { code: "VPB", name: "VPBank" },
-];
 
 const calcVoucherDiscount = (voucher, subtotal) => {
   if (!voucher) return 0;
@@ -50,21 +44,18 @@ const Cart = () => {
   const [vouchers, setVouchers] = useState(() => loadSharedVouchers());
 
   const [payMethod, setPayMethod] = useState("COD");
-  const [selectedBank, setSelectedBank] = useState("");
   const [address, setAddress] = useState("");
   const [openAddressModal, setOpenAddressModal] = useState(false);
   const [placed, setPlaced] = useState(false);
   const [openQrModal, setOpenQrModal] = useState(false);
   const [onlinePaymentRef, setOnlinePaymentRef] = useState("");
 
-  // ─── Load cart from API on mount ─────────────────────────────────
   useEffect(() => {
     const loadCart = async () => {
       try {
         setLoadingCart(true);
         const res = await cartService.getCart();
         const data = res.data?.data;
-
         const mapped = (data?.items || []).map((i) => ({
           item_id: i.itemId,
           name: i.foodName,
@@ -72,7 +63,6 @@ const Cart = () => {
           image: i.image,
           qty: i.quantity,
         }));
-
         setCart(mapped);
       } catch (err) {
         console.error("Load cart error:", err);
@@ -80,7 +70,6 @@ const Cart = () => {
         setLoadingCart(false);
       }
     };
-
     loadCart();
   }, []);
 
@@ -102,17 +91,12 @@ const Cart = () => {
       try {
         const item = cart.find((c) => c.item_id === id);
         if (!item) return;
-
         const newQty = item.qty + delta;
         if (newQty <= 0) {
-          // Remove item if quantity becomes 0
           await cartService.deleteCart(id);
         } else {
-          // Update quantity via API
           await cartService.updateCart(id, { quantity: newQty });
         }
-
-        // Reload cart from API
         const res = await cartService.getCart();
         const data = res.data?.data;
         const mapped = (data?.items || []).map((i) => ({
@@ -131,29 +115,24 @@ const Cart = () => {
     [cart],
   );
 
-  const removeItem = useCallback(
-    async (id) => {
-      try {
-        await cartService.deleteCart(id);
-
-        // Reload cart from API
-        const res = await cartService.getCart();
-        const data = res.data?.data;
-        const mapped = (data?.items || []).map((i) => ({
-          item_id: i.itemId,
-          name: i.foodName,
-          price: i.price,
-          image: i.image,
-          qty: i.quantity,
-        }));
-        setCart(mapped);
-      } catch (err) {
-        console.error("Remove cart item error:", err);
-        toast.error("Xóa món thất bại");
-      }
-    },
-    [],
-  );
+  const removeItem = useCallback(async (id) => {
+    try {
+      await cartService.deleteCart(id);
+      const res = await cartService.getCart();
+      const data = res.data?.data;
+      const mapped = (data?.items || []).map((i) => ({
+        item_id: i.itemId,
+        name: i.foodName,
+        price: i.price,
+        image: i.image,
+        qty: i.quantity,
+      }));
+      setCart(mapped);
+    } catch (err) {
+      console.error("Remove cart item error:", err);
+      toast.error("Xóa món thất bại");
+    }
+  }, []);
 
   const subtotal = useMemo(
     () => cart.reduce((s, c) => s + c.price * c.qty, 0),
@@ -218,7 +197,6 @@ const Cart = () => {
 
   const finalizeOrder = (paymentStatus) => {
     if (cart.length === 0) return;
-
     const order = {
       id: "ORD-" + String(Date.now()).slice(-6),
       created_at: new Date().toLocaleString("vi-VN"),
@@ -239,20 +217,16 @@ const Cart = () => {
       voucher: appliedVouchers.map((voucher) => voucher.code),
       address,
     };
-
     const saved = localStorage.getItem("orders");
     const prevOrders = saved ? JSON.parse(saved) : [];
     const nextOrders = Array.isArray(prevOrders)
       ? [order, ...prevOrders]
       : [order];
     localStorage.setItem("orders", JSON.stringify(nextOrders));
-
     setCart([]);
     setAppliedVouchers([]);
     setVoucherInput("");
-    setSelectedBank("");
     setPlaced(true);
-
     setTimeout(() => {
       setPlaced(false);
       navigate("/customer/orders");
@@ -267,10 +241,6 @@ const Cart = () => {
       return;
     }
     if (payMethod === "ONLINE") {
-      if (!selectedBank) {
-        toast.warning("Vui lòng chọn ngân hàng để thanh toán online");
-        return;
-      }
       const ref = `PAY-${Date.now()}`;
       setOnlinePaymentRef(ref);
       setOpenQrModal(true);
@@ -323,18 +293,13 @@ const Cart = () => {
         <div className="cart-layout">
           {/* Left */}
           <div className="cart-left">
-            {/* Items */}
             <div
               className="cart-items-box"
-              style={{
-                background: T.card,
-                border: `1px solid ${T.border}`,
-              }}
+              style={{ background: T.card, border: `1px solid ${T.border}` }}
             >
               <div className="cart-box-header">
                 <p className="cart-title">Món đã chọn</p>
               </div>
-
               {cart.map((item, i) => (
                 <div
                   key={item.item_id}
@@ -355,7 +320,6 @@ const Cart = () => {
                       textSize={28}
                     />
                   </div>
-
                   <div className="cart-item-info">
                     <p className="cart-item-name" style={{ color: T.text }}>
                       {item.name}
@@ -364,7 +328,6 @@ const Cart = () => {
                       {fmt(item.price)} / phần
                     </p>
                   </div>
-
                   <div className="cart-qty-controls">
                     <button
                       className="cart-qty-btn-minus"
@@ -384,11 +347,9 @@ const Cart = () => {
                       +
                     </button>
                   </div>
-
                   <p className="cart-item-total" style={{ color: T.text }}>
                     {fmt(item.price * item.qty)}
                   </p>
-
                   <button
                     className="cart-item-remove-btn"
                     style={{ background: T.redBg, color: T.red }}
@@ -405,10 +366,7 @@ const Cart = () => {
             {/* Address */}
             <div
               className="cart-address-box"
-              style={{
-                background: T.card,
-                border: `1px solid ${T.border}`,
-              }}
+              style={{ background: T.card, border: `1px solid ${T.border}` }}
             >
               <p className="cart-address-label" style={{ color: T.text }}>
                 <FontAwesomeIcon
@@ -450,12 +408,8 @@ const Cart = () => {
           <div className="cart-right">
             <PaymentMethodSection
               payMethod={payMethod}
-              selectedBank={selectedBank}
-              bankOptions={BANK_OPTIONS}
               onChangePayMethod={setPayMethod}
-              onSelectBank={setSelectedBank}
             />
-
             <OrderSummarySection
               subtotal={subtotal}
               shipping={shipping}
@@ -473,6 +427,7 @@ const Cart = () => {
         onSave={saveAddressFromModal}
       />
 
+      {/* QR Modal */}
       <Modal
         title={
           <span>
@@ -485,17 +440,9 @@ const Cart = () => {
         footer={null}
       >
         <div className="cart-qr-modal-body">
-          <p className="cart-qr-bank-label" style={{ color: T.sub }}>
-            Ngân hàng:{" "}
-            <strong>
-              {BANK_OPTIONS.find((b) => b.code === selectedBank)?.name || "-"}
-            </strong>
-          </p>
           <img
             className="cart-qr-image"
-            src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(
-              `BANK:${selectedBank}|AMOUNT:${total}|REF:${onlinePaymentRef}`,
-            )}`}
+            src={icon}
             alt="QR thanh toán"
             style={{ border: `1px solid ${T.border}` }}
           />

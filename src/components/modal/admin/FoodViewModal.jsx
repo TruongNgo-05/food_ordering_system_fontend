@@ -10,9 +10,11 @@ const FoodViewModal = ({ open, onCancel, record, categories = [] }) => {
   const galleryImages = useMemo(() => {
     if (!record) return [];
 
-    return [...(record.image ? [record.image] : []), ...(record.images || [])];
+    return [
+      ...(record.image ? [record.image] : []),
+      ...(record.images || []).map((img) => img.url), 
+    ];
   }, [record]);
-
 
   useEffect(() => {
     if (!record) return;

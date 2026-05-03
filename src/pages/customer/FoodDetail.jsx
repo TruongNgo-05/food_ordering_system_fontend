@@ -12,6 +12,7 @@ import {
   getFoods,
   getCategories,
 } from "../../services/userService";
+import favoriteService from "../../services/customer/favoriteService";
 import reviewService from "../../services/customer/reviewService";
 import { toast } from "react-toastify";
 
@@ -64,30 +65,41 @@ const FoodDetail = () => {
     return [...new Set([main, ...images].filter(Boolean))];
   }, [item]);
 
-  const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem("cart");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [cart, setCart] = useState([]);
 
-  const [favorites, setFavorites] = useState(() => {
-    const saved = localStorage.getItem("favorites");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [favorites, setFavorites] = useState([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
 
   const [orders] = useState(() => {
     const saved = localStorage.getItem("orders");
     return saved ? JSON.parse(saved) : [];
   });
 
+  // Load favorites from API on mount
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
-  }, [cart]);
+    const loadFavorites = async () => {
+      try {
+        setLoadingFavorites(true);
+        const res = await favoriteService.getMyFavorite();
+        const data = res.data?.data;
+        const favIds = Array.isArray(data)
+          ? data.map((item) => item.foodId || item.id)
+          : [];
+        setFavorites(favIds);
+      } catch (err) {
+        console.error("Load favorites error:", err);
+        setFavorites([]);
+      } finally {
+        setLoadingFavorites(false);
+      }
+    };
 
-  useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify(favorites));
-    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
-  }, [favorites]);
+    if (isLoggedIn) {
+      loadFavorites();
+    } else {
+      setFavorites([]);
+    }
+  }, [isLoggedIn]);
 
   const fetchFoods = async () => {
     try {
@@ -204,17 +216,6 @@ const FoodDetail = () => {
   }, [cart]);
 
   const inCart = item ? cart.find((c) => c.item_id === item.id)?.qty || 0 : 0;
-  // const DEBUG_ALLOW_REVIEW = false;
-  // const canReview =
-  //   DEBUG_ALLOW_REVIEW ||
-  //   useMemo(() => {
-  //     if (!item || !Array.isArray(orders)) return false;
-  //     return orders.some(
-  //       (order) =>
-  //         order?.status === "completed" &&
-  //         order.items?.some((it) => it.item_id === item.id),
-  //     );
-  //   }, [orders, item]);
   const canReview = useMemo(() => {
     if (!item || !Array.isArray(orders)) return false;
     return orders.some(
@@ -255,16 +256,26 @@ const FoodDetail = () => {
     );
   };
 
-  const toggleFav = (foodId) => {
+  const toggleFav = async (foodId) => {
     if (!isLoggedIn) {
       requireLoginAction();
       return;
     }
-    setFavorites((prev) =>
-      prev.includes(foodId)
-        ? prev.filter((f) => f !== foodId)
-        : [...prev, foodId],
-    );
+    try {
+      const isFav = favorites.includes(foodId);
+      if (isFav) {
+        await favoriteService.deleteFavorite(foodId);
+        setFavorites((prev) => prev.filter((f) => f !== foodId));
+        toast.info("Đã xóa khỏi yêu thích");
+      } else {
+        await favoriteService.addToFavorite(foodId);
+        setFavorites((prev) => [...prev, foodId]);
+        toast.success("Đã thêm vào yêu thích");
+      }
+    } catch (err) {
+      console.error("Toggle favorite error:", err);
+      toast.error("Không thể cập nhật yêu thích");
+    }
   };
 
   const handleSubmitComment = async () => {
