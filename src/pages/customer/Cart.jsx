@@ -13,24 +13,12 @@ import VoucherSection from "../../components/customer/cart/VoucherSection";
 import PaymentMethodSection from "../../components/customer/cart/PaymentMethodSection";
 import OrderSummarySection from "../../components/customer/cart/OrderSummarySection";
 import cartService from "../../services/customer/cartService";
-import {
-  loadSharedVouchers,
-  SHARED_DATA_UPDATED_EVENT,
-} from "../../utils/sharedData";
 import icon from "../../assets/images/icon.png";
 import "../../assets/styles/CustomerCart.css";
-
+import voucherService from "../../services/customer/voucherService";
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 
-const calcVoucherDiscount = (voucher, subtotal) => {
-  if (!voucher) return 0;
-  return voucher.discount_type === "percent"
-    ? Math.min(
-        Math.round((subtotal * voucher.discount_value) / 100),
-        voucher.max_discount,
-      )
-    : voucher.discount_value;
-};
+
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -39,23 +27,45 @@ const Cart = () => {
   const [loadingCart, setLoadingCart] = useState(false);
 
   const [voucherInput, setVoucherInput] = useState("");
-  const [appliedVouchers, setAppliedVouchers] = useState([]);
   const [voucherError, setVoucherError] = useState("");
-  const [vouchers, setVouchers] = useState(() => loadSharedVouchers());
-
+  const [vouchers, setVouchers] = useState([]);
+  const [appliedVoucher, setAppliedVoucher] = useState(null);
   const [payMethod, setPayMethod] = useState("COD");
   const [address, setAddress] = useState("");
   const [openAddressModal, setOpenAddressModal] = useState(false);
   const [placed, setPlaced] = useState(false);
   const [openQrModal, setOpenQrModal] = useState(false);
   const [onlinePaymentRef, setOnlinePaymentRef] = useState("");
+  const [summary, setSummary] = useState({
+    totalBefore: 0,
+    totalAfter: 0,
+    discount: 0,
+  });
 
+
+  const refreshSummary = async (code = "") => {
+    try {
+      const res = await voucherService.checkVoucher(code);
+      setSummary(res.data?.data);
+      setVoucherError("");
+    } catch (err) {
+      setSummary({
+        totalBefore: 0,
+        totalAfter: 0,
+        discount: 0,
+      });
+      setAppliedVoucher(null);
+
+      setVoucherError(err.response?.data?.message || "Voucher không hợp lệ");
+    }
+  };
   useEffect(() => {
     const loadCart = async () => {
       try {
         setLoadingCart(true);
         const res = await cartService.getCart();
         const data = res.data?.data;
+
         const mapped = (data?.items || []).map((i) => ({
           item_id: i.itemId,
           name: i.foodName,
@@ -63,6 +73,7 @@ const Cart = () => {
           image: i.image,
           qty: i.quantity,
         }));
+
         setCart(mapped);
       } catch (err) {
         console.error("Load cart error:", err);
@@ -70,131 +81,98 @@ const Cart = () => {
         setLoadingCart(false);
       }
     };
-    loadCart();
-  }, []);
 
-  useEffect(() => {
-    const syncVouchers = () => setVouchers(loadSharedVouchers());
-    syncVouchers();
-    window.addEventListener("focus", syncVouchers);
-    window.addEventListener("storage", syncVouchers);
-    window.addEventListener(SHARED_DATA_UPDATED_EVENT, syncVouchers);
-    return () => {
-      window.removeEventListener("focus", syncVouchers);
-      window.removeEventListener("storage", syncVouchers);
-      window.removeEventListener(SHARED_DATA_UPDATED_EVENT, syncVouchers);
+    const init = async () => {
+      await loadCart();
+      await refreshSummary("");
     };
+
+    init();
   }, []);
 
-  const updateQty = useCallback(
-    async (id, delta) => {
-      try {
-        const item = cart.find((c) => c.item_id === id);
-        if (!item) return;
-        const newQty = item.qty + delta;
-        if (newQty <= 0) {
-          await cartService.deleteCart(id);
-        } else {
-          await cartService.updateCart(id, { quantity: newQty });
-        }
-        const res = await cartService.getCart();
-        const data = res.data?.data;
-        const mapped = (data?.items || []).map((i) => ({
-          item_id: i.itemId,
-          name: i.foodName,
-          price: i.price,
-          image: i.image,
-          qty: i.quantity,
-        }));
-        setCart(mapped);
-      } catch (err) {
-        console.error("Update cart error:", err);
-        toast.error("Cập nhật giỏ hàng thất bại");
+
+  const updateQty = useCallback(async (id, delta) => {
+    try {
+      const item = cart.find((c) => c.item_id === id);
+      if (!item) return;
+
+      const newQty = item.qty + delta;
+
+      if (newQty <= 0) {
+        await cartService.deleteCart(id);
+      } else {
+        await cartService.updateCart(id, { quantity: newQty });
       }
-    },
-    [cart],
-  );
+      await refreshCartAndVoucher();
+
+    } catch (err) {
+      console.error("Update cart error:", err);
+      toast.error("Cập nhật giỏ hàng thất bại");
+    }
+  }, [cart]);
 
   const removeItem = useCallback(async (id) => {
     try {
       await cartService.deleteCart(id);
-      const res = await cartService.getCart();
-      const data = res.data?.data;
-      const mapped = (data?.items || []).map((i) => ({
-        item_id: i.itemId,
-        name: i.foodName,
-        price: i.price,
-        image: i.image,
-        qty: i.quantity,
-      }));
-      setCart(mapped);
+      await refreshCartAndVoucher();
+
     } catch (err) {
       console.error("Remove cart item error:", err);
       toast.error("Xóa món thất bại");
     }
   }, []);
 
-  const subtotal = useMemo(
-    () => cart.reduce((s, c) => s + c.price * c.qty, 0),
-    [cart],
-  );
-  const shipping = subtotal > 0 ? 15000 : 0;
+  const applyVoucher = async (customCode) => {
+    const code = (customCode || voucherInput).trim();
 
-  const discount = useMemo(() => {
-    const sum = appliedVouchers.reduce(
-      (acc, voucher) => acc + calcVoucherDiscount(voucher, subtotal),
-      0,
-    );
-    return Math.min(sum, subtotal + shipping);
-  }, [appliedVouchers, subtotal, shipping]);
-
-  const total = Math.max(0, subtotal + shipping - discount);
-
-  const applyVoucher = () => {
-    const code = voucherInput.trim().toUpperCase();
     if (!code) {
       setVoucherError("Vui lòng nhập mã");
       return;
     }
-    const v = vouchers.find((x) => x.code === code);
-    if (!v) {
-      setVoucherError("Mã không hợp lệ");
-      return;
-    }
-    if (appliedVouchers.some((x) => x.code === v.code)) {
-      setVoucherError("Mã này đã được áp dụng");
-      return;
-    }
-    if (subtotal < v.min_order) {
-      setVoucherError(`Đơn tối thiểu ${fmt(v.min_order)}`);
-      return;
-    }
-    const now = Date.now();
-    const start = v.start_at ? new Date(v.start_at).getTime() : null;
-    const end = v.end_at
-      ? new Date(v.end_at).getTime()
-      : v.expired
-        ? new Date(v.expired).getTime()
-        : null;
-    if (start && now < start) {
-      setVoucherError("Voucher chưa đến thời gian áp dụng");
-      return;
-    }
-    if (end && now > end) {
-      setVoucherError("Voucher đã hết hạn");
-      return;
-    }
-    setAppliedVouchers((prev) => [...prev, v]);
-    setVoucherError("");
-    setVoucherInput("");
-  };
 
-  const removeAppliedVoucher = (code) => {
-    setAppliedVouchers((prev) =>
-      prev.filter((voucher) => voucher.code !== code),
-    );
+    try {
+      await refreshSummary(code);
+      setAppliedVoucher(code);
+      setVoucherError("");
+      toast.success("Áp dụng voucher thành công");
+    } catch (err) {
+      setAppliedVoucher(null);
+      setVoucherError("Voucher không hợp lệ");
+    }
   };
+  const refreshCartAndVoucher = async () => {
+    const res = await cartService.getCart();
+    const data = res.data?.data;
 
+    const mapped = (data?.items || []).map((i) => ({
+      item_id: i.itemId,
+      name: i.foodName,
+      price: i.price,
+      image: i.image,
+      qty: i.quantity,
+    }));
+
+    setCart(mapped);
+
+    // 👇 chỉ cần cái này
+    await refreshSummary(voucherInput);
+  };
+  const finalSubtotal = summary.totalBefore;
+  const finalTotal = summary.totalAfter;
+  const discount = summary.discount;
+
+  useEffect(() => {
+    const fetchVoucher = async () => {
+      try {
+        const res = await voucherService.getVoucher();
+        setVouchers(res.data?.data || []);
+      } catch (err) {
+        console.error("Load voucher error:", err);
+      }
+    };
+
+    fetchVoucher();
+  }, []);
   const finalizeOrder = (paymentStatus) => {
     if (cart.length === 0) return;
     const order = {
@@ -210,11 +188,10 @@ const Cart = () => {
         qty: c.qty,
         price: c.price,
       })),
-      subtotal,
+      subtotal: finalSubtotal,
       discount,
-      shipping,
-      total,
-      voucher: appliedVouchers.map((voucher) => voucher.code),
+      total: finalTotal,
+      voucher: appliedVoucher ? [appliedVoucher] : [],
       address,
     };
     const saved = localStorage.getItem("orders");
@@ -224,7 +201,6 @@ const Cart = () => {
       : [order];
     localStorage.setItem("orders", JSON.stringify(nextOrders));
     setCart([]);
-    setAppliedVouchers([]);
     setVoucherInput("");
     setPlaced(true);
     setTimeout(() => {
@@ -253,6 +229,12 @@ const Cart = () => {
     setAddress(fullAddress);
     setOpenAddressModal(false);
     toast.success("Đã cập nhật địa chỉ giao hàng");
+  };
+
+  const removeAppliedVoucher = async () => {
+    setVoucherInput("");
+    setAppliedVoucher(null);
+    await refreshSummary(""); // reset về cart gốc
   };
 
   if (placed) {
@@ -387,9 +369,15 @@ const Cart = () => {
             <VoucherSection
               voucherInput={voucherInput}
               voucherError={voucherError}
-              appliedVouchers={appliedVouchers}
+              voucherResult={
+                appliedVoucher
+                  ? {
+                    description: summary.description || "Áp dụng thành công",
+                    discount: summary.discount,
+                  }
+                  : null
+              }
               vouchers={vouchers}
-              subtotal={subtotal}
               onVoucherInputChange={(value) => {
                 setVoucherInput(value);
                 setVoucherError("");
@@ -398,9 +386,9 @@ const Cart = () => {
               onPickVoucherCode={(code) => {
                 setVoucherInput(code);
                 setVoucherError("");
+                applyVoucher(code);
               }}
-              onRemoveAppliedVoucher={removeAppliedVoucher}
-              calcVoucherDiscount={calcVoucherDiscount}
+              onRemoveVoucher={removeAppliedVoucher}
             />
           </div>
 
@@ -411,10 +399,9 @@ const Cart = () => {
               onChangePayMethod={setPayMethod}
             />
             <OrderSummarySection
-              subtotal={subtotal}
-              shipping={shipping}
-              discount={discount}
-              total={total}
+              subtotal={summary.totalBefore}
+              discount={summary.discount}
+              total={summary.totalAfter}
               onPlaceOrder={placeOrder}
             />
           </div>

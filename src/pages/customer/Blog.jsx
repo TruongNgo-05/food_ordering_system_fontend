@@ -105,7 +105,7 @@ const Blog = () => {
             <div className="hero-overlay" />
           </div>
           <div className="hero-text">
-            <span className="hero-badge">Thành lập năm 2008</span>
+            <span className="hero-badge">Thành lập năm 2005</span>
             <h2 className="hero-title">Nhà Hàng NQT</h2>
             <p className="hero-sub">
               Tự hào phục vụ hàng nghìn thực khách mỗi tháng với nguyên liệu

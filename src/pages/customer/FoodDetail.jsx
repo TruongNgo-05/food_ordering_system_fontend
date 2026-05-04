@@ -13,10 +13,13 @@ import {
   getCategories,
 } from "../../services/userService";
 import favoriteService from "../../services/customer/favoriteService";
+import cartService from "../../services/customer/cartService";
 import reviewService from "../../services/customer/reviewService";
 import { toast } from "react-toastify";
 
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
+const CART_UPDATED_EVENT = "cart-updated-event";
+const FAVORITE_UPDATED_EVENT = "favorite-updated-event";
 
 const FoodDetail = () => {
   const navigate = useNavigate();
@@ -66,6 +69,7 @@ const FoodDetail = () => {
   }, [item]);
 
   const [cart, setCart] = useState([]);
+  const [loadingCart, setLoadingCart] = useState(false);
 
   const [favorites, setFavorites] = useState([]);
   const [loadingFavorites, setLoadingFavorites] = useState(false);
@@ -74,6 +78,38 @@ const FoodDetail = () => {
     const saved = localStorage.getItem("orders");
     return saved ? JSON.parse(saved) : [];
   });
+
+  // Load cart from API on mount
+  useEffect(() => {
+    const loadCartFromAPI = async () => {
+      try {
+        setLoadingCart(true);
+        const res = await cartService.getCart();
+        const data = res.data?.data;
+        const mapped = (data?.items || []).map((i) => ({
+          item_id: i.itemId,
+          name: i.foodName,
+          price: i.price,
+          image: i.image,
+          qty: i.quantity,
+        }));
+        setCart(mapped);
+      } catch (err) {
+        console.error("Load cart error:", err);
+        setCart([]);
+      } finally {
+        setLoadingCart(false);
+      }
+    };
+
+    loadCartFromAPI();
+
+    // Listen for cart updates from Home.jsx
+    window.addEventListener(CART_UPDATED_EVENT, loadCartFromAPI);
+    return () => {
+      window.removeEventListener(CART_UPDATED_EVENT, loadCartFromAPI);
+    };
+  }, []);
 
   // Load favorites from API on mount
   useEffect(() => {
@@ -96,7 +132,6 @@ const FoodDetail = () => {
 
     if (isLoggedIn) {
       loadFavorites();
-    } else {
       setFavorites([]);
     }
   }, [isLoggedIn]);
@@ -227,33 +262,69 @@ const FoodDetail = () => {
         ),
     );
   }, [orders, item]);
-  const addToCart = () => {
+  const addToCart = async () => {
+    if (!isLoggedIn) {
+      confirmLoginWithModal(navigate);
+      return;
+    }
     if (!item) return;
-    setCart((prev) => {
-      const ex = prev.find((c) => c.item_id === item.id);
-      if (ex)
-        return prev.map((c) =>
-          c.item_id === item.id ? { ...c, qty: c.qty + qty } : c,
-        );
-      return [
-        ...prev,
-        {
-          item_id: item.id,
-          name: item.name,
-          price: item.price,
-          image: item.image,
-          qty,
-        },
-      ];
-    });
+    try {
+      await cartService.addToCart({
+        foodId: item.id,
+        quantity: qty,
+      });
+
+      // Reload cart from API
+      const res = await cartService.getCart();
+      const data = res.data?.data;
+      const mapped = (data?.items || []).map((i) => ({
+        item_id: i.itemId,
+        name: i.foodName,
+        price: i.price,
+        image: i.image,
+        qty: i.quantity,
+      }));
+      setCart(mapped);
+      setQty(1);
+      toast.success("Đã thêm vào giỏ hàng");
+      // Dispatch event to notify Header.jsx of cart update
+      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
+    } catch (err) {
+      console.error("Add to cart error:", err);
+      toast.error("Thêm vào giỏ hàng thất bại");
+    }
   };
 
-  const decCart = (item_id) => {
-    setCart((prev) =>
-      prev
-        .map((c) => (c.item_id === item_id ? { ...c, qty: c.qty - 1 } : c))
-        .filter((c) => c.qty > 0),
-    );
+  const decCart = async (item_id) => {
+    try {
+      const item = cart.find((c) => c.item_id === item_id);
+      if (!item) return;
+
+      if (item.qty <= 1) {
+        await cartService.deleteCart(item_id);
+      } else {
+        await cartService.updateCart(item_id, {
+          quantity: item.qty - 1,
+        });
+      }
+
+      // Reload cart from API
+      const res = await cartService.getCart();
+      const data = res.data?.data;
+      const mapped = (data?.items || []).map((i) => ({
+        item_id: i.itemId,
+        name: i.foodName,
+        price: i.price,
+        image: i.image,
+        qty: i.quantity,
+      }));
+      setCart(mapped);
+      // Dispatch event to notify Header.jsx of cart update
+      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
+    } catch (err) {
+      console.error("Dec cart error:", err);
+      toast.error("Cập nhật giỏ hàng thất bại");
+    }
   };
 
   const toggleFav = async (foodId) => {
@@ -261,19 +332,43 @@ const FoodDetail = () => {
       requireLoginAction();
       return;
     }
+
+    const isFavorite = favorites.includes(foodId);
+
     try {
-      const isFav = favorites.includes(foodId);
-      if (isFav) {
-        await favoriteService.deleteFavorite(foodId);
+      // Optimistic update - update UI immediately
+      if (isFavorite) {
         setFavorites((prev) => prev.filter((f) => f !== foodId));
         toast.info("Đã xóa khỏi yêu thích");
       } else {
-        await favoriteService.addToFavorite(foodId);
         setFavorites((prev) => [...prev, foodId]);
         toast.success("Đã thêm vào yêu thích");
       }
+
+      // Call API to sync with backend
+      const res = await favoriteService.toggleFavorite(foodId);
+
+      // If API fails, revert the change
+      if (!res.data) {
+        if (isFavorite) {
+          setFavorites((prev) => [...prev, foodId]);
+        } else {
+          setFavorites((prev) => prev.filter((f) => f !== foodId));
+        }
+        toast.error("Không thể cập nhật yêu thích");
+      } else {
+        // Dispatch event to notify Header of favorite update
+        window.dispatchEvent(new Event(FAVORITE_UPDATED_EVENT));
+      }
     } catch (err) {
       console.error("Toggle favorite error:", err);
+
+      // Revert on error
+      if (isFavorite) {
+        setFavorites((prev) => [...prev, foodId]);
+      } else {
+        setFavorites((prev) => prev.filter((f) => f !== foodId));
+      }
       toast.error("Không thể cập nhật yêu thích");
     }
   };

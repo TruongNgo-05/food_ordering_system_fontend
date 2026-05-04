@@ -269,7 +269,6 @@ const Orders = () => {
 
                 {[
                   ["Tạm tính", fmt(detail.subtotal ?? 0), T.text],
-                  ["Phí giao hàng", fmt(detail.shipping ?? 0), T.text],
                   ...(detail.discount > 0
                     ? [["Giảm giá", `−${fmt(detail.discount)}`, T.green]]
                     : []),

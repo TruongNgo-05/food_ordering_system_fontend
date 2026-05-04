@@ -34,7 +34,6 @@ export default function OrderSummarySection({
 
         {[
           ["Tạm tính", fmt(subtotal), T.text],
-          ["Phí giao hàng", fmt(shipping), T.text],
           ...(discount > 0 ? [["Giảm giá", `−${fmt(discount)}`, T.green]] : []),
         ].map(([key, value, color]) => (
           <div

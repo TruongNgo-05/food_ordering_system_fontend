@@ -37,7 +37,7 @@ export const mockOrders = [
     id: "ORD-2040",
     created_at: "08/04/2025 09:10",
     status: "processing",
-    payment_method: "COD",
+    payment_method: "AT_TABLE",
     payment_status: "pending",
     items: [{ name: "Bánh Mì Thịt Nướng", image: "🥖", qty: 3, price: 35000 }],
     subtotal: 105000,

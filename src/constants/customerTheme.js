@@ -22,8 +22,9 @@ export const T = {
 };
 
 // Format số tiền VNĐ
-export const fmt = (n) => n.toLocaleString("vi-VN") + "đ";
-
+// export const fmt = (n) => n.toLocaleString("vi-VN") + "đ";
+export const fmt = (n) =>
+  (Number(n) || 0).toLocaleString("vi-VN") + "đ";
 // Config trạng thái đơn hàng
 export const STATUS_CFG = {
   pending: { label: "Chờ xác nhận", color: T.amber, bg: T.amberBg, icon: "⏳" },

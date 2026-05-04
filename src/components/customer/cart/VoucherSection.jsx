@@ -44,9 +44,8 @@ export default function VoucherSection({
             flex: 1,
             padding: "11px 14px",
             borderRadius: 11,
-            border: `1.5px solid ${
-              voucherError ? T.red : voucherResult ? T.green : T.border
-            }`,
+            border: `1.5px solid ${voucherError ? T.red : voucherResult ? T.green : T.border
+              }`,
             fontSize: 14,
             outline: "none",
           }}
@@ -91,9 +90,8 @@ export default function VoucherSection({
         >
           <span>
             <FontAwesomeIcon icon={faCircleCheck} style={{ marginRight: 6 }} />
-            Đã áp dụng — tiết kiệm {fmt(voucherResult.discount)}
+            {voucherResult.description || "Áp dụng thành công"} — tiết kiệm {fmt(voucherResult.discount)}
           </span>
-
           <button
             onClick={onRemoveVoucher}
             style={{
@@ -113,8 +111,8 @@ export default function VoucherSection({
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {(vouchers || []).map((voucher) => (
           <button
-            key={voucher.id}
-            onClick={() => onPickVoucherCode(voucher.code)}
+            key={voucher.voucherCode}
+            onClick={() => onPickVoucherCode(voucher.voucherCode)}
             style={{
               fontSize: 12,
               padding: "4px 12px",
@@ -126,7 +124,7 @@ export default function VoucherSection({
               fontWeight: 700,
             }}
           >
-            {voucher.code}
+            {voucher.voucherCode}
           </button>
         ))}
       </div>
