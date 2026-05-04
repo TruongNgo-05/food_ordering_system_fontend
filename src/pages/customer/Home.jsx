@@ -282,23 +282,44 @@ const Home = () => {
         return;
       }
 
-      try {
-        const res = await favoriteService.toggleFavorite(id);
-        const action = res.data?.data;
+      // Check current favorite status
+      const isFavorite = favorites.includes(id);
 
-        if (action === "FAVORITE") {
-          setFavorites((prev) => [...prev, id]);
-          toast.success("Đã thêm vào yêu thích");
-        } else {
+      try {
+        // Optimistic update - update UI immediately
+        if (isFavorite) {
           setFavorites((prev) => prev.filter((f) => f !== id));
           toast.info("Đã xóa khỏi yêu thích");
+        } else {
+          setFavorites((prev) => [...prev, id]);
+          toast.success("Đã thêm vào yêu thích");
+        }
+
+        // Call API to sync with backend
+        const res = await favoriteService.toggleFavorite(id);
+        
+        // If API fails, revert the change
+        if (!res.data) {
+          if (isFavorite) {
+            setFavorites((prev) => [...prev, id]);
+          } else {
+            setFavorites((prev) => prev.filter((f) => f !== id));
+          }
+          toast.error("Không thể cập nhật yêu thích");
         }
       } catch (err) {
         console.error("Toggle favorite error:", err);
+        
+        // Revert on error
+        if (isFavorite) {
+          setFavorites((prev) => [...prev, id]);
+        } else {
+          setFavorites((prev) => prev.filter((f) => f !== id));
+        }
         toast.error("Không thể cập nhật yêu thích");
       }
     },
-    [isLoggedIn, requireLoginAction],
+    [isLoggedIn, requireLoginAction, favorites],
   );
 
   const scrollToMenu = () => {

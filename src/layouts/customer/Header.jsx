@@ -38,6 +38,7 @@ import { fmt } from "../../constants/customerTheme";
 import logo from "../../assets/images/logo.png";
 
 const CART_UPDATED_EVENT = "cart-updated-event";
+const FAVORITE_UPDATED_EVENT = "favorite-updated-event";
 
 const navItems = [
   { to: "/customer", label: "Thực đơn", icon: faHouse, end: true },
@@ -202,6 +203,12 @@ const Header = () => {
 
     if (isLoggedIn) {
       loadFavorites();
+      
+      // Listen for favorite updates from Home.jsx and Favorites.jsx
+      window.addEventListener(FAVORITE_UPDATED_EVENT, loadFavorites);
+      return () => {
+        window.removeEventListener(FAVORITE_UPDATED_EVENT, loadFavorites);
+      };
     } else {
       setFavorites([]);
     }
