@@ -1,16 +1,13 @@
 import { use } from "react";
 import api from "../apiClient";
 
-// const voucherService = {
-//   getVoucher: () => api.get(`/customer/voucher`),
-//   checkVoucher: (code) => api.post(`/customer/check?code=${code}`),
-//   useVoucher: (code) => api.post(`/customer/voucher/apply?code=${code}`),
-// };
-
-// export default voucherService;
 const voucherService = {
   getVoucher: () => api.get(`/customer/voucher`),
+
   checkVoucher: (code) =>
-    api.post(`/customer/check`, { code }),
+    api.get(`/customer/check-voucher`, {
+      params: { code },
+    }),
 };
+
 export default voucherService;

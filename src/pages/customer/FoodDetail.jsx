@@ -74,11 +74,6 @@ const FoodDetail = () => {
   const [favorites, setFavorites] = useState([]);
   const [loadingFavorites, setLoadingFavorites] = useState(false);
 
-  const [orders] = useState(() => {
-    const saved = localStorage.getItem("orders");
-    return saved ? JSON.parse(saved) : [];
-  });
-
   // Load cart from API on mount
   useEffect(() => {
     const loadCartFromAPI = async () => {
@@ -145,17 +140,6 @@ const FoodDetail = () => {
       console.error("Lỗi load foods:", err);
     }
   };
-
-  useEffect(() => {
-    if (!item) return;
-    const saved = localStorage.getItem("recently-viewed-foods");
-    const prev = saved ? JSON.parse(saved) : [];
-    const next = [
-      item.id,
-      ...(Array.isArray(prev) ? prev.filter((id) => id !== item.id) : []),
-    ].slice(0, 8);
-    localStorage.setItem("recently-viewed-foods", JSON.stringify(next));
-  }, [item]);
 
   const [qty, setQty] = useState(1);
   const [activeImage, setActiveImage] = useState("");
@@ -251,17 +235,7 @@ const FoodDetail = () => {
   }, [cart]);
 
   const inCart = item ? cart.find((c) => c.item_id === item.id)?.qty || 0 : 0;
-  const canReview = useMemo(() => {
-    if (!item || !Array.isArray(orders)) return false;
-    return orders.some(
-      (order) =>
-        order?.status === "completed" &&
-        Array.isArray(order.items) &&
-        order.items.some(
-          (it) => it.item_id === item.id || it.name === item.name,
-        ),
-    );
-  }, [orders, item]);
+
   const addToCart = async () => {
     if (!isLoggedIn) {
       confirmLoginWithModal(navigate);
@@ -582,12 +556,6 @@ const FoodDetail = () => {
                 🛒 Thêm vào giỏ hàng
               </button>
             </div>
-
-            {inCart > 0 && (
-              <p className="fd-in-cart-msg" style={{ color: T.green }}>
-                ✓ Đã có {inCart} trong giỏ hàng
-              </p>
-            )}
           </div>
         </div>
 
@@ -653,12 +621,10 @@ const FoodDetail = () => {
                     onClick={() => setNewRating(s)}
                     className="fd-star-btn"
                     style={{
-                      cursor: canReview ? "pointer" : "not-allowed",
+                      cursor: "pointer",
                       color: s <= newRating ? "#F59E0B" : "#D1D5DB",
-                      opacity: canReview ? 1 : 0.6,
                     }}
                     title={`${s} sao`}
-                    disabled={!canReview}
                   >
                     ★
                   </button>
@@ -677,28 +643,15 @@ const FoodDetail = () => {
                         : handleSubmitComment();
                     }
                   }}
-                  placeholder={
-                    canReview
-                      ? "Chia sẻ cảm nhận của bạn..."
-                      : "Hoàn thành đơn hàng để mở tính năng bình luận"
-                  }
-                  className="fd-comment-input"
-                  style={{
-                    borderColor: T.border,
-                    background: canReview ? "#fff" : "#F5F5F5",
-                  }}
-                  disabled={!canReview}
+                  placeholder="Chia sẻ cảm nhận của bạn..."
+                  style={{ borderColor: T.border, background: "#fff" }}
                 />
                 <button
                   onClick={
                     editingReviewId ? handleUpdateReview : handleSubmitComment
                   }
                   className="fd-comment-submit-btn"
-                  style={{
-                    background: canReview ? T.primary : T.muted,
-                    cursor: canReview ? "pointer" : "not-allowed",
-                  }}
-                  disabled={!canReview}
+                  style={{ background: T.primary, cursor: "pointer" }}
                 >
                   {editingReviewId ? "Cập nhật" : "Gửi"}
                 </button>

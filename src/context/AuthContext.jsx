@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { loginApi } from "../services/authService";
 import { AuthContext } from "./authContext";
 import { getCurrentUserApi } from "../services/userService";
@@ -11,7 +12,11 @@ const getFullName = (u) => {
   return `${firstName} ${lastName}`.trim() || u.username || u.email || "";
 };
 
+// 5 hours in milliseconds
+const TOKEN_EXPIRATION_TIME = 5 * 60 * 60 * 1000;
+
 export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => !!localStorage.getItem("accessToken"),
   );
@@ -30,12 +35,32 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // 5 tiếng bị out token
+  useEffect(() => {
+    const tokenTimestamp = localStorage.getItem("tokenTimestamp");
+    if (!tokenTimestamp) return;
+    const checkTokenExpiration = () => {
+      const currentTime = Date.now();
+      const loginTime = parseInt(tokenTimestamp, 10);
+      const timeElapsed = currentTime - loginTime;
+
+      if (timeElapsed >= TOKEN_EXPIRATION_TIME) {
+        logout();
+        navigate("/customer", { replace: true });
+      }
+    };
+    checkTokenExpiration();
+    const expirationInterval = setInterval(checkTokenExpiration, 60 * 1000);
+    return () => clearInterval(expirationInterval);
+  }, [navigate]);
+
   const login = async (credentials) => {
     const res = await loginApi(credentials);
     const loginUser = res.data.data;
 
     localStorage.setItem("accessToken", loginUser.token);
     localStorage.setItem("role", loginUser.role);
+    localStorage.setItem("tokenTimestamp", Date.now().toString());
     setIsLoggedIn(true);
     setRole(loginUser.role);
     await refreshUser();

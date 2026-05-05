@@ -281,12 +281,9 @@ const Home = () => {
         requireLoginAction();
         return;
       }
-
-      // Check current favorite status
       const isFavorite = favorites.includes(id);
 
       try {
-        // Optimistic update - update UI immediately
         if (isFavorite) {
           setFavorites((prev) => prev.filter((f) => f !== id));
           toast.info("Đã xóa khỏi yêu thích");
@@ -294,11 +291,7 @@ const Home = () => {
           setFavorites((prev) => [...prev, id]);
           toast.success("Đã thêm vào yêu thích");
         }
-
-        // Call API to sync with backend
         const res = await favoriteService.toggleFavorite(id);
-        
-        // If API fails, revert the change
         if (!res.data) {
           if (isFavorite) {
             setFavorites((prev) => [...prev, id]);

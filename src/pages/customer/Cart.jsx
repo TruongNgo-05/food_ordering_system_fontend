@@ -13,12 +13,10 @@ import VoucherSection from "../../components/customer/cart/VoucherSection";
 import PaymentMethodSection from "../../components/customer/cart/PaymentMethodSection";
 import OrderSummarySection from "../../components/customer/cart/OrderSummarySection";
 import cartService from "../../services/customer/cartService";
-import icon from "../../assets/images/icon.png";
+import qr from "../../assets/images/qr.jpg";
 import "../../assets/styles/CustomerCart.css";
 import voucherService from "../../services/customer/voucherService";
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
-
-
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -42,11 +40,18 @@ const Cart = () => {
     discount: 0,
   });
 
-
   const refreshSummary = async (code = "") => {
     try {
       const res = await voucherService.checkVoucher(code);
-      setSummary(res.data?.data);
+      const data = res.data?.data;
+
+      setSummary({
+        totalBefore: data?.totalPrice || 0,
+        totalAfter: data?.totalAfter || 0,
+        discount: data?.discount || 0,
+        description: data?.description,
+      });
+
       setVoucherError("");
     } catch (err) {
       setSummary({
@@ -54,9 +59,14 @@ const Cart = () => {
         totalAfter: 0,
         discount: 0,
       });
+
       setAppliedVoucher(null);
 
-      setVoucherError(err.response?.data?.message || "Voucher không hợp lệ");
+      const message = err.response?.data?.message || "Voucher không hợp lệ";
+
+      setVoucherError(message);
+
+      throw new Error(message);
     }
   };
   useEffect(() => {
@@ -90,37 +100,40 @@ const Cart = () => {
     init();
   }, []);
 
+  const updateQty = useCallback(
+    async (id, delta) => {
+      try {
+        const item = cart.find((c) => c.item_id === id);
+        if (!item) return;
 
-  const updateQty = useCallback(async (id, delta) => {
-    try {
-      const item = cart.find((c) => c.item_id === id);
-      if (!item) return;
+        const newQty = item.qty + delta;
 
-      const newQty = item.qty + delta;
-
-      if (newQty <= 0) {
-        await cartService.deleteCart(id);
-      } else {
-        await cartService.updateCart(id, { quantity: newQty });
+        if (newQty <= 0) {
+          await cartService.deleteCart(id);
+        } else {
+          await cartService.updateCart(id, { quantity: newQty });
+        }
+        await refreshCartAndVoucher();
+      } catch (err) {
+        console.error("Update cart error:", err);
+        toast.error("Cập nhật giỏ hàng thất bại");
       }
-      await refreshCartAndVoucher();
+    },
+    [cart, appliedVoucher],
+  );
 
-    } catch (err) {
-      console.error("Update cart error:", err);
-      toast.error("Cập nhật giỏ hàng thất bại");
-    }
-  }, [cart]);
-
-  const removeItem = useCallback(async (id) => {
-    try {
-      await cartService.deleteCart(id);
-      await refreshCartAndVoucher();
-
-    } catch (err) {
-      console.error("Remove cart item error:", err);
-      toast.error("Xóa món thất bại");
-    }
-  }, []);
+  const removeItem = useCallback(
+    async (id) => {
+      try {
+        await cartService.deleteCart(id);
+        await refreshCartAndVoucher();
+      } catch (err) {
+        console.error("Remove cart item error:", err);
+        toast.error("Xóa món thất bại");
+      }
+    },
+    [appliedVoucher],
+  );
 
   const applyVoucher = async (customCode) => {
     const code = (customCode || voucherInput).trim();
@@ -133,11 +146,11 @@ const Cart = () => {
     try {
       await refreshSummary(code);
       setAppliedVoucher(code);
-      setVoucherError("");
+      setVoucherInput(""); // Clear input sau khi apply thành công
       toast.success("Áp dụng voucher thành công");
     } catch (err) {
       setAppliedVoucher(null);
-      setVoucherError("Voucher không hợp lệ");
+      toast.error(err.message); // thêm dòng này cho chắc
     }
   };
   const refreshCartAndVoucher = async () => {
@@ -154,8 +167,7 @@ const Cart = () => {
 
     setCart(mapped);
 
-    // 👇 chỉ cần cái này
-    await refreshSummary(voucherInput);
+    await refreshSummary(appliedVoucher || "");
   };
   const finalSubtotal = summary.totalBefore;
   const finalTotal = summary.totalAfter;
@@ -372,9 +384,9 @@ const Cart = () => {
               voucherResult={
                 appliedVoucher
                   ? {
-                    description: summary.description || "Áp dụng thành công",
-                    discount: summary.discount,
-                  }
+                      description: summary.description || "Áp dụng thành công",
+                      discount: summary.discount,
+                    }
                   : null
               }
               vouchers={vouchers}
@@ -429,7 +441,7 @@ const Cart = () => {
         <div className="cart-qr-modal-body">
           <img
             className="cart-qr-image"
-            src={icon}
+            src={qr}
             alt="QR thanh toán"
             style={{ border: `1px solid ${T.border}` }}
           />

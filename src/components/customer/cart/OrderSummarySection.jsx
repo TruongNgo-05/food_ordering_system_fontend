@@ -5,7 +5,6 @@ import { T, fmt } from "../../../constants/customerTheme";
 
 export default function OrderSummarySection({
   subtotal,
-  shipping,
   discount,
   total,
   onPlaceOrder,

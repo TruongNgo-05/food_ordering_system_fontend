@@ -44,14 +44,15 @@ export default function VoucherSection({
             flex: 1,
             padding: "11px 14px",
             borderRadius: 11,
-            border: `1.5px solid ${voucherError ? T.red : voucherResult ? T.green : T.border
-              }`,
+            border: `1.5px solid ${
+              voucherError ? T.red : voucherResult ? T.green : T.border
+            }`,
             fontSize: 14,
             outline: "none",
           }}
         />
         <button
-          onClick={onApplyVoucher}
+          onClick={() => onApplyVoucher(voucherInput)}
           style={{
             padding: "11px 22px",
             background: T.primary,
@@ -90,7 +91,8 @@ export default function VoucherSection({
         >
           <span>
             <FontAwesomeIcon icon={faCircleCheck} style={{ marginRight: 6 }} />
-            {voucherResult.description || "Áp dụng thành công"} — tiết kiệm {fmt(voucherResult.discount)}
+            {voucherResult.description || "Áp dụng thành công"} — tiết kiệm{" "}
+            {fmt(voucherResult.discount)}
           </span>
           <button
             onClick={onRemoveVoucher}
