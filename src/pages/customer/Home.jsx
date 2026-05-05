@@ -235,8 +235,9 @@ const Home = () => {
           qty: i.quantity,
         }));
         setCart(mapped);
-        // Dispatch event to notify Header.jsx of cart update
+
         window.dispatchEvent(new Event(CART_UPDATED_EVENT));
+        toast.success("Thêm vào giỏ hàng thành công");
       } catch (err) {
         console.error("Add to cart error:", err);
         toast.error("Thêm vào giỏ hàng thất bại");
@@ -302,7 +303,7 @@ const Home = () => {
         }
       } catch (err) {
         console.error("Toggle favorite error:", err);
-        
+
         // Revert on error
         if (isFavorite) {
           setFavorites((prev) => [...prev, id]);
