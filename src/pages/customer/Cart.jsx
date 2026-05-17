@@ -16,6 +16,7 @@ import cartService from "../../services/customer/cartService";
 import qr from "../../assets/images/qr.jpg";
 import "../../assets/styles/CustomerCart.css";
 import voucherService from "../../services/customer/voucherService";
+import { useAuth } from "../../hooks/useAuth";
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 
 const Cart = () => {
@@ -29,18 +30,24 @@ const Cart = () => {
   const [vouchers, setVouchers] = useState([]);
   const [appliedVoucher, setAppliedVoucher] = useState(null);
   const [payMethod, setPayMethod] = useState("COD");
-  const [address, setAddress] = useState("");
+  const [deliveryInfo, setDeliveryInfo] = useState({
+    address: "",
+    receiverName: "",
+    receiverPhone: "",
+  });
   const [openAddressModal, setOpenAddressModal] = useState(false);
   const [placed, setPlaced] = useState(false);
   const [openQrModal, setOpenQrModal] = useState(false);
   const [onlinePaymentRef, setOnlinePaymentRef] = useState("");
+  const [note, setNote] = useState("");
+
   const [summary, setSummary] = useState({
     totalBefore: 0,
     totalAfter: 0,
     discount: 0,
   });
 
-  const refreshSummary = async (code = "") => {
+  const refreshSummary = async (code = "", cartData = null) => {
     try {
       const res = await voucherService.checkVoucher(code);
       const data = res.data?.data;
@@ -54,10 +61,17 @@ const Cart = () => {
 
       setVoucherError("");
     } catch (err) {
+      const targetCart = cartData || cart;
+      const totalBefore = targetCart.reduce(
+        (sum, item) => sum + item.price * item.qty,
+        0,
+      );
+
       setSummary({
-        totalBefore: 0,
-        totalAfter: 0,
+        totalBefore: totalBefore,
+        totalAfter: totalBefore, // Không giảm giá vì voucher không hợp lệ
         discount: 0,
+        description: null,
       });
 
       setAppliedVoucher(null);
@@ -85,6 +99,9 @@ const Cart = () => {
         }));
 
         setCart(mapped);
+
+        // 👇 Truyền mapped data vào refreshSummary để tính toán chính xác
+        await refreshSummary("", mapped);
       } catch (err) {
         console.error("Load cart error:", err);
       } finally {
@@ -92,12 +109,7 @@ const Cart = () => {
       }
     };
 
-    const init = async () => {
-      await loadCart();
-      await refreshSummary("");
-    };
-
-    init();
+    loadCart();
   }, []);
 
   const updateQty = useCallback(
@@ -167,7 +179,8 @@ const Cart = () => {
 
     setCart(mapped);
 
-    await refreshSummary(appliedVoucher || "");
+    // 👇 Truyền mapped data vào refreshSummary
+    await refreshSummary(appliedVoucher || "", mapped);
   };
   const finalSubtotal = summary.totalBefore;
   const finalTotal = summary.totalAfter;
@@ -204,16 +217,21 @@ const Cart = () => {
       discount,
       total: finalTotal,
       voucher: appliedVoucher ? [appliedVoucher] : [],
-      address,
+      address: deliveryInfo.address,
+
+      customer: {
+        name: deliveryInfo.receiverName,
+        phone: deliveryInfo.receiverPhone,
+      },
+      note: note || "",
     };
-    const saved = localStorage.getItem("orders");
     const prevOrders = saved ? JSON.parse(saved) : [];
     const nextOrders = Array.isArray(prevOrders)
       ? [order, ...prevOrders]
       : [order];
-    localStorage.setItem("orders", JSON.stringify(nextOrders));
     setCart([]);
     setVoucherInput("");
+    setNote("");
     setPlaced(true);
     setTimeout(() => {
       setPlaced(false);
@@ -223,9 +241,18 @@ const Cart = () => {
 
   const placeOrder = () => {
     if (cart.length === 0) return;
-    if (!address.trim()) {
+    if (!deliveryInfo.address.trim()) {
       toast.warning("Vui lòng chọn địa chỉ giao hàng");
       setOpenAddressModal(true);
+      return;
+    }
+    if (!deliveryInfo.receiverName.trim()) {
+      toast.warning("Thiếu tên người nhận");
+      return;
+    }
+
+    if (!deliveryInfo.receiverPhone.trim()) {
+      toast.warning("Thiếu số điện thoại người nhận");
       return;
     }
     if (payMethod === "ONLINE") {
@@ -237,16 +264,21 @@ const Cart = () => {
     finalizeOrder("pending");
   };
 
-  const saveAddressFromModal = (fullAddress) => {
-    setAddress(fullAddress);
+  const saveAddressFromModal = (data) => {
+    setDeliveryInfo({
+      address: data.address,
+      receiverName: data.receiverName,
+      receiverPhone: data.receiverPhone,
+    });
+
     setOpenAddressModal(false);
+
     toast.success("Đã cập nhật địa chỉ giao hàng");
   };
-
   const removeAppliedVoucher = async () => {
     setVoucherInput("");
     setAppliedVoucher(null);
-    await refreshSummary(""); // reset về cart gốc
+    await refreshSummary("", cart); // reset về cart gốc
   };
 
   if (placed) {
@@ -374,7 +406,22 @@ const Cart = () => {
                 type="button"
                 onClick={() => setOpenAddressModal(true)}
               >
-                {address || "Chọn địa chỉ giao hàng"}
+                {deliveryInfo.address ? (
+                  <div>
+                    <div
+                      style={{
+                        fontWeight: 600,
+                        marginBottom: 4,
+                      }}
+                    >
+                      {deliveryInfo.receiverName} - {deliveryInfo.receiverPhone}
+                    </div>
+
+                    <div>{deliveryInfo.address}</div>
+                  </div>
+                ) : (
+                  "Chọn địa chỉ giao hàng"
+                )}
               </button>
             </div>
 
