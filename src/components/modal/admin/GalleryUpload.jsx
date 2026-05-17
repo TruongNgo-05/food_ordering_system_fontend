@@ -43,23 +43,14 @@ const GalleryUpload = ({ form }) => {
   }, [imageFiles]);
 
   // ================= DELETE IMAGE URL =================
-  const handleDeleteUrl = async (img, index) => {
+  const handleDeleteUrl = (img, index) => {
     try {
-      // 🔥 tìm imageId từ DB
-      const found = existingImages.find((it) => it.url === img);
-
-      // nếu có id → gọi API xoá
-      if (found?.id) {
-        await adminFoodService.deleteFoodSubImage(found.id);
-      }
-
-      // update UI
       const list = [...imageUrls];
       list.splice(index, 1);
 
       form.setFieldValue("additionalImages", list.join("\n"));
 
-      message.success("Xóa ảnh thành công");
+      message.success("Đã xóa khỏi danh sách (sẽ cập nhật khi bấm Lưu)");
     } catch (err) {
       console.error(err);
       message.error("Xóa ảnh thất bại");

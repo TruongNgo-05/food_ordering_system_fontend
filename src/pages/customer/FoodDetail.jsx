@@ -12,10 +12,14 @@ import {
   getFoods,
   getCategories,
 } from "../../services/userService";
+import favoriteService from "../../services/customer/favoriteService";
+import cartService from "../../services/customer/cartService";
 import reviewService from "../../services/customer/reviewService";
 import { toast } from "react-toastify";
 
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
+const CART_UPDATED_EVENT = "cart-updated-event";
+const FAVORITE_UPDATED_EVENT = "favorite-updated-event";
 
 const FoodDetail = () => {
   const navigate = useNavigate();
@@ -64,30 +68,68 @@ const FoodDetail = () => {
     return [...new Set([main, ...images].filter(Boolean))];
   }, [item]);
 
-  const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem("cart");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [cart, setCart] = useState([]);
+  const [loadingCart, setLoadingCart] = useState(false);
 
-  const [favorites, setFavorites] = useState(() => {
-    const saved = localStorage.getItem("favorites");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [favorites, setFavorites] = useState([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
 
-  const [orders] = useState(() => {
-    const saved = localStorage.getItem("orders");
-    return saved ? JSON.parse(saved) : [];
-  });
-
+  // Load cart from API on mount
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
-  }, [cart]);
+    const loadCartFromAPI = async () => {
+      try {
+        setLoadingCart(true);
+        const res = await cartService.getCart();
+        const data = res.data?.data;
+        const mapped = (data?.items || []).map((i) => ({
+          item_id: i.itemId,
+          name: i.foodName,
+          price: i.price,
+          image: i.image,
+          qty: i.quantity,
+        }));
+        setCart(mapped);
+      } catch (err) {
+        console.error("Load cart error:", err);
+        setCart([]);
+      } finally {
+        setLoadingCart(false);
+      }
+    };
 
+    loadCartFromAPI();
+
+    // Listen for cart updates from Home.jsx
+    window.addEventListener(CART_UPDATED_EVENT, loadCartFromAPI);
+    return () => {
+      window.removeEventListener(CART_UPDATED_EVENT, loadCartFromAPI);
+    };
+  }, []);
+
+  // Load favorites from API on mount
   useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify(favorites));
-    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
-  }, [favorites]);
+    const loadFavorites = async () => {
+      try {
+        setLoadingFavorites(true);
+        const res = await favoriteService.getMyFavorite();
+        const data = res.data?.data;
+        const favIds = Array.isArray(data)
+          ? data.map((item) => item.foodId || item.id)
+          : [];
+        setFavorites(favIds);
+      } catch (err) {
+        console.error("Load favorites error:", err);
+        setFavorites([]);
+      } finally {
+        setLoadingFavorites(false);
+      }
+    };
+
+    if (isLoggedIn) {
+      loadFavorites();
+      setFavorites([]);
+    }
+  }, [isLoggedIn]);
 
   const fetchFoods = async () => {
     try {
@@ -98,17 +140,6 @@ const FoodDetail = () => {
       console.error("Lỗi load foods:", err);
     }
   };
-
-  useEffect(() => {
-    if (!item) return;
-    const saved = localStorage.getItem("recently-viewed-foods");
-    const prev = saved ? JSON.parse(saved) : [];
-    const next = [
-      item.id,
-      ...(Array.isArray(prev) ? prev.filter((id) => id !== item.id) : []),
-    ].slice(0, 8);
-    localStorage.setItem("recently-viewed-foods", JSON.stringify(next));
-  }, [item]);
 
   const [qty, setQty] = useState(1);
   const [activeImage, setActiveImage] = useState("");
@@ -204,67 +235,116 @@ const FoodDetail = () => {
   }, [cart]);
 
   const inCart = item ? cart.find((c) => c.item_id === item.id)?.qty || 0 : 0;
-  // const DEBUG_ALLOW_REVIEW = false;
-  // const canReview =
-  //   DEBUG_ALLOW_REVIEW ||
-  //   useMemo(() => {
-  //     if (!item || !Array.isArray(orders)) return false;
-  //     return orders.some(
-  //       (order) =>
-  //         order?.status === "completed" &&
-  //         order.items?.some((it) => it.item_id === item.id),
-  //     );
-  //   }, [orders, item]);
-  const canReview = useMemo(() => {
-    if (!item || !Array.isArray(orders)) return false;
-    return orders.some(
-      (order) =>
-        order?.status === "completed" &&
-        Array.isArray(order.items) &&
-        order.items.some(
-          (it) => it.item_id === item.id || it.name === item.name,
-        ),
-    );
-  }, [orders, item]);
-  const addToCart = () => {
+
+  const addToCart = async () => {
+    if (!isLoggedIn) {
+      confirmLoginWithModal(navigate);
+      return;
+    }
     if (!item) return;
-    setCart((prev) => {
-      const ex = prev.find((c) => c.item_id === item.id);
-      if (ex)
-        return prev.map((c) =>
-          c.item_id === item.id ? { ...c, qty: c.qty + qty } : c,
-        );
-      return [
-        ...prev,
-        {
-          item_id: item.id,
-          name: item.name,
-          price: item.price,
-          image: item.image,
-          qty,
-        },
-      ];
-    });
+    try {
+      await cartService.addToCart({
+        foodId: item.id,
+        quantity: qty,
+      });
+
+      // Reload cart from API
+      const res = await cartService.getCart();
+      const data = res.data?.data;
+      const mapped = (data?.items || []).map((i) => ({
+        item_id: i.itemId,
+        name: i.foodName,
+        price: i.price,
+        image: i.image,
+        qty: i.quantity,
+      }));
+      setCart(mapped);
+      setQty(1);
+      toast.success("Đã thêm vào giỏ hàng");
+      // Dispatch event to notify Header.jsx of cart update
+      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
+    } catch (err) {
+      console.error("Add to cart error:", err);
+      toast.error("Thêm vào giỏ hàng thất bại");
+    }
   };
 
-  const decCart = (item_id) => {
-    setCart((prev) =>
-      prev
-        .map((c) => (c.item_id === item_id ? { ...c, qty: c.qty - 1 } : c))
-        .filter((c) => c.qty > 0),
-    );
+  const decCart = async (item_id) => {
+    try {
+      const item = cart.find((c) => c.item_id === item_id);
+      if (!item) return;
+
+      if (item.qty <= 1) {
+        await cartService.deleteCart(item_id);
+      } else {
+        await cartService.updateCart(item_id, {
+          quantity: item.qty - 1,
+        });
+      }
+
+      // Reload cart from API
+      const res = await cartService.getCart();
+      const data = res.data?.data;
+      const mapped = (data?.items || []).map((i) => ({
+        item_id: i.itemId,
+        name: i.foodName,
+        price: i.price,
+        image: i.image,
+        qty: i.quantity,
+      }));
+      setCart(mapped);
+      // Dispatch event to notify Header.jsx of cart update
+      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
+    } catch (err) {
+      console.error("Dec cart error:", err);
+      toast.error("Cập nhật giỏ hàng thất bại");
+    }
   };
 
-  const toggleFav = (foodId) => {
+  const toggleFav = async (foodId) => {
     if (!isLoggedIn) {
       requireLoginAction();
       return;
     }
-    setFavorites((prev) =>
-      prev.includes(foodId)
-        ? prev.filter((f) => f !== foodId)
-        : [...prev, foodId],
-    );
+
+    const isFavorite = favorites.includes(foodId);
+
+    try {
+      // Optimistic update - update UI immediately
+      if (isFavorite) {
+        setFavorites((prev) => prev.filter((f) => f !== foodId));
+        toast.info("Đã xóa khỏi yêu thích");
+      } else {
+        setFavorites((prev) => [...prev, foodId]);
+        toast.success("Đã thêm vào yêu thích");
+      }
+
+      // Call API to sync with backend
+      const res = await favoriteService.toggleFavorite(foodId);
+
+      // If API fails, revert the change
+      if (!res.data) {
+        if (isFavorite) {
+          setFavorites((prev) => [...prev, foodId]);
+        } else {
+          setFavorites((prev) => prev.filter((f) => f !== foodId));
+        }
+        toast.error("Không thể cập nhật yêu thích");
+      } else {
+        // Dispatch event to notify Header of favorite update
+        window.dispatchEvent(new Event(FAVORITE_UPDATED_EVENT));
+      }
+    } catch (err) {
+      console.error("Toggle favorite error:", err);
+
+      // Revert on error
+      if (isFavorite) {
+        setFavorites((prev) => [...prev, foodId]);
+      } else {
+        setFavorites((prev) => prev.filter((f) => f !== foodId));
+      }
+      toast.error("Không thể cập nhật yêu thích");
+    }
   };
 
   const handleSubmitComment = async () => {
@@ -476,12 +556,6 @@ const FoodDetail = () => {
                 🛒 Thêm vào giỏ hàng
               </button>
             </div>
-
-            {inCart > 0 && (
-              <p className="fd-in-cart-msg" style={{ color: T.green }}>
-                ✓ Đã có {inCart} trong giỏ hàng
-              </p>
-            )}
           </div>
         </div>
 
@@ -547,12 +621,10 @@ const FoodDetail = () => {
                     onClick={() => setNewRating(s)}
                     className="fd-star-btn"
                     style={{
-                      cursor: canReview ? "pointer" : "not-allowed",
+                      cursor: "pointer",
                       color: s <= newRating ? "#F59E0B" : "#D1D5DB",
-                      opacity: canReview ? 1 : 0.6,
                     }}
                     title={`${s} sao`}
-                    disabled={!canReview}
                   >
                     ★
                   </button>
@@ -571,28 +643,15 @@ const FoodDetail = () => {
                         : handleSubmitComment();
                     }
                   }}
-                  placeholder={
-                    canReview
-                      ? "Chia sẻ cảm nhận của bạn..."
-                      : "Hoàn thành đơn hàng để mở tính năng bình luận"
-                  }
-                  className="fd-comment-input"
-                  style={{
-                    borderColor: T.border,
-                    background: canReview ? "#fff" : "#F5F5F5",
-                  }}
-                  disabled={!canReview}
+                  placeholder="Chia sẻ cảm nhận của bạn..."
+                  style={{ borderColor: T.border, background: "#fff" }}
                 />
                 <button
                   onClick={
                     editingReviewId ? handleUpdateReview : handleSubmitComment
                   }
                   className="fd-comment-submit-btn"
-                  style={{
-                    background: canReview ? T.primary : T.muted,
-                    cursor: canReview ? "pointer" : "not-allowed",
-                  }}
-                  disabled={!canReview}
+                  style={{ background: T.primary, cursor: "pointer" }}
                 >
                   {editingReviewId ? "Cập nhật" : "Gửi"}
                 </button>

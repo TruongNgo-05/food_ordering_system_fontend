@@ -183,9 +183,17 @@ const AdminFoods = () => {
       message.error("Thêm món thất bại");
     }
   };
-
   const handleEdit = async (values) => {
     try {
+      const existingImages = values.existingImages || [];
+
+      const currentUrls = parseAdditionalImages(values.additionalImages);
+
+      // giữ ảnh chưa bị xoá
+      const finalExisting = existingImages.filter((img) =>
+        currentUrls.includes(img.url),
+      );
+
       await adminFoodService.updateFood(
         editingRecord.id,
         {
@@ -198,12 +206,14 @@ const AdminFoods = () => {
             : values.removeImage
               ? ""
               : values.image || "",
-          imageUrls: parseAdditionalImages(values.additionalImages),
+          imageUrls: finalExisting.map((img) => img.url),
+
           removeImage: values.removeImage || false,
         },
         values.imageFile,
-        values.imageFiles || [],
+        values.imageFiles || [], // file upload riêng
       );
+
       message.success("Cập nhật thành công");
       setOpenEdit(false);
       setEditingRecord(null);
@@ -213,7 +223,6 @@ const AdminFoods = () => {
       message.error("Cập nhật thất bại");
     }
   };
-
   const handleDelete = async (id) => {
     try {
       await adminFoodService.deleteFood(id);
@@ -293,6 +302,7 @@ const AdminFoods = () => {
               priceInThousand: r.price / 1000,
               imageFiles: [],
               additionalImages: (r.images || []).map((i) => i.url).join("\n"),
+              existingImages: r.images || [],
             });
             setOpenEdit(true);
           }}

@@ -1,17 +1,17 @@
 import api from "../apiClient";
 const adminUserService = {
-  getAllUser: (params) => api.get("/admin/users", { params }),
+  getAllUser: (params) => api.get("/admin/account", { params }),
 
-  getUserById: (id) => api.get(`/admin/users/${id}`),
+  getUserById: (id) => api.get(`/admin/account/${id}`),
 
-  createUser: (data) => api.post("/users", data),
+  createUser: (data) => api.post("/account", data),
 
-  updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
+  updateUser: (id, data) => api.put(`/admin/account/${id}`, data),
 
-  deleteUser: (id) => api.delete(`/admin/users/${id}`),
+  deleteUser: (id) => api.delete(`/admin/account/${id}`),
 
-  unlockUser: (id) => api.put(`/auth/admin/account/unlock/${id}`),
+  unlockUser: (id) => api.put(`/admin/account/unlock/${id}`),
 
-  lockUser: (id) => api.put(`/auth/admin/account/lock/${id}`),
+  lockUser: (id) => api.put(`/admin/account/lock/${id}`),
 };
 export default adminUserService;

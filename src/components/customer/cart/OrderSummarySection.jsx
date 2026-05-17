@@ -5,7 +5,6 @@ import { T, fmt } from "../../../constants/customerTheme";
 
 export default function OrderSummarySection({
   subtotal,
-  shipping,
   discount,
   total,
   onPlaceOrder,
@@ -34,7 +33,6 @@ export default function OrderSummarySection({
 
         {[
           ["Tạm tính", fmt(subtotal), T.text],
-          ["Phí giao hàng", fmt(shipping), T.text],
           ...(discount > 0 ? [["Giảm giá", `−${fmt(discount)}`, T.green]] : []),
         ].map(([key, value, color]) => (
           <div

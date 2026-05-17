@@ -150,20 +150,6 @@ export default function MenuItemCard({
           >
             {fmt(item.price)}
           </span>
-          {inCart > 0 && (
-            <span
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: T.green,
-                background: T.greenBg,
-                borderRadius: 999,
-                padding: "3px 8px",
-              }}
-            >
-              Trong giỏ: {inCart}
-            </span>
-          )}
         </div>
 
         <div style={{ display: "flex", gap: 8 }}>

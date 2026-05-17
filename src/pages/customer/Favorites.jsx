@@ -1,145 +1,241 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { T } from "../../constants/customerTheme";
 import { EmptyState } from "../../components/customer/SharedUI";
 import MenuItemCard from "../../components/customer/MenuItemCard";
 import UserHeader from "../../components/user/UserHeader";
-import {
-  loadSharedFoods,
-  SHARED_DATA_UPDATED_EVENT,
-} from "../../utils/sharedData";
-import { confirmLoginWithModal } from "../../utils/authGuards";
+import favoriteService from "../../services/customer/favoriteService";
+import cartService from "../../services/customer/cartService";
+import { getFoods } from "../../services/userService";
 import { useAuth } from "../../hooks/useAuth";
+import { confirmLoginWithModal } from "../../utils/authGuards";
 import "../../assets/styles/CustomerFavorites.css";
 
-const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
-const isSameArray = (a, b) =>
-  JSON.stringify(a || []) === JSON.stringify(b || []);
+const CART_UPDATED_EVENT = "cart-updated-event";
 
 const Favorites = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
 
-  useEffect(() => {
-    if (!isLoggedIn) {
-      confirmLoginWithModal(navigate, () => navigate("/customer"));
-    }
-  }, [isLoggedIn, navigate]);
-
-  const [favorites, setFavorites] = useState(() => {
-    const saved = localStorage.getItem("favorites");
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify(favorites));
-    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
-  }, [favorites]);
-
-  const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem("cart");
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [foods, setFoods] = useState(() => loadSharedFoods());
+  const [favorites, setFavorites] = useState([]);
+  const [foods, setFoods] = useState([]);
   const [search, setSearch] = useState("");
+  const [cart, setCart] = useState([]);
 
+  // ─── Require login ─────────────────────
+  const requireLoginAction = useCallback(() => {
+    confirmLoginWithModal(navigate);
+  }, [navigate]);
+
+  // ─── Load favorites (API) ──────────────
   useEffect(() => {
-    const syncLocalData = () => {
+    const loadFavorites = async () => {
       try {
-        const savedFav = localStorage.getItem("favorites");
-        const nextFav = savedFav ? JSON.parse(savedFav) : [];
-        setFavorites((prev) => (isSameArray(prev, nextFav) ? prev : nextFav));
-      } catch {
+        const res = await favoriteService.getMyFavorite();
+        const favIds = res.data?.data?.favoriteIds || [];
+        setFavorites(favIds);
+      } catch (err) {
+        console.error(err);
         setFavorites([]);
       }
+    };
+
+    if (isLoggedIn) loadFavorites();
+    else setFavorites([]);
+  }, [isLoggedIn]);
+
+  // ─── Load foods (API) ──────────────────
+  useEffect(() => {
+    const fetchFoods = async () => {
       try {
-        const savedCart = localStorage.getItem("cart");
-        const nextCart = savedCart ? JSON.parse(savedCart) : [];
-        setCart((prev) => (isSameArray(prev, nextCart) ? prev : nextCart));
-      } catch {
-        setCart([]);
+        const res = await getFoods({ page: 0, size: 1000 });
+        const list = res.data?.data?.content || [];
+
+        const mapped = list.map((f) => ({
+          id: f.id,
+          name: f.name,
+          price: f.price,
+          image: f.image,
+          desc: f.description || "",
+        }));
+
+        setFoods(mapped);
+      } catch (err) {
+        console.error("Load foods error:", err);
+        setFoods([]);
       }
     };
-    syncLocalData();
-    window.addEventListener("focus", syncLocalData);
-    window.addEventListener("storage", syncLocalData);
-    window.addEventListener(CUSTOMER_DATA_UPDATED_EVENT, syncLocalData);
-    return () => {
-      window.removeEventListener("focus", syncLocalData);
-      window.removeEventListener("storage", syncLocalData);
-      window.removeEventListener(CUSTOMER_DATA_UPDATED_EVENT, syncLocalData);
-    };
+
+    fetchFoods();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
-  }, [cart]);
-
-  useEffect(() => {
-    const syncFoods = () => setFoods(loadSharedFoods());
-    syncFoods();
-    window.addEventListener("focus", syncFoods);
-    window.addEventListener("storage", syncFoods);
-    window.addEventListener(SHARED_DATA_UPDATED_EVENT, syncFoods);
-    return () => {
-      window.removeEventListener("focus", syncFoods);
-      window.removeEventListener("storage", syncFoods);
-      window.removeEventListener(SHARED_DATA_UPDATED_EVENT, syncFoods);
-    };
-  }, []);
-
+  // ─── Filter favorites ──────────────────
   const items = useMemo(() => {
-    const keyword = search.trim().toLowerCase();
+    const keyword = search.toLowerCase();
+
     return foods.filter(
-      (m) =>
-        favorites.includes(m.id) &&
-        (keyword.length === 0 ||
-          m.name.toLowerCase().includes(keyword) ||
-          m.desc.toLowerCase().includes(keyword)),
+      (f) =>
+        favorites.includes(f.id) &&
+        (f.name.toLowerCase().includes(keyword) ||
+          f.desc.toLowerCase().includes(keyword)),
     );
   }, [foods, favorites, search]);
 
-  const cartMap = useMemo(() => {
-    return Object.fromEntries(cart.map((c) => [c.item_id, c.qty]));
-  }, [cart]);
+  // ─── Toggle favorite (API) ─────────────
+  const toggleFav = useCallback(
+    async (id) => {
+      if (!isLoggedIn) {
+        requireLoginAction();
+        return;
+      }
 
-  const addToCart = useCallback((item) => {
-    setCart((prev) => {
-      const ex = prev.find((c) => c.item_id === item.id);
-      if (ex)
-        return prev.map((c) =>
-          c.item_id === item.id ? { ...c, qty: c.qty + 1 } : c,
-        );
-      return [
-        ...prev,
-        {
-          item_id: item.id,
-          name: item.name,
-          price: item.price,
-          image: item.image,
-          qty: 1,
-        },
-      ];
-    });
-  }, []);
+      // Check current favorite status
+      const isFavorite = favorites.includes(id);
 
-  const decCart = useCallback((item_id) => {
-    setCart((prev) =>
-      prev
-        .map((c) => (c.item_id === item_id ? { ...c, qty: c.qty - 1 } : c))
-        .filter((c) => c.qty > 0),
-    );
-  }, []);
+      try {
+        // Optimistic update - update UI immediately
+        if (isFavorite) {
+          setFavorites((prev) => prev.filter((f) => f !== id));
+          toast.info("Đã xóa khỏi yêu thích");
+        } else {
+          setFavorites((prev) => [...prev, id]);
+          toast.success("Đã thêm vào yêu thích");
+        }
 
-  const toggleFav = useCallback((id) => {
-    setFavorites((prev) => prev.filter((f) => f !== id));
-  }, []);
+        // Call API to sync with backend
+        const res = await favoriteService.toggleFavorite(id);
 
-  const clearAllFavorites = () => {
-    setFavorites([]);
+        // If API fails, revert the change
+        if (!res.data) {
+          if (isFavorite) {
+            setFavorites((prev) => [...prev, id]);
+          } else {
+            setFavorites((prev) => prev.filter((f) => f !== id));
+          }
+          toast.error("Không thể cập nhật yêu thích");
+        }
+      } catch (err) {
+        console.error("Toggle favorite error:", err);
+
+        // Revert on error
+        if (isFavorite) {
+          setFavorites((prev) => [...prev, id]);
+        } else {
+          setFavorites((prev) => prev.filter((f) => f !== id));
+        }
+        toast.error("Không thể cập nhật yêu thích");
+      }
+    },
+    [isLoggedIn, requireLoginAction, favorites],
+  );
+
+  // ─── Clear all favorites (API-safe) ────
+  const clearAllFavorites = async () => {
+    try {
+      await Promise.all(
+        favorites.map((id) => favoriteService.toggleFavorite(id)),
+      );
+      setFavorites([]);
+      toast.success("Đã xóa tất cả yêu thích");
+    } catch (err) {
+      toast.error("Xóa thất bại");
+    }
   };
 
+  // ─── Load cart from API on mount ─────────────────────────────
+  useEffect(() => {
+    const loadCartFromAPI = async () => {
+      try {
+        const res = await cartService.getCart();
+        const data = res.data?.data;
+        const mapped = (data?.items || []).map((i) => ({
+          item_id: i.itemId,
+          name: i.foodName,
+          price: i.price,
+          image: i.image,
+          qty: i.quantity,
+        }));
+        setCart(mapped);
+      } catch (err) {
+        console.error("Load cart error:", err);
+      }
+    };
+
+    loadCartFromAPI();
+  }, []);
+
+  // ─── Cart map ────────────────────────────
+  const cartMap = useMemo(
+    () => Object.fromEntries(cart.map((c) => [c.item_id, c.qty])),
+    [cart],
+  );
+
+  // ─── Add to cart (API) ────────────────────
+  const addToCart = useCallback(
+    async (item) => {
+      if (!isLoggedIn) {
+        requireLoginAction();
+        return;
+      }
+      try {
+        await cartService.addToCart({
+          foodId: item.id,
+          quantity: 1,
+        });
+
+        // Reload cart from API
+        const res = await cartService.getCart();
+        const data = res.data?.data;
+        const mapped = (data?.items || []).map((i) => ({
+          item_id: i.itemId,
+          name: i.foodName,
+          price: i.price,
+          image: i.image,
+          qty: i.quantity,
+        }));
+        setCart(mapped);
+        // Dispatch event to notify Header.jsx of cart update
+        window.dispatchEvent(new Event(CART_UPDATED_EVENT));
+      } catch (err) {
+        console.error("Add to cart error:", err);
+        toast.error("Thêm vào giỏ hàng thất bại");
+      }
+    },
+    [isLoggedIn, requireLoginAction],
+  );
+
+  // ─── Dec cart (API) ───────────────────────
+  const decCart = useCallback(async (item) => {
+    try {
+      if (item.qty <= 1) {
+        await cartService.deleteCart(item.item_id);
+      } else {
+        await cartService.updateCart(item.item_id, {
+          quantity: item.qty - 1,
+        });
+      }
+
+      // Reload cart from API
+      const res = await cartService.getCart();
+      const data = res.data?.data;
+      const mapped = (data?.items || []).map((i) => ({
+        item_id: i.itemId,
+        name: i.foodName,
+        price: i.price,
+        image: i.image,
+        qty: i.quantity,
+      }));
+      setCart(mapped);
+      // Dispatch event to notify Header.jsx of cart update
+      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
+    } catch (err) {
+      console.error("Dec cart error:", err);
+      toast.error("Cập nhật giỏ hàng thất bại");
+    }
+  }, []);
+
+  // ─── UI ────────────────────────────────
   return (
     <div className="customer-favorites-page" style={{ background: T.bg }}>
       <div className="customer-favorites-container">
@@ -148,36 +244,22 @@ const Favorites = () => {
           description="Những món bạn đã lưu"
           extra={
             <div className="favorites-header-extra">
-              <div
-                className="favorites-search-box"
-                style={{
-                  background: T.card,
-                  border: `1px solid ${T.border}`,
-                }}
-              >
-                <input
-                  className="favorites-search-input"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Tìm trong yêu thích..."
-                  style={{ color: T.text }}
-                />
-              </div>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Tìm trong yêu thích..."
+              />
+
               <button
-                className="favorites-clear-btn"
                 onClick={clearAllFavorites}
                 disabled={favorites.length === 0}
-                style={{
-                  border: `1px solid ${T.border}`,
-                  background: favorites.length > 0 ? "#fff" : T.bg,
-                  color: favorites.length > 0 ? T.red : T.muted,
-                }}
               >
                 Xóa tất cả
               </button>
             </div>
           }
         />
+
         {items.length === 0 ? (
           <EmptyState
             icon="❤️"

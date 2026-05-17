@@ -1,0 +1,108 @@
+.dam-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dam-section-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+/* ADDRESS LIST */
+.dam-address-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dam-address-card {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  background: #fff;
+}
+
+.dam-address-card--default {
+  background: #f0fdf4;
+}
+
+.dam-address-card__header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.dam-address-card__name {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.dam-address-card__phone {
+  font-size: 13px;
+  color: #666;
+}
+
+.dam-address-card__address {
+  font-size: 13px;
+}
+
+.dam-address-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.dam-badge--default {
+  color: green;
+  font-size: 12px;
+}
+
+.dam-address-card__actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* BUTTONS */
+.dam-btn {
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.dam-btn--edit {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.dam-btn--delete {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.dam-btn--cancel-edit {
+  background: #e5e7eb;
+  font-weight: 600;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* FORM */
+.dam-field__label {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.dam-input,
+.dam-select {
+  width: 100%;
+  height: 38px;
+  padding-left: 8px;
+}

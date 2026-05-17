@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "antd";
 import { toast } from "react-toastify";
@@ -12,145 +12,194 @@ import DeliveryAddressModal from "../../components/customer/DeliveryAddressModal
 import VoucherSection from "../../components/customer/cart/VoucherSection";
 import PaymentMethodSection from "../../components/customer/cart/PaymentMethodSection";
 import OrderSummarySection from "../../components/customer/cart/OrderSummarySection";
-import {
-  loadSharedVouchers,
-  SHARED_DATA_UPDATED_EVENT,
-} from "../../utils/sharedData";
+import cartService from "../../services/customer/cartService";
+import qr from "../../assets/images/qr.jpg";
 import "../../assets/styles/CustomerCart.css";
-
+import voucherService from "../../services/customer/voucherService";
+import { useAuth } from "../../hooks/useAuth";
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
-const BANK_OPTIONS = [
-  { code: "VCB", name: "Vietcombank" },
-  { code: "BIDV", name: "BIDV" },
-  { code: "TCB", name: "Techcombank" },
-  { code: "MB", name: "MB Bank" },
-  { code: "ACB", name: "ACB" },
-  { code: "VPB", name: "VPBank" },
-];
-
-const calcVoucherDiscount = (voucher, subtotal) => {
-  if (!voucher) return 0;
-  return voucher.discount_type === "percent"
-    ? Math.min(
-        Math.round((subtotal * voucher.discount_value) / 100),
-        voucher.max_discount,
-      )
-    : voucher.discount_value;
-};
 
 const Cart = () => {
   const navigate = useNavigate();
 
-  const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem("cart");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [cart, setCart] = useState([]);
+  const [loadingCart, setLoadingCart] = useState(false);
 
   const [voucherInput, setVoucherInput] = useState("");
-  const [appliedVouchers, setAppliedVouchers] = useState([]);
   const [voucherError, setVoucherError] = useState("");
-  const [vouchers, setVouchers] = useState(() => loadSharedVouchers());
-
+  const [vouchers, setVouchers] = useState([]);
+  const [appliedVoucher, setAppliedVoucher] = useState(null);
   const [payMethod, setPayMethod] = useState("COD");
-  const [selectedBank, setSelectedBank] = useState("");
-  const [address, setAddress] = useState("");
+  const [deliveryInfo, setDeliveryInfo] = useState({
+    address: "",
+    receiverName: "",
+    receiverPhone: "",
+  });
   const [openAddressModal, setOpenAddressModal] = useState(false);
   const [placed, setPlaced] = useState(false);
   const [openQrModal, setOpenQrModal] = useState(false);
   const [onlinePaymentRef, setOnlinePaymentRef] = useState("");
+  const [note, setNote] = useState("");
 
-  useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event(CUSTOMER_DATA_UPDATED_EVENT));
-  }, [cart]);
+  const [summary, setSummary] = useState({
+    totalBefore: 0,
+    totalAfter: 0,
+    discount: 0,
+  });
 
+  const refreshSummary = async (code = "", cartData = null) => {
+    try {
+      const res = await voucherService.checkVoucher(code);
+      const data = res.data?.data;
+
+      setSummary({
+        totalBefore: data?.totalPrice || 0,
+        totalAfter: data?.totalAfter || 0,
+        discount: data?.discount || 0,
+        description: data?.description,
+      });
+
+      setVoucherError("");
+    } catch (err) {
+      const targetCart = cartData || cart;
+      const totalBefore = targetCart.reduce(
+        (sum, item) => sum + item.price * item.qty,
+        0,
+      );
+
+      setSummary({
+        totalBefore: totalBefore,
+        totalAfter: totalBefore, // Không giảm giá vì voucher không hợp lệ
+        discount: 0,
+        description: null,
+      });
+
+      setAppliedVoucher(null);
+
+      const message = err.response?.data?.message || "Voucher không hợp lệ";
+
+      setVoucherError(message);
+
+      throw new Error(message);
+    }
+  };
   useEffect(() => {
-    const syncVouchers = () => setVouchers(loadSharedVouchers());
-    syncVouchers();
-    window.addEventListener("focus", syncVouchers);
-    window.addEventListener("storage", syncVouchers);
-    window.addEventListener(SHARED_DATA_UPDATED_EVENT, syncVouchers);
-    return () => {
-      window.removeEventListener("focus", syncVouchers);
-      window.removeEventListener("storage", syncVouchers);
-      window.removeEventListener(SHARED_DATA_UPDATED_EVENT, syncVouchers);
+    const loadCart = async () => {
+      try {
+        setLoadingCart(true);
+        const res = await cartService.getCart();
+        const data = res.data?.data;
+
+        const mapped = (data?.items || []).map((i) => ({
+          item_id: i.itemId,
+          name: i.foodName,
+          price: i.price,
+          image: i.image,
+          qty: i.quantity,
+        }));
+
+        setCart(mapped);
+
+        // 👇 Truyền mapped data vào refreshSummary để tính toán chính xác
+        await refreshSummary("", mapped);
+      } catch (err) {
+        console.error("Load cart error:", err);
+      } finally {
+        setLoadingCart(false);
+      }
     };
+
+    loadCart();
   }, []);
 
-  const updateQty = (id, d) =>
-    setCart((prev) =>
-      prev
-        .map((c) => (c.item_id === id ? { ...c, qty: c.qty + d } : c))
-        .filter((c) => c.qty > 0),
-    );
+  const updateQty = useCallback(
+    async (id, delta) => {
+      try {
+        const item = cart.find((c) => c.item_id === id);
+        if (!item) return;
 
-  const removeItem = (id) =>
-    setCart((prev) => prev.filter((c) => c.item_id !== id));
+        const newQty = item.qty + delta;
 
-  const subtotal = useMemo(
-    () => cart.reduce((s, c) => s + c.price * c.qty, 0),
-    [cart],
+        if (newQty <= 0) {
+          await cartService.deleteCart(id);
+        } else {
+          await cartService.updateCart(id, { quantity: newQty });
+        }
+        await refreshCartAndVoucher();
+      } catch (err) {
+        console.error("Update cart error:", err);
+        toast.error("Cập nhật giỏ hàng thất bại");
+      }
+    },
+    [cart, appliedVoucher],
   );
-  const shipping = subtotal > 0 ? 15000 : 0;
 
-  const discount = useMemo(() => {
-    const sum = appliedVouchers.reduce(
-      (acc, voucher) => acc + calcVoucherDiscount(voucher, subtotal),
-      0,
-    );
-    return Math.min(sum, subtotal + shipping);
-  }, [appliedVouchers, subtotal, shipping]);
+  const removeItem = useCallback(
+    async (id) => {
+      try {
+        await cartService.deleteCart(id);
+        await refreshCartAndVoucher();
+      } catch (err) {
+        console.error("Remove cart item error:", err);
+        toast.error("Xóa món thất bại");
+      }
+    },
+    [appliedVoucher],
+  );
 
-  const total = Math.max(0, subtotal + shipping - discount);
+  const applyVoucher = async (customCode) => {
+    const code = (customCode || voucherInput).trim();
 
-  const applyVoucher = () => {
-    const code = voucherInput.trim().toUpperCase();
     if (!code) {
       setVoucherError("Vui lòng nhập mã");
       return;
     }
-    const v = vouchers.find((x) => x.code === code);
-    if (!v) {
-      setVoucherError("Mã không hợp lệ");
-      return;
-    }
-    if (appliedVouchers.some((x) => x.code === v.code)) {
-      setVoucherError("Mã này đã được áp dụng");
-      return;
-    }
-    if (subtotal < v.min_order) {
-      setVoucherError(`Đơn tối thiểu ${fmt(v.min_order)}`);
-      return;
-    }
-    const now = Date.now();
-    const start = v.start_at ? new Date(v.start_at).getTime() : null;
-    const end = v.end_at
-      ? new Date(v.end_at).getTime()
-      : v.expired
-        ? new Date(v.expired).getTime()
-        : null;
-    if (start && now < start) {
-      setVoucherError("Voucher chưa đến thời gian áp dụng");
-      return;
-    }
-    if (end && now > end) {
-      setVoucherError("Voucher đã hết hạn");
-      return;
-    }
-    setAppliedVouchers((prev) => [...prev, v]);
-    setVoucherError("");
-    setVoucherInput("");
-  };
 
-  const removeAppliedVoucher = (code) => {
-    setAppliedVouchers((prev) =>
-      prev.filter((voucher) => voucher.code !== code),
-    );
+    try {
+      await refreshSummary(code);
+      setAppliedVoucher(code);
+      setVoucherInput(""); // Clear input sau khi apply thành công
+      toast.success("Áp dụng voucher thành công");
+    } catch (err) {
+      setAppliedVoucher(null);
+      toast.error(err.message); // thêm dòng này cho chắc
+    }
   };
+  const refreshCartAndVoucher = async () => {
+    const res = await cartService.getCart();
+    const data = res.data?.data;
 
+    const mapped = (data?.items || []).map((i) => ({
+      item_id: i.itemId,
+      name: i.foodName,
+      price: i.price,
+      image: i.image,
+      qty: i.quantity,
+    }));
+
+    setCart(mapped);
+
+    // 👇 Truyền mapped data vào refreshSummary
+    await refreshSummary(appliedVoucher || "", mapped);
+  };
+  const finalSubtotal = summary.totalBefore;
+  const finalTotal = summary.totalAfter;
+  const discount = summary.discount;
+
+  useEffect(() => {
+    const fetchVoucher = async () => {
+      try {
+        const res = await voucherService.getVoucher();
+        setVouchers(res.data?.data || []);
+      } catch (err) {
+        console.error("Load voucher error:", err);
+      }
+    };
+
+    fetchVoucher();
+  }, []);
   const finalizeOrder = (paymentStatus) => {
     if (cart.length === 0) return;
-
     const order = {
       id: "ORD-" + String(Date.now()).slice(-6),
       created_at: new Date().toLocaleString("vi-VN"),
@@ -164,27 +213,26 @@ const Cart = () => {
         qty: c.qty,
         price: c.price,
       })),
-      subtotal,
+      subtotal: finalSubtotal,
       discount,
-      shipping,
-      total,
-      voucher: appliedVouchers.map((voucher) => voucher.code),
-      address,
-    };
+      total: finalTotal,
+      voucher: appliedVoucher ? [appliedVoucher] : [],
+      address: deliveryInfo.address,
 
-    const saved = localStorage.getItem("orders");
+      customer: {
+        name: deliveryInfo.receiverName,
+        phone: deliveryInfo.receiverPhone,
+      },
+      note: note || "",
+    };
     const prevOrders = saved ? JSON.parse(saved) : [];
     const nextOrders = Array.isArray(prevOrders)
       ? [order, ...prevOrders]
       : [order];
-    localStorage.setItem("orders", JSON.stringify(nextOrders));
-
     setCart([]);
-    setAppliedVouchers([]);
     setVoucherInput("");
-    setSelectedBank("");
+    setNote("");
     setPlaced(true);
-
     setTimeout(() => {
       setPlaced(false);
       navigate("/customer/orders");
@@ -193,16 +241,21 @@ const Cart = () => {
 
   const placeOrder = () => {
     if (cart.length === 0) return;
-    if (!address.trim()) {
+    if (!deliveryInfo.address.trim()) {
       toast.warning("Vui lòng chọn địa chỉ giao hàng");
       setOpenAddressModal(true);
       return;
     }
+    if (!deliveryInfo.receiverName.trim()) {
+      toast.warning("Thiếu tên người nhận");
+      return;
+    }
+
+    if (!deliveryInfo.receiverPhone.trim()) {
+      toast.warning("Thiếu số điện thoại người nhận");
+      return;
+    }
     if (payMethod === "ONLINE") {
-      if (!selectedBank) {
-        toast.warning("Vui lòng chọn ngân hàng để thanh toán online");
-        return;
-      }
       const ref = `PAY-${Date.now()}`;
       setOnlinePaymentRef(ref);
       setOpenQrModal(true);
@@ -211,10 +264,21 @@ const Cart = () => {
     finalizeOrder("pending");
   };
 
-  const saveAddressFromModal = (fullAddress) => {
-    setAddress(fullAddress);
+  const saveAddressFromModal = (data) => {
+    setDeliveryInfo({
+      address: data.address,
+      receiverName: data.receiverName,
+      receiverPhone: data.receiverPhone,
+    });
+
     setOpenAddressModal(false);
+
     toast.success("Đã cập nhật địa chỉ giao hàng");
+  };
+  const removeAppliedVoucher = async () => {
+    setVoucherInput("");
+    setAppliedVoucher(null);
+    await refreshSummary("", cart); // reset về cart gốc
   };
 
   if (placed) {
@@ -255,18 +319,13 @@ const Cart = () => {
         <div className="cart-layout">
           {/* Left */}
           <div className="cart-left">
-            {/* Items */}
             <div
               className="cart-items-box"
-              style={{
-                background: T.card,
-                border: `1px solid ${T.border}`,
-              }}
+              style={{ background: T.card, border: `1px solid ${T.border}` }}
             >
               <div className="cart-box-header">
                 <p className="cart-title">Món đã chọn</p>
               </div>
-
               {cart.map((item, i) => (
                 <div
                   key={item.item_id}
@@ -287,7 +346,6 @@ const Cart = () => {
                       textSize={28}
                     />
                   </div>
-
                   <div className="cart-item-info">
                     <p className="cart-item-name" style={{ color: T.text }}>
                       {item.name}
@@ -296,7 +354,6 @@ const Cart = () => {
                       {fmt(item.price)} / phần
                     </p>
                   </div>
-
                   <div className="cart-qty-controls">
                     <button
                       className="cart-qty-btn-minus"
@@ -316,11 +373,9 @@ const Cart = () => {
                       +
                     </button>
                   </div>
-
                   <p className="cart-item-total" style={{ color: T.text }}>
                     {fmt(item.price * item.qty)}
                   </p>
-
                   <button
                     className="cart-item-remove-btn"
                     style={{ background: T.redBg, color: T.red }}
@@ -337,10 +392,7 @@ const Cart = () => {
             {/* Address */}
             <div
               className="cart-address-box"
-              style={{
-                background: T.card,
-                border: `1px solid ${T.border}`,
-              }}
+              style={{ background: T.card, border: `1px solid ${T.border}` }}
             >
               <p className="cart-address-label" style={{ color: T.text }}>
                 <FontAwesomeIcon
@@ -354,16 +406,37 @@ const Cart = () => {
                 type="button"
                 onClick={() => setOpenAddressModal(true)}
               >
-                {address || "Chọn địa chỉ giao hàng"}
+                {deliveryInfo.address ? (
+                  <div>
+                    <div
+                      style={{
+                        fontWeight: 600,
+                        marginBottom: 4,
+                      }}
+                    >
+                      {deliveryInfo.receiverName} - {deliveryInfo.receiverPhone}
+                    </div>
+
+                    <div>{deliveryInfo.address}</div>
+                  </div>
+                ) : (
+                  "Chọn địa chỉ giao hàng"
+                )}
               </button>
             </div>
 
             <VoucherSection
               voucherInput={voucherInput}
               voucherError={voucherError}
-              appliedVouchers={appliedVouchers}
+              voucherResult={
+                appliedVoucher
+                  ? {
+                      description: summary.description || "Áp dụng thành công",
+                      discount: summary.discount,
+                    }
+                  : null
+              }
               vouchers={vouchers}
-              subtotal={subtotal}
               onVoucherInputChange={(value) => {
                 setVoucherInput(value);
                 setVoucherError("");
@@ -372,9 +445,9 @@ const Cart = () => {
               onPickVoucherCode={(code) => {
                 setVoucherInput(code);
                 setVoucherError("");
+                applyVoucher(code);
               }}
-              onRemoveAppliedVoucher={removeAppliedVoucher}
-              calcVoucherDiscount={calcVoucherDiscount}
+              onRemoveVoucher={removeAppliedVoucher}
             />
           </div>
 
@@ -382,17 +455,12 @@ const Cart = () => {
           <div className="cart-right">
             <PaymentMethodSection
               payMethod={payMethod}
-              selectedBank={selectedBank}
-              bankOptions={BANK_OPTIONS}
               onChangePayMethod={setPayMethod}
-              onSelectBank={setSelectedBank}
             />
-
             <OrderSummarySection
-              subtotal={subtotal}
-              shipping={shipping}
-              discount={discount}
-              total={total}
+              subtotal={summary.totalBefore}
+              discount={summary.discount}
+              total={summary.totalAfter}
               onPlaceOrder={placeOrder}
             />
           </div>
@@ -405,6 +473,7 @@ const Cart = () => {
         onSave={saveAddressFromModal}
       />
 
+      {/* QR Modal */}
       <Modal
         title={
           <span>
@@ -417,17 +486,9 @@ const Cart = () => {
         footer={null}
       >
         <div className="cart-qr-modal-body">
-          <p className="cart-qr-bank-label" style={{ color: T.sub }}>
-            Ngân hàng:{" "}
-            <strong>
-              {BANK_OPTIONS.find((b) => b.code === selectedBank)?.name || "-"}
-            </strong>
-          </p>
           <img
             className="cart-qr-image"
-            src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(
-              `BANK:${selectedBank}|AMOUNT:${total}|REF:${onlinePaymentRef}`,
-            )}`}
+            src={qr}
             alt="QR thanh toán"
             style={{ border: `1px solid ${T.border}` }}
           />
