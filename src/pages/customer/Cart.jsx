@@ -13,11 +13,19 @@ import VoucherSection from "../../components/customer/cart/VoucherSection";
 import PaymentMethodSection from "../../components/customer/cart/PaymentMethodSection";
 import OrderSummarySection from "../../components/customer/cart/OrderSummarySection";
 import cartService from "../../services/customer/cartService";
-import qr from "../../assets/images/qr.jpg";
 import "../../assets/styles/CustomerCart.css";
 import voucherService from "../../services/customer/voucherService";
 import { useAuth } from "../../hooks/useAuth";
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
+
+const BANK_OPTIONS = [
+  { code: "VCB", name: "Vietcombank" },
+  { code: "BIDV", name: "BIDV" },
+  { code: "TCB", name: "Techcombank" },
+  { code: "MB", name: "MB Bank" },
+  { code: "ACB", name: "ACB" },
+  { code: "VPB", name: "VPBank" },
+];
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -29,7 +37,6 @@ const Cart = () => {
   const [voucherError, setVoucherError] = useState("");
   const [vouchers, setVouchers] = useState([]);
   const [appliedVoucher, setAppliedVoucher] = useState(null);
-  const [payMethod, setPayMethod] = useState("COD");
   const [deliveryInfo, setDeliveryInfo] = useState({
     address: "",
     receiverName: "",
@@ -40,6 +47,9 @@ const Cart = () => {
   const [openQrModal, setOpenQrModal] = useState(false);
   const [onlinePaymentRef, setOnlinePaymentRef] = useState("");
   const [note, setNote] = useState("");
+
+  const [payMethod, setPayMethod] = useState("COD");
+  const [selectedBank, setSelectedBank] = useState("");
 
   const [summary, setSummary] = useState({
     totalBefore: 0,
@@ -69,7 +79,7 @@ const Cart = () => {
 
       setSummary({
         totalBefore: totalBefore,
-        totalAfter: totalBefore, // Không giảm giá vì voucher không hợp lệ
+        totalAfter: totalBefore,
         discount: 0,
         description: null,
       });
@@ -99,8 +109,6 @@ const Cart = () => {
         }));
 
         setCart(mapped);
-
-        // 👇 Truyền mapped data vào refreshSummary để tính toán chính xác
         await refreshSummary("", mapped);
       } catch (err) {
         console.error("Load cart error:", err);
@@ -158,11 +166,11 @@ const Cart = () => {
     try {
       await refreshSummary(code);
       setAppliedVoucher(code);
-      setVoucherInput(""); // Clear input sau khi apply thành công
+      setVoucherInput("");
       toast.success("Áp dụng voucher thành công");
     } catch (err) {
       setAppliedVoucher(null);
-      toast.error(err.message); // thêm dòng này cho chắc
+      toast.error(err.message);
     }
   };
   const refreshCartAndVoucher = async () => {
@@ -179,7 +187,6 @@ const Cart = () => {
 
     setCart(mapped);
 
-    // 👇 Truyền mapped data vào refreshSummary
     await refreshSummary(appliedVoucher || "", mapped);
   };
   const finalSubtotal = summary.totalBefore;
@@ -200,12 +207,14 @@ const Cart = () => {
   }, []);
   const finalizeOrder = (paymentStatus) => {
     if (cart.length === 0) return;
+
     const order = {
       id: "ORD-" + String(Date.now()).slice(-6),
       created_at: new Date().toLocaleString("vi-VN"),
       status: "pending",
       payment_method: payMethod,
       payment_status: paymentStatus,
+
       items: cart.map((c) => ({
         item_id: c.item_id,
         name: c.name,
@@ -213,6 +222,7 @@ const Cart = () => {
         qty: c.qty,
         price: c.price,
       })),
+
       subtotal: finalSubtotal,
       discount,
       total: finalTotal,
@@ -223,16 +233,26 @@ const Cart = () => {
         name: deliveryInfo.receiverName,
         phone: deliveryInfo.receiverPhone,
       },
+
       note: note || "",
     };
+
+    const saved = localStorage.getItem("customer_orders");
+
     const prevOrders = saved ? JSON.parse(saved) : [];
+
     const nextOrders = Array.isArray(prevOrders)
       ? [order, ...prevOrders]
       : [order];
+
+    localStorage.setItem("customer_orders", JSON.stringify(nextOrders));
+
     setCart([]);
     setVoucherInput("");
     setNote("");
+
     setPlaced(true);
+
     setTimeout(() => {
       setPlaced(false);
       navigate("/customer/orders");
@@ -256,9 +276,16 @@ const Cart = () => {
       return;
     }
     if (payMethod === "ONLINE") {
+      if (!selectedBank) {
+        toast.warning("Vui lòng chọn ngân hàng");
+        return;
+      }
+
       const ref = `PAY-${Date.now()}`;
+
       setOnlinePaymentRef(ref);
       setOpenQrModal(true);
+
       return;
     }
     finalizeOrder("pending");
@@ -455,7 +482,10 @@ const Cart = () => {
           <div className="cart-right">
             <PaymentMethodSection
               payMethod={payMethod}
+              selectedBank={selectedBank}
+              bankOptions={BANK_OPTIONS}
               onChangePayMethod={setPayMethod}
+              onSelectBank={setSelectedBank}
             />
             <OrderSummarySection
               subtotal={summary.totalBefore}
@@ -486,9 +516,17 @@ const Cart = () => {
         footer={null}
       >
         <div className="cart-qr-modal-body">
+          <p className="cart-qr-bank-label" style={{ color: T.sub }}>
+            Ngân hàng:{" "}
+            <strong>
+              {BANK_OPTIONS.find((b) => b.code === selectedBank)?.name || "-"}
+            </strong>
+          </p>
           <img
             className="cart-qr-image"
-            src={qr}
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(
+              `BANK:${selectedBank}|AMOUNT:${finalTotal}|REF:${onlinePaymentRef}`,
+            )}`}
             alt="QR thanh toán"
             style={{ border: `1px solid ${T.border}` }}
           />
