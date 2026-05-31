@@ -4,10 +4,14 @@ import { T } from "../../constants/customerTheme";
 import UserHeader from "../../components/user/UserHeader";
 import "../../assets/styles/CustomerTableQrSamples.css";
 
-const TABLES = Array.from({ length: 20 }, (_, idx) => `B${String(idx + 1).padStart(2, "0")}`);
+const TABLES = Array.from(
+  { length: 20 },
+  (_, idx) => `B${String(idx + 1).padStart(2, "0")}`,
+);
 
 const getBaseUrl = () => {
-  if (typeof window !== "undefined" && window.location?.origin) return window.location.origin;
+  if (typeof window !== "undefined" && window.location?.origin)
+    return window.location.origin;
   return "http://localhost:5173";
 };
 
@@ -43,13 +47,26 @@ const TableQrSamples = () => {
           {tableQrData.map((item) => (
             <div className="table-qr-card" key={item.tableNo}>
               <p className="table-qr-title">Bàn {item.tableNo}</p>
-              <img src={item.qrSrc} alt={`QR ${item.tableNo}`} className="table-qr-image" />
+              <img
+                src={item.qrSrc}
+                alt={`QR ${item.tableNo}`}
+                className="table-qr-image"
+              />
               <p className="table-qr-link">{item.orderUrl}</p>
               <div className="table-qr-actions">
-                <button type="button" onClick={() => window.open(item.orderUrl, "_blank", "noopener,noreferrer")}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    window.open(item.orderUrl, "_blank", "noopener,noreferrer")
+                  }
+                >
                   Mở thử
                 </button>
-                <button type="button" className="ghost" onClick={() => copyLink(item.orderUrl)}>
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={() => copyLink(item.orderUrl)}
+                >
                   Copy link
                 </button>
               </div>

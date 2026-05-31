@@ -17,15 +17,7 @@ import "../../assets/styles/CustomerCart.css";
 import voucherService from "../../services/customer/voucherService";
 import { useAuth } from "../../hooks/useAuth";
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
-
-const BANK_OPTIONS = [
-  { code: "VCB", name: "Vietcombank" },
-  { code: "BIDV", name: "BIDV" },
-  { code: "TCB", name: "Techcombank" },
-  { code: "MB", name: "MB Bank" },
-  { code: "ACB", name: "ACB" },
-  { code: "VPB", name: "VPBank" },
-];
+import orderService from "../../services/customer/orderService";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -45,11 +37,10 @@ const Cart = () => {
   const [openAddressModal, setOpenAddressModal] = useState(false);
   const [placed, setPlaced] = useState(false);
   const [openQrModal, setOpenQrModal] = useState(false);
-  const [onlinePaymentRef, setOnlinePaymentRef] = useState("");
+  const [paymentUrl, setPaymentUrl] = useState("");
   const [note, setNote] = useState("");
 
   const [payMethod, setPayMethod] = useState("COD");
-  const [selectedBank, setSelectedBank] = useState("");
 
   const [summary, setSummary] = useState({
     totalBefore: 0,
@@ -205,94 +196,45 @@ const Cart = () => {
 
     fetchVoucher();
   }, []);
-  const finalizeOrder = (paymentStatus) => {
-    if (cart.length === 0) return;
+  const finalizeOrder = async () => {
+    try {
+      const payload = {
+        addressId: deliveryInfo.id,
+        paymentMethodId: payMethod === "COD" ? 1 : 2,
+        voucherCode: appliedVoucher || null,
+        note: note || "",
+      };
 
-    const order = {
-      id: "ORD-" + String(Date.now()).slice(-6),
-      created_at: new Date().toLocaleString("vi-VN"),
-      status: "pending",
-      payment_method: payMethod,
-      payment_status: paymentStatus,
+      const res = await orderService.orderOnLine(payload);
 
-      items: cart.map((c) => ({
-        item_id: c.item_id,
-        name: c.name,
-        image: c.image,
-        qty: c.qty,
-        price: c.price,
-      })),
+      const orderData = res.data?.data;
 
-      subtotal: finalSubtotal,
-      discount,
-      total: finalTotal,
-      voucher: appliedVoucher ? [appliedVoucher] : [],
-      address: deliveryInfo.address,
-
-      customer: {
-        name: deliveryInfo.receiverName,
-        phone: deliveryInfo.receiverPhone,
-      },
-
-      note: note || "",
-    };
-
-    const saved = localStorage.getItem("customer_orders");
-
-    const prevOrders = saved ? JSON.parse(saved) : [];
-
-    const nextOrders = Array.isArray(prevOrders)
-      ? [order, ...prevOrders]
-      : [order];
-
-    localStorage.setItem("customer_orders", JSON.stringify(nextOrders));
-
-    setCart([]);
-    setVoucherInput("");
-    setNote("");
-
-    setPlaced(true);
-
-    setTimeout(() => {
-      setPlaced(false);
-      navigate("/customer/orders");
-    }, 900);
-  };
-
-  const placeOrder = () => {
-    if (cart.length === 0) return;
-    if (!deliveryInfo.address.trim()) {
-      toast.warning("Vui lòng chọn địa chỉ giao hàng");
-      setOpenAddressModal(true);
-      return;
-    }
-    if (!deliveryInfo.receiverName.trim()) {
-      toast.warning("Thiếu tên người nhận");
-      return;
-    }
-
-    if (!deliveryInfo.receiverPhone.trim()) {
-      toast.warning("Thiếu số điện thoại người nhận");
-      return;
-    }
-    if (payMethod === "ONLINE") {
-      if (!selectedBank) {
-        toast.warning("Vui lòng chọn ngân hàng");
+      if (payMethod === "ONLINE") {
+        setPaymentUrl(orderData.paymentUrl);
+        setOpenQrModal(true);
         return;
       }
 
-      const ref = `PAY-${Date.now()}`;
+      toast.success("Đặt hàng thành công");
 
-      setOnlinePaymentRef(ref);
-      setOpenQrModal(true);
+      navigate("/customer/orders");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Tạo đơn hàng thất bại");
+    }
+  };
 
+  const placeOrder = () => {
+    if (!deliveryInfo.address) {
+      toast.warning("Vui lòng chọn địa chỉ");
       return;
     }
-    finalizeOrder("pending");
+
+    finalizeOrder();
   };
 
   const saveAddressFromModal = (data) => {
     setDeliveryInfo({
+      id: data.id,
       address: data.address,
       receiverName: data.receiverName,
       receiverPhone: data.receiverPhone,
@@ -482,10 +424,7 @@ const Cart = () => {
           <div className="cart-right">
             <PaymentMethodSection
               payMethod={payMethod}
-              selectedBank={selectedBank}
-              bankOptions={BANK_OPTIONS}
               onChangePayMethod={setPayMethod}
-              onSelectBank={setSelectedBank}
             />
             <OrderSummarySection
               subtotal={summary.totalBefore}
@@ -505,48 +444,29 @@ const Cart = () => {
 
       {/* QR Modal */}
       <Modal
-        title={
-          <span>
-            <FontAwesomeIcon icon={faQrcode} style={{ marginRight: 8 }} />
-            Quét QR để thanh toán
-          </span>
-        }
+        title="Thanh toán SePay"
         open={openQrModal}
-        onCancel={() => setOpenQrModal(false)}
         footer={null}
+        onCancel={() => setOpenQrModal(false)}
       >
-        <div className="cart-qr-modal-body">
-          <p className="cart-qr-bank-label" style={{ color: T.sub }}>
-            Ngân hàng:{" "}
-            <strong>
-              {BANK_OPTIONS.find((b) => b.code === selectedBank)?.name || "-"}
-            </strong>
-          </p>
+        <div style={{ textAlign: "center" }}>
           <img
-            className="cart-qr-image"
-            src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(
-              `BANK:${selectedBank}|AMOUNT:${finalTotal}|REF:${onlinePaymentRef}`,
-            )}`}
-            alt="QR thanh toán"
-            style={{ border: `1px solid ${T.border}` }}
-          />
-          <p className="cart-qr-ref" style={{ color: T.sub }}>
-            Nội dung chuyển khoản: <strong>{onlinePaymentRef}</strong>
-          </p>
-          <button
-            type="button"
-            className="cart-qr-confirm-btn"
-            style={{ background: T.primary }}
-            onClick={() => {
-              setOpenQrModal(false);
-              finalizeOrder("paid");
+            src={paymentUrl}
+            alt="QR Payment"
+            style={{
+              width: 280,
+              maxWidth: "100%",
             }}
+          />
+
+          <p style={{ marginTop: 16 }}>Quét mã QR để thanh toán</p>
+
+          <button
+            className="cart-qr-confirm-btn"
+            onClick={() => navigate("/customer/orders")}
           >
-            Tôi đã quét và thanh toán thành công
+            Xem đơn hàng
           </button>
-          <p className="cart-qr-note" style={{ color: T.sub }}>
-            Sau thanh toán, đơn sẽ ở trạng thái chờ xác nhận.
-          </p>
         </div>
       </Modal>
     </div>

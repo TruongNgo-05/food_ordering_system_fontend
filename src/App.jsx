@@ -21,6 +21,7 @@ import AdminInventory from "./pages/admin/InventoryAdmin";
 import CustomerHome from "./pages/customer/Home";
 import CustomerCart from "./pages/customer/Cart";
 import CustomerOrders from "./pages/customer/Orders";
+import OrderDetail from "./pages/customer/OrderDetail";
 import CustomerFavorites from "./pages/customer/Favorites";
 import CustomerSupport from "./pages/customer/Support";
 import CustomerTableOrder from "./pages/customer/TableOrder";
@@ -66,6 +67,7 @@ const App = () => {
           <Route path="foods/:id" element={<FoodDetail />} />
           <Route path="carts" element={<CustomerCart />} />
           <Route path="orders" element={<CustomerOrders />} />
+          <Route path="/customer/orders/:id" element={<OrderDetail />} />
           <Route path="favorites" element={<CustomerFavorites />} />
           <Route path="blog" element={<CustomerBlog />} />
           <Route path="support" element={<CustomerSupport />} />
