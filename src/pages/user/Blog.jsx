@@ -1,6 +1,8 @@
 import React from "react";
 import UserHeader from "../../components/user/UserHeader";
-import "../../assets/styles/Blog.css";
+import TableList from "../../components/user/modal/TableList";
+import TableReservationModal from "../../components/user/modal/TableReservationModal";
+import "../../assets/styles/user/Blog.css";
 
 const STATS = [
   { num: "15+", label: "Năm hoạt động" },
@@ -87,6 +89,67 @@ const StarRating = ({ count }) => (
 );
 
 const Blog = () => {
+  const [showTableReservation, setShowTableReservation] = React.useState(false);
+  const [showModal, setShowModal] = React.useState(false);
+  const [selectedTable, setSelectedTable] = React.useState(null);
+
+  const handleTableReservation = () => {
+    setShowTableReservation(true);
+  };
+
+  const handleTableClick = (table) => {
+    if (table.status === "CÓ SẴN") {
+      setSelectedTable(table);
+      setShowModal(true);
+    }
+  };
+
+  const handleCloseTableReservation = () => {
+    setShowTableReservation(false);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedTable(null);
+  };
+
+  const handleSubmit = (formData) => {
+    console.log("Booking data:", {
+      ...formData,
+      tableNumber: selectedTable.number,
+    });
+    // TODO: Send to API
+    setShowModal(false);
+    setSelectedTable(null);
+    setShowTableReservation(false);
+  };
+
+  if (showTableReservation) {
+    return (
+      <div className="table-reservation-wrapper">
+        <button
+          className="btn-back-to-blog"
+          onClick={handleCloseTableReservation}
+        >
+          ← Quay lại
+        </button>
+        <div className="table-reservation-inline">
+          <h2 style={{ textAlign: "center", marginBottom: "30px" }}>
+            Chọn bàn để đặt
+          </h2>
+          <TableList onTableClick={handleTableClick} />
+        </div>
+        {showModal && selectedTable && (
+          <TableReservationModal
+            table={selectedTable}
+            onClose={handleCloseModal}
+            onSubmit={handleSubmit}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="about-page">
       <div className="about-container">
@@ -246,7 +309,9 @@ const Blog = () => {
               nghiệp
             </p>
           </div>
-          <button className="cta-btn">Liên hệ đặt bàn</button>
+          <button className="cta-btn" onClick={handleTableReservation}>
+            Liên hệ đặt bàn
+          </button>
         </section>
       </div>
     </div>

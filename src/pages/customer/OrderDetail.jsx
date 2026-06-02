@@ -243,27 +243,6 @@ const OrderDetail = () => {
               </p>
             </div>
           </div>
-
-          <div className="ord-steps-strip">
-            {steps.map((s, i) => {
-              const c = STATUS_CFG[s];
-              const active = i <= stepIdx;
-
-              return (
-                <span
-                  key={s}
-                  className="ord-step-badge"
-                  style={{
-                    background: active ? c.bg : "#fff",
-                    color: active ? c.color : T.muted,
-                    borderColor: active ? `${c.color}33` : T.border,
-                  }}
-                >
-                  {c.icon} {c.label}
-                </span>
-              );
-            })}
-          </div>
         </div>
 
         {/* CONTENT */}

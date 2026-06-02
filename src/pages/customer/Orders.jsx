@@ -80,7 +80,7 @@ const Orders = () => {
         return "COMPLETED";
 
       case "cancelled":
-        return "CANCELLED";
+        return "CANCELED";
 
       default:
         return null;
@@ -372,10 +372,8 @@ const Orders = () => {
                       />
 
                       {order.payment_method === "ONLINE"
-                        ? "Online"
-                        : order.payment_method === "AT_TABLE"
-                          ? "Tại bàn"
-                          : "COD"}
+                        ? "Thanh toán online"
+                        : "Thanh toán tiền mặt"}
                     </p>
 
                     <button

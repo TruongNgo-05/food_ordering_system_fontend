@@ -7,7 +7,35 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { T } from "../../../constants/customerTheme";
 
-export default function PaymentMethodSection({ payMethod, onChangePayMethod }) {
+export default function PaymentMethodSection({
+  payMethod,
+  onChangePayMethod,
+  allowedMethods,
+}) {
+  const allMethods = [
+    [
+      "COD",
+      <FontAwesomeIcon icon={faMoneyBillWave} key="cod-icon" />,
+      "Tiền mặt khi nhận",
+      "Trả tiền lúc giao hàng",
+    ],
+    [
+      "ONLINE",
+      <FontAwesomeIcon icon={faBuildingColumns} key="online-icon" />,
+      "Thanh toán online",
+      "Chuyển khoản / Ví điện tử",
+    ],
+    [
+      "AT_TABLE",
+      <FontAwesomeIcon icon={faMoneyBillWave} key="attable-icon" />,
+      "Tiền mặt tại bàn",
+      "Trả tiền khi nhân viên phục vụ",
+    ],
+  ];
+
+  const methods = allowedMethods
+    ? allMethods.filter(([value]) => allowedMethods.includes(value))
+    : allMethods;
   return (
     <div
       style={{
@@ -29,20 +57,7 @@ export default function PaymentMethodSection({ payMethod, onChangePayMethod }) {
         Phương thức thanh toán
       </p>
 
-      {[
-        [
-          "COD",
-          <FontAwesomeIcon icon={faMoneyBillWave} key="cod-icon" />,
-          "Tiền mặt khi nhận",
-          "Trả tiền lúc giao hàng",
-        ],
-        [
-          "ONLINE",
-          <FontAwesomeIcon icon={faBuildingColumns} key="online-icon" />,
-          "Thanh toán online",
-          "Chuyển khoản / Ví điện tử",
-        ],
-      ].map(([value, icon, label, sub]) => (
+      {methods.map(([value, icon, label, sub]) => (
         <label
           key={value}
           style={{
@@ -104,6 +119,28 @@ export default function PaymentMethodSection({ payMethod, onChangePayMethod }) {
             }}
           >
             Sau khi đặt hàng hệ thống sẽ hiển thị mã QR SePay để bạn thanh toán.
+          </p>
+        </div>
+      )}
+
+      {(payMethod === "COD" || payMethod === "AT_TABLE") && (
+        <div
+          style={{
+            marginTop: 10,
+            background: "#e6f4ea",
+            borderRadius: 10,
+            padding: "10px 14px",
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              fontSize: 12,
+              color: "#1b5e20",
+            }}
+          >
+            Vui lòng chuẩn bị sẵn tiền mặt. Bạn sẽ thanh toán khi nhân viên giao
+            hàng đến.
           </p>
         </div>
       )}

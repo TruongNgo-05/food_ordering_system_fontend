@@ -425,6 +425,7 @@ const Cart = () => {
             <PaymentMethodSection
               payMethod={payMethod}
               onChangePayMethod={setPayMethod}
+              allowedMethods={["COD", "ONLINE"]}
             />
             <OrderSummarySection
               subtotal={summary.totalBefore}

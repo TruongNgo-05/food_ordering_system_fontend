@@ -24,9 +24,10 @@ import CustomerOrders from "./pages/customer/Orders";
 import OrderDetail from "./pages/customer/OrderDetail";
 import CustomerFavorites from "./pages/customer/Favorites";
 import CustomerSupport from "./pages/customer/Support";
-import CustomerTableOrder from "./pages/customer/TableOrder";
-import CustomerTableQrSamples from "./pages/customer/TableQrSamples";
-import CustomerBlog from "./pages/customer/Blog";
+import CustomerTableOrder from "./pages/user/TableOrder";
+import CustomerTableQrSamples from "./pages/user/TableQrSamples";
+import CustomerBlog from "./pages/user/Blog";
+import TableReservation from "./pages/user/TableReservation";
 import CustomerLayout from "./layouts/customer/UserLayout";
 import FoodDetail from "./pages/customer/FoodDetail";
 
@@ -36,6 +37,13 @@ const App = () => {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Navigate to="/customer" replace />} />
+        <Route path="/nhahangnqt" element={<CustomerBlog />} />
+
+        <Route
+          path="/table-order"
+          element={<CustomerTableOrder />}
+        />
+
         <Route
           path="/login"
           element={
@@ -71,7 +79,6 @@ const App = () => {
           <Route path="favorites" element={<CustomerFavorites />} />
           <Route path="blog" element={<CustomerBlog />} />
           <Route path="support" element={<CustomerSupport />} />
-          <Route path="table-order" element={<CustomerTableOrder />} />
           <Route path="table-qr-samples" element={<CustomerTableQrSamples />} />
         </Route>
 

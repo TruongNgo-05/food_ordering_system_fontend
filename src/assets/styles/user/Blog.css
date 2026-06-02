@@ -447,3 +447,55 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ===== Table Reservation Wrapper ===== */
+.table-reservation-wrapper {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding: 20px;
+  position: relative;
+}
+
+.btn-back-to-blog {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 30px;
+}
+
+.btn-back-to-blog:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(139, 69, 19, 0.3);
+}
+
+.btn-back-to-blog:active {
+  transform: translateY(0);
+}
+
+.table-reservation-inline {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 768px) {
+  .table-reservation-inline {
+    padding: 30px 20px;
+  }
+
+  .btn-back-to-blog {
+    margin-bottom: 20px;
+  }
+}
