@@ -102,6 +102,7 @@ const UserCreateModal = ({ open, onCancel, onOk, form }) => {
         <Form.Item name="role" label="Vai trò" initialValue="CUSTOMER">
           <Select>
             <Select.Option value="CUSTOMER">Khách hàng</Select.Option>
+            <Select.Option value="STAFF">Nhân viên</Select.Option>
             <Select.Option value="ADMIN">Quản trị</Select.Option>
           </Select>
         </Form.Item>

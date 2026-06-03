@@ -1,0 +1,227 @@
+import React, { useMemo, useState, useEffect, useCallback } from "react";
+import { Button, Modal, Input, Select, message } from "antd";
+import UserHeader from "../../components/user/UserHeader";
+import AppPagination from "../../components/common/AppPagination";
+import { T, fmt } from "../../constants/customerTheme";
+import OnlineTable from "../../components/staff/OnlineTable";
+import OnlineOrderDetailModal from "../../components/modal/staff/OnlineOrderDetailModal";
+import OnlineOrderEditModal from "../../components/modal/staff/OnlineOrderEditModal";
+import orderStaffService from "../../services/staff/orderStaffService";
+const pageSize = 5;
+const statusOptions = [
+  { label: "Đã xác nhận", value: "CONFIRMED" },
+  { label: "Đang chuẩn bị", value: "PREPARING" },
+  { label: "Đang giao", value: "DELIVERING" },
+  { label: "Hoàn thành", value: "COMPLETED" },
+  { label: "Từ chối", value: "REJECTED" },
+];
+const OnlineOrders = () => {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [editingRecord, setEditingRecord] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [newStatus, setNewStatus] = useState("");
+
+  const fetchOrders = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      const params = {
+        page,
+        size: pageSize,
+      };
+
+      // search theo orderCode
+      if (search.trim()) {
+        params.orderCode = search.trim();
+      }
+
+      // filter status
+      if (statusFilter && statusFilter !== "all") {
+        params.status = statusFilter;
+      }
+
+      const res = await orderStaffService.getAllOrderOnline(params);
+
+      const data = res.data || {};
+
+      setItems(
+        (data.content || []).map((item) => ({
+          id: item.orderId,
+          orderCode: item.orderCode,
+          customerName: item.customerName,
+          customerPhone: item.customerPhone,
+          totalPrice: item.totalPrice,
+          discount: item.discount,
+          paymentMethod: item.paymentMethod,
+          paymentStatus: item.paymentStatus,
+          status: item.status,
+          createdAt: item.createdAt,
+        })),
+      );
+
+      setTotal(data.totalElements || 0);
+    } catch (e) {
+      console.log(e);
+      message.error("Không tải được danh sách đơn hàng");
+    } finally {
+      setLoading(false);
+    }
+  }, [page, search, statusFilter]);
+
+  const fetchOrderDetail = async (id) => {
+    try {
+      setDetailLoading(true);
+
+      const res = await orderStaffService.getOrderDetail(id);
+      const data = res.data;
+
+      setEditingRecord({
+        id: data.orderId,
+        orderCode: data.orderCode,
+        customerName: data.customerName,
+        customerPhone: data.customerPhone,
+        totalPrice: data.totalPrice,
+        discount: data.discount,
+        paymentMethod: data.paymentMethod,
+        paymentStatus: data.paymentStatus,
+        status: data.status,
+        createdAt: data.createdAt,
+        address: data.address,
+        note: data.note,
+        items: data.items,
+      });
+
+      setModalOpen(true);
+      setEditMode(false);
+    } catch (e) {
+      message.error("Không load được chi tiết đơn hàng");
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const updateOrderStatus = async (id, newStatus) => {
+    try {
+      console.log("CALL API:", id, newStatus);
+
+      const res = await orderStaffService.updateOrderStatus(id, newStatus);
+
+      console.log("SUCCESS:", res);
+
+      message.success("Cập nhật trạng thái thành công");
+      fetchOrders();
+    } catch (e) {
+      console.log("ERROR FULL:", e);
+      console.log("ERROR RESPONSE:", e?.response?.data);
+
+      message.error("Cập nhật thất bại");
+    }
+  };
+  const handleStatusChange = (newStatus) => {
+    setEditingRecord((prev) => ({
+      ...prev,
+      status: newStatus,
+    }));
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  return (
+    <>
+      <UserHeader
+        title="Quản lý đơn hàng online"
+        description="Theo dõi và xử lý các đơn giao hàng"
+      />
+
+      <div className="filter-bar">
+        <div style={{ flex: 1, minWidth: 220 }}>
+          <Input
+            placeholder="Tìm mã đơn ..."
+            allowClear
+            onChange={(e) => {
+              setPage(0);
+              setSearch(e.target.value);
+            }}
+          />
+        </div>
+        <div className="filter-divider" />
+        <Select
+          placeholder="Trạng thái"
+          allowClear
+          style={{ width: 150 }}
+          onChange={(v) => {
+            setPage(0);
+            setStatusFilter(v || "all");
+          }}
+        >
+          {statusOptions.map((opt) => (
+            <Select.Option key={opt.value} value={opt.value}>
+              {opt.label}
+            </Select.Option>
+          ))}
+        </Select>
+      </div>
+      <div className="admin-table-wrapper">
+        <OnlineTable
+          data={items}
+          loading={loading}
+          onView={(record) => {
+            fetchOrderDetail(record.id);
+          }}
+          onEdit={(record) => {
+            setEditingRecord(record);
+            setEditMode(true);
+            setModalOpen(true);
+          }}
+        />
+      </div>
+
+      <AppPagination
+        page={page}
+        size={pageSize}
+        total={total}
+        onChange={(p) => {
+          setPage(p);
+        }}
+      />
+
+      <OnlineOrderDetailModal
+        open={modalOpen && !editMode}
+        record={editingRecord}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingRecord(null);
+        }}
+      />
+      <OnlineOrderEditModal
+        open={modalOpen && editMode}
+        record={editingRecord}
+        statusOptions={statusOptions}
+        newStatus={newStatus}
+        setNewStatus={setNewStatus}
+        onSave={async () => {
+          await updateOrderStatus(editingRecord.id, newStatus);
+          setModalOpen(false);
+          setEditingRecord(null);
+          setNewStatus("");
+        }}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingRecord(null);
+          setNewStatus("");
+        }}
+      />
+    </>
+  );
+};
+
+export default OnlineOrders;

@@ -1,7 +1,7 @@
 // Design tokens — màu sắc dùng chung toàn bộ customer module
 export const T = {
   // Neutral base (aligned with global CSS variables in `src/index.css`)
-  primary: "#4F46E5",
+    primary: "#4F46E5",
   primaryLight: "#EEF2FF",
   primaryDark: "#4338CA",
   surface: "#FFFFFF",

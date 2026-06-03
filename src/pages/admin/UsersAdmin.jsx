@@ -54,7 +54,12 @@ const AdminUsers = () => {
         name: u.fullName,
         email: u.email,
         phone: u.phone,
-        role: u.role === "ADMIN" ? "Quản trị" : "Khách hàng",
+        role:
+          u.role === "ADMIN"
+            ? "Quản trị"
+            : u.role === "STAFF"
+              ? "Nhân viên"
+              : "Khách hàng",
         image: u.avatar,
         status: u.status === "ACTIVED" ? "Hoạt động" : "Khóa",
         raw: u,
@@ -81,7 +86,7 @@ const AdminUsers = () => {
         confirmPassword: values.confirmPassword,
         role: values.role,
       };
-      console.log("=== values từ form:", values); 
+      console.log("=== values từ form:", values);
       console.log("=== payload gửi lên:", payload);
       message.success("Thêm user thành công");
       setOpenAdd(false);
@@ -197,6 +202,7 @@ const AdminUsers = () => {
         >
           <Select.Option value="all">Tất cả</Select.Option>
           <Select.Option value="ADMIN">Admin</Select.Option>
+          <Select.Option value="STAFF">Nhân viên</Select.Option>
           <Select.Option value="CUSTOMER">Khách hàng</Select.Option>
         </Select>
       </div>

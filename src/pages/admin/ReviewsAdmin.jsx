@@ -1,231 +1,292 @@
-import React, { useMemo, useState } from "react";
-import { Input, Modal } from "antd";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 
+import { Input, Select, message } from "antd";
+
+import adminReviewService from "../../services/admin/adminReviewService";
+import { getCategories } from "../../services/userService";
 import UserHeader from "../../components/user/UserHeader";
 import StatsCards from "../../components/common/StatsCards";
 import AppPagination from "../../components/common/AppPagination";
-import BaseTable from "../../components/common/BaseTable";
-import TableActions from "../../components/common/TableActions";
+import ReviewDetail from "../../components/modal/admin/ReviewDetail";
+import reviewService from "../../services/customer/reviewService";
 
-import { mockFoodReviews } from "../../data/mockFoodReviews";
-import { loadSharedFoods } from "../../utils/sharedData";
-
-import "../../assets/styles/AdminPages.css";
-
-const pageSize = 5;
-
-const AdminReviews = () => {
-  const [foods] = useState(() => loadSharedFoods());
-  const [customReviews, setCustomReviews] = useState(() => {
-    const saved = localStorage.getItem("food-reviews");
-    return saved ? JSON.parse(saved) : {};
-  });
-
-  const [page, setPage] = useState(0);
-  const [search, setSearch] = useState("");
-  const [ratingFilter, setRatingFilter] = useState("all");
-
-  const [openDelete, setOpenDelete] = useState(false);
-  const [editingRecord, setEditingRecord] = useState(null);
-
-  // ================= MAP DATA =================
-  const rows = useMemo(() => {
-    const sharedRows = Object.entries(mockFoodReviews).flatMap(
-      ([foodId, list]) =>
-        (Array.isArray(list) ? list : []).map((r) => ({
-          id: `${foodId}-${r.id}`,
-          foodId: Number(foodId),
-          foodName:
-            foods.find((f) => f.id === Number(foodId))?.name ||
-            `Món #${foodId}`,
-          user: r.user,
-          rating: r.rating,
-          comment: r.comment,
-          source: "mock",
-        })),
-    );
-
-    const localRows = Object.entries(customReviews || {}).flatMap(
-      ([foodId, list]) =>
-        (Array.isArray(list) ? list : []).map((r) => ({
-          id: `${foodId}-${r.id}`,
-          foodId: Number(foodId),
-          foodName:
-            foods.find((f) => f.id === Number(foodId))?.name ||
-            `Món #${foodId}`,
-          user: r.user,
-          rating: r.rating,
-          comment: r.comment,
-          source: "local",
-        })),
-    );
-
-    return [...localRows, ...sharedRows];
-  }, [foods, customReviews]);
-
-  // ================= FILTER =================
-  const filteredRows = useMemo(() => {
-    const keyword = search.trim().toLowerCase();
-
-    return rows.filter((row) => {
-      const matchKeyword =
-        !keyword ||
-        row.foodName.toLowerCase().includes(keyword) ||
-        row.user.toLowerCase().includes(keyword) ||
-        row.comment.toLowerCase().includes(keyword);
-
-      if (ratingFilter === "all") return matchKeyword;
-      if (ratingFilter === "low") return matchKeyword && row.rating <= 2;
-      if (ratingFilter === "mid") return matchKeyword && row.rating === 3;
-
-      return matchKeyword && row.rating >= 4;
-    });
-  }, [rows, search, ratingFilter]);
-
-  // ================= PAGINATION =================
-  const pageData = useMemo(
-    () => filteredRows.slice(page * pageSize, page * pageSize + pageSize),
-    [filteredRows, page],
-  );
-
-  // ================= DELETE =================
-  const handleDelete = () => {
-    if (!editingRecord || editingRecord.source !== "local") {
-      setOpenDelete(false);
-      setEditingRecord(null);
-      return;
-    }
-
-    const { foodId, id } = editingRecord;
-    const reviewId = id.split("-").slice(1).join("-");
-
-    const next = { ...(customReviews || {}) };
-    const current = next[foodId] || [];
-
-    next[foodId] = current.filter((r) => String(r.id) !== String(reviewId));
-
-    setCustomReviews(next);
-    localStorage.setItem("food-reviews", JSON.stringify(next));
-
-    setOpenDelete(false);
-    setEditingRecord(null);
-  };
-
-  // ================= TABLE =================
-  const columns = [
-    { title: "Món ăn", dataIndex: "foodName" },
-    { title: "Người dùng", dataIndex: "user" },
-    {
-      title: "Điểm",
-      dataIndex: "rating",
-      render: (v) => `${v}★`,
-    },
-    { title: "Nội dung", dataIndex: "comment" },
-    {
-      title: "Thao tác",
-      render: (_, record) => (
-        <TableActions
-          record={record}
-          showView={false}
-          showEdit={false}
-          onDelete={() => {
-            setEditingRecord(record);
-            setOpenDelete(true);
-          }}
-        />
-      ),
-    },
-  ];
+const pageSize = 10;
+// ===================== HELPERS =====================
+const renderStars = (n, size = 14) => {
+  const full = Math.round(n || 0);
 
   return (
-    <>
-      {/* HEADER */}
+    <span style={{ fontSize: size, color: "#EF9F27" }}>
+      {"★".repeat(full)}
+      <span style={{ color: "#D3D1C7" }}>{"★".repeat(5 - full)}</span>
+    </span>
+  );
+};
+
+// ===================== FOOD CARD =====================
+const FoodCardGrid = ({ foods, onSelect }) => {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))",
+        gap: 16,
+      }}
+    >
+      {foods.map((food) => (
+        <div
+          key={food.foodId}
+          onClick={() => onSelect(food)}
+          style={{
+            background: "#fff",
+            border: "1px solid #ddd",
+            borderRadius: 12,
+            padding: 16,
+            cursor: "pointer",
+          }}
+        >
+          {food.image ? (
+            <img
+              src={food.image}
+              alt={food.foodName}
+              onError={(e) => {
+                e.target.style.display = "none";
+                e.target.nextSibling.style.display = "flex";
+              }}
+              style={{
+                width: "100%",
+                height: 160,
+                objectFit: "cover",
+                borderRadius: 10,
+                marginBottom: 12,
+              }}
+            />
+          ) : null}
+
+          <div
+            style={{
+              width: "100%",
+              height: 160,
+              borderRadius: 10,
+              marginBottom: 12,
+              background: "#f5f5f5",
+              display: food.image ? "none" : "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 50,
+            }}
+          >
+            🍽️
+          </div>
+
+          <h4>{food.foodName}</h4>
+
+          <div>
+            {renderStars(food.averageRating)}
+
+            <span style={{ marginLeft: 6 }}>
+              {(food.averageRating || 0).toFixed(1)}
+            </span>
+          </div>
+
+          <div
+            style={{
+              marginTop: 8,
+              fontSize: 12,
+              color: "#777",
+            }}
+          >
+            {food.reviewCount} đánh giá
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// ===================== MAIN =====================
+const AdminReviews = () => {
+  const [foods, setFoods] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [selectedFood, setSelectedFood] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState(null);
+
+  const searchTimeout = useRef(null);
+
+  const [search, setSearch] = useState("");
+  const [reviews, setReviews] = useState([]);
+
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(pageSize);
+  const [total, setTotal] = useState(0);
+
+  const handleSelectFood = async (food) => {
+    try {
+      const res = await reviewService.getReviewByFood(food.foodId);
+
+      setReviews(res.data?.data?.content || []);
+
+      setSelectedFood(food);
+    } catch (error) {
+      console.error(error);
+      message.error("Không thể tải đánh giá");
+    }
+  };
+
+  const handleDeleteReview = async (review) => {
+    try {
+      await reviewService.deleteReview(review.id);
+
+      setReviews((prev) => prev.filter((item) => item.id !== review.id));
+
+      message.success("Xóa đánh giá thành công");
+    } catch (error) {
+      console.error(error);
+      message.error("Xóa đánh giá thất bại");
+    }
+  };
+
+  useEffect(() => {
+    fetchFoods();
+    fetchCategories();
+  }, []);
+
+  const fetchFoods = async (keyword = "", categoryId = null, page = 0) => {
+    try {
+      setLoading(true);
+
+      const params = {
+        page,
+        size,
+      };
+
+      if (keyword?.trim()) {
+        params.name = keyword;
+      }
+
+      if (categoryId) {
+        params.categoryId = categoryId;
+      }
+
+      const res = await adminReviewService.getAllFoodReview(params);
+
+      setFoods(res.data.data.content || []);
+      setTotal(res.data.data.totalElements || 0);
+    } catch (error) {
+      console.error("Load foods error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchCategories = useCallback(async () => {
+    try {
+      const res = await getCategories();
+      const data = res.data?.data || {};
+      const content = Array.isArray(data.content) ? data.content : [];
+      setCategories(content);
+    } catch {
+      message.error("Không thể tải danh mục");
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchFoods(search, categoryFilter, page);
+  }, [page, size]);
+
+  if (loading) {
+    return <div>Đang tải dữ liệu...</div>;
+  }
+
+  return (
+    <div style={{ padding: "24px 0" }}>
       <UserHeader
         title="Quản lý đánh giá"
         description="Theo dõi phản hồi và xử lý bình luận"
-        buttonText={null}
       />
 
-      {/* STATS */}
       <StatsCards
         items={[
-          { title: "Tổng đánh giá", value: rows.length },
           {
-            title: "Đánh giá user",
-            value: rows.filter((r) => r.source === "local").length,
+            title: "Tổng đánh giá",
+            value: foods.reduce((sum, item) => sum + item.reviewCount, 0),
           },
           {
-            title: "Điểm TB",
-            value: rows.length
-              ? (rows.reduce((s, r) => s + r.rating, 0) / rows.length).toFixed(
-                  1,
-                )
-              : "0.0",
-          },
-          {
-            title: "Cần xử lý",
-            value: rows.filter((r) => r.rating <= 2).length,
+            title: "Số món ăn",
+            value: foods.length,
           },
         ]}
       />
 
-      {/* FILTER */}
-      <div className="filter-bar">
-        <div style={{ flex: 1 }}>
-          <Input
-            placeholder="Tìm món, user, nội dung..."
-            allowClear
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(0);
+      {selectedFood ? (
+        <ReviewDetail
+          food={selectedFood}
+          rows={reviews}
+          onBack={() => {
+            setSelectedFood(null);
+            setReviews([]);
+          }}
+          onDelete={handleDeleteReview}
+        />
+      ) : (
+        <>
+          <div className="filter-bar">
+            <div style={{ flex: 1, minWidth: 220 }}>
+              <Input
+                placeholder="Tìm tên món..."
+                allowClear
+                onChange={(e) => {
+                  const val = e.target.value;
+
+                  clearTimeout(searchTimeout.current);
+
+                  searchTimeout.current = setTimeout(() => {
+                    setSearch(val);
+                    setPage(0);
+                    fetchFoods(val, categoryFilter, 0);
+                  }, 300);
+                }}
+              />
+            </div>
+            <div className="filter-divider" />
+            <Select
+              placeholder="Danh mục"
+              allowClear
+              style={{ width: 150 }}
+              onChange={(v) => {
+                setCategoryFilter(v);
+                setPage(0);
+                fetchFoods(search, v, 0);
+              }}
+              options={categories.map((c) => ({
+                value: c.id,
+                label: c.name,
+              }))}
+            />
+          </div>
+
+          <FoodCardGrid foods={foods} onSelect={handleSelectFood} />
+
+          {/* PAGINATION */}
+          <AppPagination
+            page={page}
+            size={size}
+            total={total}
+            onChange={(p, s) => {
+              setPage(p);
+              setSize(s);
             }}
           />
-        </div>
-
-        <select
-          className="admin-control"
-          value={ratingFilter}
-          onChange={(e) => {
-            setRatingFilter(e.target.value);
-            setPage(0);
-          }}
-        >
-          <option value="all">Tất cả</option>
-          <option value="high">4-5 sao</option>
-          <option value="mid">3 sao</option>
-          <option value="low">1-2 sao</option>
-        </select>
-      </div>
-
-      {/* TABLE */}
-      <div className="admin-table-wrapper">
-        <BaseTable columns={columns} data={pageData} />
-      </div>
-
-      {/* PAGINATION */}
-      <AppPagination
-        page={page}
-        size={pageSize}
-        total={filteredRows.length}
-        onChange={(p) => setPage(p)}
-      />
-
-      {/* DELETE MODAL */}
-      <Modal
-        title="Xác nhận xóa"
-        open={openDelete}
-        onCancel={() => setOpenDelete(false)}
-        onOk={handleDelete}
-        okText="Xóa"
-        okButtonProps={{ danger: true }}
-      >
-        <p>
-          {editingRecord?.source === "mock"
-            ? "Không thể xóa đánh giá hệ thống"
-            : "Bạn chắc chắn muốn xóa đánh giá này?"}
-        </p>
-      </Modal>
-    </>
+        </>
+      )}
+    </div>
   );
 };
 

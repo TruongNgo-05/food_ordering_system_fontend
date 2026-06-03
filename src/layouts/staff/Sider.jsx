@@ -12,53 +12,42 @@ import {
   faClipboardList,
   faCalendarCheck,
   faImages,
-  faStar,
+  faTruck,
+  faStore,
 } from "@fortawesome/free-solid-svg-icons";
 import "../../assets/styles/Sider.css";
 import logo from "../../assets/images/logo.png";
 
-const adminMenuItems = [
+const staffMenuItems = [
   {
     id: 1,
     title: "Dashboard",
-    path: "/admin",
+    path: "/staff",
     icon: faChartLine,
   },
   {
     id: 2,
-    title: "Quản lý người dùng",
-    path: "/admin/user",
-    icon: faUsers,
+    title: "Quản lý kho",
+    path: "/staff/inventory",
+    icon: faBoxesStacked,
   },
   {
     id: 3,
-    title: "Quản lý món ăn",
-    path: "/admin/foods",
-    icon: faUtensils,
+    title: "Đơn hàng online",
+    path: "/staff/orders/online",
+    icon: faTruck,
   },
   {
     id: 4,
-    title: "Quản lý danh mục",
-    path: "/admin/categories",
-    icon: faLayerGroup,
+    title: "Đơn hàng tại nhà hàng",
+    path: "/staff/orders/restaurant",
+    icon: faStore,
   },
   {
     id: 5,
-    title: "Quản lý khuyến mãi",
-    path: "/admin/vouchers",
-    icon: faTicketAlt,
-  },
-  {
-    id: 6,
-    title: "Quản lý đánh giá",
-    path: "/admin/reviews",
-    icon: faStar,
-  },
-  {
-    id: 7,
-    title: "Quản lý banner",
-    path: "/admin/banners",
-    icon: faImages,
+    title: "Quản lý đặt bàn",
+    path: "/staff/table-bookings",
+    icon: faCalendarCheck,
   },
 ];
 
@@ -74,7 +63,7 @@ const Sider = ({ mobileOpen = false, onCloseMobile }) => {
         </div>
 
         <nav className="sider-menu">
-          {adminMenuItems.map((item) => (
+          {staffMenuItems.map((item) => (
             <Link
               key={item.id}
               to={item.path}

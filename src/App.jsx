@@ -14,10 +14,15 @@ import AdminUsers from "./pages/admin/UsersAdmin";
 import AdminFoods from "./pages/admin/FoodsAdmin";
 import AdminCategories from "./pages/admin/CategoriesAdmin";
 import AdminVouchers from "./pages/admin/VouchersAdmin";
-import AdminOrders from "./pages/admin/OrdersAdmin";
-import AdminTableBookings from "./pages/admin/TableBookingsAdmin";
 import AdminBanners from "./pages/admin/BannersAdmin";
-import AdminInventory from "./pages/admin/InventoryAdmin";
+import AdminReviews from "./pages/admin/ReviewsAdmin";
+
+import StaffLayout from "./layouts/staff/StaffLayout";
+import StaffDashboard from "./pages/staff/Dashboard";
+import StaffInventory from "./pages/staff/Inventory";
+import StaffOnlineOrders from "./pages/staff/OnlineOrders";
+import StaffRestaurantOrders from "./pages/staff/RestaurantOrders";
+import StaffTableBookings from "./pages/staff/TableBookings";
 import CustomerHome from "./pages/customer/Home";
 import CustomerCart from "./pages/customer/Cart";
 import CustomerOrders from "./pages/customer/Orders";
@@ -39,10 +44,7 @@ const App = () => {
         <Route path="/" element={<Navigate to="/customer" replace />} />
         <Route path="/nhahangnqt" element={<CustomerBlog />} />
 
-        <Route
-          path="/table-order"
-          element={<CustomerTableOrder />}
-        />
+        <Route path="/table-order" element={<CustomerTableOrder />} />
 
         <Route
           path="/login"
@@ -93,12 +95,26 @@ const App = () => {
           <Route index element={<Dashboard />} />
           <Route path="user" element={<AdminUsers />} />
           <Route path="foods" element={<AdminFoods />} />
-          <Route path="inventory" element={<AdminInventory />} />
           <Route path="categories" element={<AdminCategories />} />
           <Route path="vouchers" element={<AdminVouchers />} />
-          <Route path="orders" element={<AdminOrders />} />
-          <Route path="table-bookings" element={<AdminTableBookings />} />
+          <Route path="reviews" element={<AdminReviews />} />
           <Route path="banners" element={<AdminBanners />} />
+        </Route>
+
+        {/* Staff Routes */}
+        <Route
+          path="/staff"
+          element={
+            <ProtectedRoute allowedRoles={["STAFF"]}>
+              <StaffLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<StaffDashboard />} />
+          <Route path="inventory" element={<StaffInventory />} />
+          <Route path="orders/online" element={<StaffOnlineOrders />} />
+          <Route path="orders/restaurant" element={<StaffRestaurantOrders />} />
+          <Route path="table-bookings" element={<StaffTableBookings />} />
         </Route>
 
         {/* 404 Page */}

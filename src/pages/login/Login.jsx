@@ -40,6 +40,8 @@ const Login = () => {
         toast.success("Đăng nhập Google thành công!");
         if (user.role === "ADMIN") {
           navigate("/admin");
+        } else if (user.role === "STAFF") {
+          navigate("/staff");
         } else {
           navigate("/customer");
         }
@@ -63,6 +65,8 @@ const Login = () => {
 
       if (role === "ADMIN") {
         navigate("/admin");
+      } else if (role === "STAFF") {
+        navigate("/staff");
       } else {
         navigate("/customer");
       }

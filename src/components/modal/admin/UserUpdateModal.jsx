@@ -25,6 +25,7 @@ const UserUpdateModal = ({ open, onCancel, onOk, form }) => {
         >
           <Select>
             <Select.Option value="CUSTOMER">Khách hàng</Select.Option>
+            <Select.Option value="STAFF">Nhân viên</Select.Option>
             <Select.Option value="ADMIN">Admin</Select.Option>
           </Select>
         </Form.Item>
