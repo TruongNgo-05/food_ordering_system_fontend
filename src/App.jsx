@@ -10,12 +10,16 @@ import ProtectedRoute from "./routers/ProtectedRoute";
 import PublicRoute from "./routers/PublicRoute";
 import NotFound from "./errors/NotFound";
 import Register from "./pages/login/Register";
-import AdminUsers from "./pages/admin/UsersAdmin";
-import AdminFoods from "./pages/admin/FoodsAdmin";
-import AdminCategories from "./pages/admin/CategoriesAdmin";
-import AdminVouchers from "./pages/admin/VouchersAdmin";
-import AdminBanners from "./pages/admin/BannersAdmin";
-import AdminReviews from "./pages/admin/ReviewsAdmin";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminFoods from "./pages/admin/AdminFoods";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminVouchers from "./pages/admin/AdminVouchers";
+import AdminBanners from "./pages/admin/AdminBanners";
+import AdminReviews from "./pages/admin/AdminReviews";
+import AdminTable from "./pages/admin/AdminTable";
+import AdminBlog from "./pages/admin/AdminBlog";
+import AdminOrder from "./pages/admin/AdminOrder";
+
 
 import StaffLayout from "./layouts/staff/StaffLayout";
 import StaffDashboard from "./pages/staff/Dashboard";
@@ -32,7 +36,6 @@ import CustomerSupport from "./pages/customer/Support";
 import CustomerTableOrder from "./pages/user/TableOrder";
 import CustomerTableQrSamples from "./pages/user/TableQrSamples";
 import CustomerBlog from "./pages/user/Blog";
-import TableReservation from "./pages/user/TableReservation";
 import CustomerLayout from "./layouts/customer/UserLayout";
 import FoodDetail from "./pages/customer/FoodDetail";
 
@@ -43,7 +46,6 @@ const App = () => {
         {/* Public Routes */}
         <Route path="/" element={<Navigate to="/customer" replace />} />
         <Route path="/nhahangnqt" element={<CustomerBlog />} />
-
         <Route path="/table-order" element={<CustomerTableOrder />} />
 
         <Route
@@ -99,6 +101,9 @@ const App = () => {
           <Route path="vouchers" element={<AdminVouchers />} />
           <Route path="reviews" element={<AdminReviews />} />
           <Route path="banners" element={<AdminBanners />} />
+          <Route path="tables" element={<AdminTable />} />
+          <Route path="blog" element={<AdminBlog />} />
+          <Route path="orders" element={<AdminOrder />} />
         </Route>
 
         {/* Staff Routes */}

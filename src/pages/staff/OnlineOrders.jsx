@@ -109,18 +109,11 @@ const OnlineOrders = () => {
 
   const updateOrderStatus = async (id, newStatus) => {
     try {
-      console.log("CALL API:", id, newStatus);
-
       const res = await orderStaffService.updateOrderStatus(id, newStatus);
-
-      console.log("SUCCESS:", res);
 
       message.success("Cập nhật trạng thái thành công");
       fetchOrders();
     } catch (e) {
-      console.log("ERROR FULL:", e);
-      console.log("ERROR RESPONSE:", e?.response?.data);
-
       message.error("Cập nhật thất bại");
     }
   };

@@ -1,18 +1,17 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// Cập nhật lại danh sách import các icon phù hợp
 import {
   faChartLine,
   faUsers,
   faUtensils,
-  faBoxesStacked,
   faLayerGroup,
   faTicketAlt,
   faClipboardList,
-  faCalendarCheck,
   faImages,
   faStar,
+  faTable,
+  faNewspaper,
 } from "@fortawesome/free-solid-svg-icons";
 import "../../assets/styles/Sider.css";
 import logo from "../../assets/images/logo.png";
@@ -50,15 +49,33 @@ const adminMenuItems = [
   },
   {
     id: 6,
+    title: "Quản lý banner",
+    path: "/admin/banners",
+    icon: faImages,
+  },
+  {
+    id: 7,
+    title: "Quản lý Bàn",
+    path: "/admin/tables",
+    icon: faTable,
+  },
+  {
+    id: 8,
     title: "Quản lý đánh giá",
     path: "/admin/reviews",
     icon: faStar,
   },
   {
-    id: 7,
-    title: "Quản lý banner",
-    path: "/admin/banners",
-    icon: faImages,
+    id: 9,
+    title: "Quản lý Blog",
+    path: "/admin/blog",
+    icon: faNewspaper,
+  },
+  {
+    id: 10,
+    title: "Xem Đơn hàng",
+    path: "/admin/orders",
+    icon: faClipboardList,
   },
 ];
 

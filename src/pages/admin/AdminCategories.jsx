@@ -5,9 +5,7 @@ import UserHeader from "../../components/user/UserHeader";
 import StatsCards from "../../components/common/StatsCards";
 import AppPagination from "../../components/common/AppPagination";
 import CategoryTable from "../../components/admin/CategoryTable";
-
-import CategoryCreateModal from "../../components/modal/admin/CategoryCreateModal";
-import CategoryUpdateModal from "../../components/modal/admin/CategoryUpdateModal";
+import CategoryCreateAndUpdateModal from "../../components/modal/admin/CategoryCreateAndUpdateModal";
 
 import adminCategoriesService from "../../services/admin/adminCategoriesService";
 import { getCategories } from "../../services/userService";
@@ -180,16 +178,26 @@ const AdminCategories = () => {
       />
 
       {/* MODALS */}
-      <CategoryCreateModal
+      {/* ADD */}
+      <CategoryCreateAndUpdateModal
         open={openAdd}
-        onCancel={() => setOpenAdd(false)}
+        title="Thêm danh mục"
+        onCancel={() => {
+          setOpenAdd(false);
+          addForm.resetFields();
+        }}
         onSubmit={handleAdd}
         form={addForm}
       />
 
-      <CategoryUpdateModal
+      {/* EDIT */}
+      <CategoryCreateAndUpdateModal
         open={openEdit}
-        onCancel={() => setOpenEdit(false)}
+        title="Sửa danh mục"
+        onCancel={() => {
+          setOpenEdit(false);
+          setEditingRecord(null);
+        }}
         onSubmit={handleEdit}
         form={editForm}
       />

@@ -3,10 +3,10 @@ import { Modal, Button } from "antd";
 import { fmt } from "../../../constants/customerTheme";
 import FoodItemTable from "../../staff/FoodItemTable";
 
-const OnlineOrderDetailModal = ({ open, record, onClose }) => {
+const OfflineOrderDetailModal = ({ open, record, onClose }) => {
   return (
     <Modal
-      title="Chi tiết đơn hàng online"
+      title="Chi tiết đơn hàng tại bàn"
       open={open}
       onCancel={onClose}
       footer={[
@@ -40,6 +40,11 @@ const OnlineOrderDetailModal = ({ open, record, onClose }) => {
             <div>
               <strong>Số điện thoại:</strong>
               <p>{record.customerPhone}</p>
+            </div>
+
+            <div>
+              <strong>Số Bàn:</strong>
+              <p>{record.tableNumber}</p>
             </div>
 
             <div>
@@ -82,20 +87,10 @@ const OnlineOrderDetailModal = ({ open, record, onClose }) => {
             }}
           >
             <div>
-              <strong>Giảm giá:</strong>
-              <p>{fmt(record.discount)}</p>
-            </div>
-
-            <div>
               <strong>Tổng tiền:</strong>
               <p style={{ color: "blue", fontWeight: "bold" }}>
                 {fmt(record.totalPrice)}
               </p>
-            </div>
-
-            <div style={{ gridColumn: "1 / -1" }}>
-              <strong>Địa chỉ giao:</strong>
-              <p>{record.address}</p>
             </div>
 
             <div style={{ gridColumn: "1 / -1" }}>
@@ -109,4 +104,4 @@ const OnlineOrderDetailModal = ({ open, record, onClose }) => {
   );
 };
 
-export default OnlineOrderDetailModal;
+export default OfflineOrderDetailModal;

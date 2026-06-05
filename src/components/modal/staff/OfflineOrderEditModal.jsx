@@ -1,11 +1,10 @@
 import React from "react";
 import { Modal, Button, Select } from "antd";
 
-const onlineStatusFlow = {
+const offlineStatusFlow = {
   PENDING: ["CONFIRMED", "REJECTED"],
   CONFIRMED: ["PREPARING"],
-  PREPARING: ["DELIVERING"],
-  DELIVERING: ["COMPLETED"],
+  PREPARING: ["COMPLETED"], // ❗ FIX QUAN TRỌNG
   COMPLETED: [],
   REJECTED: [],
   CANCELED: [],
@@ -13,11 +12,11 @@ const onlineStatusFlow = {
 
 const getAvailableStatuses = (currentStatus, options) => {
   return options.filter((opt) =>
-    onlineStatusFlow[currentStatus]?.includes(opt.value),
+    offlineStatusFlow[currentStatus]?.includes(opt.value),
   );
 };
 
-const OnlineOrderEditModal = ({
+const OfflineOrderEditModal = ({
   open,
   record,
   statusOptions,
@@ -34,7 +33,7 @@ const OnlineOrderEditModal = ({
 
   return (
     <Modal
-      title="Cập nhật trạng thái đơn hàng ONLINE"
+      title="Cập nhật trạng thái đơn hàng OFFLINE"
       open={open}
       onCancel={onClose}
       footer={null}
@@ -85,4 +84,4 @@ const OnlineOrderEditModal = ({
   );
 };
 
-export default OnlineOrderEditModal;
+export default OfflineOrderEditModal;
