@@ -1,60 +1,68 @@
-import React from "react";
-import { Modal, Descriptions } from "antd";
+import { Drawer, Typography, Divider, List, Card, Tag } from "antd";
 import dayjs from "dayjs";
 
-const VoucherDetailModal = ({ open, onCancel, data }) => {
+const { Title, Text } = Typography;
+
+const VoucherDetailDrawer = ({ open, onClose, data }) => {
   const formatDate = (date) =>
-    date ? dayjs(date).format("DD/MM/YYYY HH:mm") : "Không có";
+    date ? dayjs(date).format("DD/MM/YYYY HH:mm") : "—";
 
   const formatMoney = (value) =>
-    value ? `${value.toLocaleString()} đ` : "0 đ";
+    value ? `${Number(value).toLocaleString("vi-VN")} đ` : "0 đ";
+
+  const listData = data
+    ? [
+        {
+          label: "Mã voucher",
+          value: <Tag color="blue">{data.voucherCode}</Tag>,
+        },
+        { label: "Mô tả", value: data.description || "—" },
+        { label: "Giảm giá", value: formatMoney(data.discount) },
+        { label: "Đơn tối thiểu", value: formatMoney(data.minOrderValue) },
+        {
+          label: "Giới hạn lượt dùng",
+          value: data.usageLimit ?? "Không giới hạn",
+        },
+        { label: "Đã sử dụng", value: data.usedCount ?? 0 },
+        {
+          label: "Thời gian",
+          value: `${formatDate(data.startDate)} → ${formatDate(data.endDate)}`,
+        },
+        { label: "Ngày tạo", value: formatDate(data.createdAt) },
+      ]
+    : [];
 
   return (
-    <Modal
-      title=" Chi tiết voucher"
+    <Drawer
+      title="Chi tiết voucher"
       open={open}
-      onCancel={onCancel}
-      footer={null}
+      onClose={onClose}
+      width={500}
+      placement="right"
       destroyOnClose
-      width={600}
     >
-      {data && (
-        <Descriptions bordered column={1}>
-          <Descriptions.Item label="Mã voucher">
-            {data.voucherCode}
-          </Descriptions.Item>
+      <Card style={{ borderRadius: 12, background: "#fafafa" }}>
+        <Title level={5} style={{ marginBottom: 16 }}>
+          Thông tin voucher
+        </Title>
 
-          <Descriptions.Item label="Mô tả">
-            {data.description || "Không có"}
-          </Descriptions.Item>
+        <Divider style={{ margin: "12px 0" }} />
 
-          <Descriptions.Item label="Giảm giá">
-            {formatMoney(data.discount)}
-          </Descriptions.Item>
-
-          <Descriptions.Item label="Đơn tối thiểu">
-            {formatMoney(data.minOrderValue)}
-          </Descriptions.Item>
-
-          <Descriptions.Item label="Giới hạn lượt dùng">
-            {data.usageLimit ?? "Không giới hạn"}
-          </Descriptions.Item>
-
-          <Descriptions.Item label="Đã sử dụng">
-            {data.usedCount || 0}
-          </Descriptions.Item>
-
-          <Descriptions.Item label="Thời gian">
-            {formatDate(data.startDate)} → {formatDate(data.endDate)}
-          </Descriptions.Item>
-
-          <Descriptions.Item label="Ngày tạo">
-            {formatDate(data.createdAt)}
-          </Descriptions.Item>
-        </Descriptions>
-      )}
-    </Modal>
+        <List
+          dataSource={listData}
+          renderItem={(item) => (
+            <List.Item>
+              <div style={{ width: "100%" }}>
+                <Text type="secondary">{item.label}</Text>
+                <br />
+                <Text strong>{item.value}</Text>
+              </div>
+            </List.Item>
+          )}
+        />
+      </Card>
+    </Drawer>
   );
 };
 
-export default VoucherDetailModal;
+export default VoucherDetailDrawer;

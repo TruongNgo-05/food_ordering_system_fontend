@@ -18,8 +18,6 @@ const AdminBanners = () => {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const [search, setSearch] = useState("");
-
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
 
@@ -34,7 +32,6 @@ const AdminBanners = () => {
       setLoading(true);
 
       const res = await bannerService.getBannerAdmin({
-        keyword: search || undefined,
         page,
         size,
       });
@@ -128,12 +125,8 @@ const AdminBanners = () => {
 
   // ================= EFFECT =================
   useEffect(() => {
-    const delay = setTimeout(() => {
-      fetchBanners();
-    }, 300);
-
-    return () => clearTimeout(delay);
-  }, [search, page, size]);
+    fetchBanners();
+  }, [page, size]);
 
   return (
     <>
@@ -165,20 +158,6 @@ const AdminBanners = () => {
           },
         ]}
       />
-
-      {/* FILTER */}
-      <div className="filter-bar">
-        <div style={{ flex: 1 }}>
-          <Input
-            placeholder="Tìm banner..."
-            allowClear
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(0);
-            }}
-          />
-        </div>
-      </div>
 
       {/* TABLE */}
       <div className="admin-table-wrapper">

@@ -14,6 +14,7 @@ import {
   faImages,
   faTruck,
   faStore,
+  faTable,
 } from "@fortawesome/free-solid-svg-icons";
 import "../../assets/styles/Sider.css";
 import logo from "../../assets/images/logo.png";
@@ -45,6 +46,12 @@ const staffMenuItems = [
   },
   {
     id: 5,
+    title: "Quản lý bàn ăn",
+    path: "/staff/table/restaurant",
+    icon: faTable,
+  },
+  {
+    id: 6,
     title: "Quản lý đặt bàn",
     path: "/staff/table-bookings",
     icon: faCalendarCheck,

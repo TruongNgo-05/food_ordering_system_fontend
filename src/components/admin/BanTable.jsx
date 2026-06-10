@@ -9,8 +9,8 @@ const BanTable = ({ data, loading, onEdit, onDelete }) => {
       dataIndex: "tableNumber",
     },
     {
-      title: "Trạng Thái",
-      dataIndex: "status",
+      title: "Số người tối đa",
+      dataIndex: "capacity",
     },
     {
       title: "Thao tác",

@@ -1,12 +1,14 @@
 import React, { useMemo, useState, useEffect, useCallback } from "react";
-import { Button, Modal, Input, Select, message } from "antd";
+import { Button, Modal, Input, Select, message, DatePicker } from "antd";
 import UserHeader from "../../components/user/UserHeader";
 import AppPagination from "../../components/common/AppPagination";
 import { T, fmt } from "../../constants/customerTheme";
 import OfflineTable from "../../components/staff/OfflineTable";
-import OfflineOrderDetailModal from "../../components/modal/staff/OfflineOrderDetailModal";
+import OrderDetailModal from "../../components/modal/staff/OrderDetailModal";
 import OfflineOrderEditModal from "../../components/modal/staff/OfflineOrderEditModal";
 import orderStaffService from "../../services/staff/orderStaffService";
+import dayjs from "dayjs";
+
 const pageSize = 5;
 const statusOptions = [
   { label: "Đã xác nhận", value: "CONFIRMED" },
@@ -14,7 +16,7 @@ const statusOptions = [
   { label: "Hoàn thành", value: "COMPLETED" },
   { label: "Từ chối", value: "REJECTED" },
 ];
-const RestaurantOrders = () => {
+const StaffRestaurantOrders = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -26,6 +28,8 @@ const RestaurantOrders = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [newStatus, setNewStatus] = useState("");
+  const [minDate, setMinDate] = useState(null);
+  const [maxDate, setMaxDate] = useState(null);
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -40,7 +44,13 @@ const RestaurantOrders = () => {
       if (search.trim()) {
         params.orderCode = search.trim();
       }
+      if (minDate) {
+        params.minDate = dayjs(minDate).format("YYYY-MM-DD");
+      }
 
+      if (maxDate) {
+        params.maxDate = dayjs(maxDate).format("YYYY-MM-DD");
+      }
       // filter status
       if (statusFilter && statusFilter !== "all") {
         params.status = statusFilter;
@@ -72,7 +82,7 @@ const RestaurantOrders = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, search, statusFilter]);
+  }, [page, search, statusFilter, minDate, maxDate]);
 
   const fetchOrderDetail = async (id) => {
     try {
@@ -143,6 +153,21 @@ const RestaurantOrders = () => {
             }}
           />
         </div>
+        <DatePicker
+          placeholder="Từ ngày"
+          onChange={(v) => {
+            setPage(0);
+            setMinDate(v);
+          }}
+        />
+
+        <DatePicker
+          placeholder="Đến ngày"
+          onChange={(v) => {
+            setPage(0);
+            setMaxDate(v);
+          }}
+        />
         <div className="filter-divider" />
         <Select
           placeholder="Trạng thái"
@@ -169,6 +194,7 @@ const RestaurantOrders = () => {
           }}
           onEdit={(record) => {
             setEditingRecord(record);
+            setNewStatus(record.status);
             setEditMode(true);
             setModalOpen(true);
           }}
@@ -184,9 +210,10 @@ const RestaurantOrders = () => {
         }}
       />
 
-      <OfflineOrderDetailModal
+      <OrderDetailModal
         open={modalOpen && !editMode}
         record={editingRecord}
+        type="offline"
         onClose={() => {
           setModalOpen(false);
           setEditingRecord(null);
@@ -214,4 +241,4 @@ const RestaurantOrders = () => {
   );
 };
 
-export default RestaurantOrders;
+export default StaffRestaurantOrders;

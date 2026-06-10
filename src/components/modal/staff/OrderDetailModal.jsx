@@ -3,10 +3,14 @@ import { Modal, Button } from "antd";
 import { fmt } from "../../../constants/customerTheme";
 import FoodItemTable from "../../staff/FoodItemTable";
 
-const OfflineOrderDetailModal = ({ open, record, onClose }) => {
+const OrderDetailModal = ({ open, record, onClose, type = "online" }) => {
+  const isOffline = type === "offline";
+
   return (
     <Modal
-      title="Chi tiết đơn hàng tại bàn"
+      title={
+        isOffline ? "Chi tiết đơn hàng tại bàn" : "Chi tiết đơn hàng online"
+      }
       open={open}
       onCancel={onClose}
       footer={[
@@ -42,10 +46,12 @@ const OfflineOrderDetailModal = ({ open, record, onClose }) => {
               <p>{record.customerPhone}</p>
             </div>
 
-            <div>
-              <strong>Số Bàn:</strong>
-              <p>{record.tableNumber}</p>
-            </div>
+            {isOffline && (
+              <div>
+                <strong>Số bàn:</strong>
+                <p>{record.tableNumber}</p>
+              </div>
+            )}
 
             <div>
               <strong>Thời gian:</strong>
@@ -68,16 +74,15 @@ const OfflineOrderDetailModal = ({ open, record, onClose }) => {
             </div>
           </div>
 
-          {/* ITEMS TABLE */}
+          {/* ITEMS */}
           <div style={{ marginTop: 10, marginBottom: 16 }}>
             <strong>Các món:</strong>
-
             <div style={{ marginTop: 8 }}>
               <FoodItemTable data={record.items} loading={false} />
             </div>
           </div>
 
-          {/* FINANCIAL INFO (FIXED LAYOUT) */}
+          {/* FINANCIAL */}
           <div
             style={{
               display: "grid",
@@ -93,10 +98,33 @@ const OfflineOrderDetailModal = ({ open, record, onClose }) => {
               </p>
             </div>
 
-            <div style={{ gridColumn: "1 / -1" }}>
-              <strong>Ghi chú:</strong>
-              <p>{record.note}</p>
-            </div>
+            {!isOffline && (
+              <div>
+                <strong>Giảm giá:</strong>
+                <p>{fmt(record.discount)}</p>
+              </div>
+            )}
+
+            {isOffline && (
+              <div style={{ gridColumn: "1 / -1" }}>
+                <strong>Ghi chú:</strong>
+                <p>{record.note}</p>
+              </div>
+            )}
+
+            {!isOffline && (
+              <>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <strong>Địa chỉ giao:</strong>
+                  <p>{record.address}</p>
+                </div>
+
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <strong>Ghi chú:</strong>
+                  <p>{record.note}</p>
+                </div>
+              </>
+            )}
           </div>
         </>
       )}
@@ -104,4 +132,4 @@ const OfflineOrderDetailModal = ({ open, record, onClose }) => {
   );
 };
 
-export default OfflineOrderDetailModal;
+export default OrderDetailModal;

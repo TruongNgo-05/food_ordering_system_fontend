@@ -44,6 +44,12 @@ const navItems = [
   { to: "/customer/orders", label: "Đơn hàng", icon: faClipboardList },
   { to: "/customer/favorites", label: "Yêu thích", icon: faHeart },
   { to: "/customer/support", label: "Hỗ trợ", icon: faHeadset },
+  {
+    to: "/nhahangnqt",
+    label: "Blog nhà hàng",
+    icon: faNewspaper,
+    newTab: true,
+  },
   { to: "/customer/table-qr-samples", label: "QR Bàn", icon: faQrcode },
 ];
 
@@ -300,33 +306,46 @@ const Header = () => {
         </div>
 
         <nav className="header-nav" aria-label="Điều hướng">
-          {navItems.map((it) => (
-            <NavLink
-              key={it.to}
-              to={it.to}
-              end={Boolean(it.end)}
-              className={({ isActive }) =>
-                `header-nav-item ${isActive ? "active" : ""}`
-              }
-              onClick={(e) => {
-                if (requireAuthPaths.has(it.to) && !isLoggedIn) {
-                  e.preventDefault();
-                  confirmLoginWithModal(
-                    (path) => navigate(path),
-                    () => {},
-                  );
-                }
-              }}
-            >
-              <span className="header-nav-icon-wrap">
+          {navItems.map((it) =>
+            it.newTab ? (
+              <a
+                key={it.to}
+                href={it.to}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="header-nav-item"
+              >
                 <FontAwesomeIcon icon={it.icon} />
-                {it.to === "/customer/favorites" && favCount > 0 && (
-                  <span className="header-nav-badge">{favCount}</span>
-                )}
-              </span>
-              <span>{it.label}</span>
-            </NavLink>
-          ))}
+                <span>{it.label}</span>
+              </a>
+            ) : (
+              <NavLink
+                key={it.to}
+                to={it.to}
+                end={Boolean(it.end)}
+                className={({ isActive }) =>
+                  `header-nav-item ${isActive ? "active" : ""}`
+                }
+                onClick={(e) => {
+                  if (requireAuthPaths.has(it.to) && !isLoggedIn) {
+                    e.preventDefault();
+                    confirmLoginWithModal(
+                      (path) => navigate(path),
+                      () => {},
+                    );
+                  }
+                }}
+              >
+                <span className="header-nav-icon-wrap">
+                  <FontAwesomeIcon icon={it.icon} />
+                  {it.to === "/customer/favorites" && favCount > 0 && (
+                    <span className="header-nav-badge">{favCount}</span>
+                  )}
+                </span>
+                <span>{it.label}</span>
+              </NavLink>
+            ),
+          )}
         </nav>
       </div>
 

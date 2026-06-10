@@ -22,11 +22,13 @@ import AdminOrder from "./pages/admin/AdminOrder";
 
 
 import StaffLayout from "./layouts/staff/StaffLayout";
-import StaffDashboard from "./pages/staff/Dashboard";
-import StaffInventory from "./pages/staff/Inventory";
-import StaffOnlineOrders from "./pages/staff/OnlineOrders";
-import StaffRestaurantOrders from "./pages/staff/RestaurantOrders";
-import StaffTableBookings from "./pages/staff/TableBookings";
+import StaffDashboard from "./pages/staff/StaffDashboard";
+import StaffInventory from "./pages/staff/StaffInventory";
+import StaffOnlineOrders from "./pages/staff/StaffOnlineOrders";
+import StaffRestaurantOrders from "./pages/staff/StaffRestaurantOrders";
+import StaffTableBookings from "./pages/staff/StaffTableBookings";
+import StaffTableRestaurant from "./pages/staff/StaffTableRestaurant";
+
 import CustomerHome from "./pages/customer/Home";
 import CustomerCart from "./pages/customer/Cart";
 import CustomerOrders from "./pages/customer/Orders";
@@ -120,6 +122,7 @@ const App = () => {
           <Route path="orders/online" element={<StaffOnlineOrders />} />
           <Route path="orders/restaurant" element={<StaffRestaurantOrders />} />
           <Route path="table-bookings" element={<StaffTableBookings />} />
+          <Route path="table/restaurant" element={<StaffTableRestaurant />} />
         </Route>
 
         {/* 404 Page */}

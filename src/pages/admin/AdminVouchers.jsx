@@ -8,8 +8,7 @@ import VoucherTable from "../../components/admin/VoucherTable";
 import adminVoucherService from "../../services/admin/adminVoucher";
 import VoucherCreateModal from "../../components/modal/admin/VoucherCreateModal";
 import VoucherEditModal from "../../components/modal/admin/VoucherUpdateModal";
-import VoucherDetailModal from "../../components/modal/admin/VoucherDetailModal";
-
+import VoucherDetailDrawer from "../../components/modal/admin/VoucherDetailModal";
 const pageSize = 5;
 
 const AdminVouchers = () => {
@@ -197,12 +196,14 @@ const AdminVouchers = () => {
       />
 
       {/* DETAIL */}
-      <VoucherDetailModal
+      <VoucherDetailDrawer
         open={openDetail}
-        onCancel={() => setOpenDetail(false)}
+        onClose={() => {
+          setOpenDetail(false);
+          setDetailRecord(null); 
+        }}
         data={detailRecord}
       />
-
       {/* CREATE */}
       <VoucherCreateModal
         form={createForm}

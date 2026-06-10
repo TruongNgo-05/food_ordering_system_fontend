@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Modal, message } from "antd";
-
+import { Form, Input, Modal, message, Button } from "antd";
+import { QrcodeOutlined } from "@ant-design/icons";
 import UserHeader from "../../components/user/UserHeader";
 import StatsCards from "../../components/common/StatsCards";
 import AppPagination from "../../components/common/AppPagination";
@@ -8,8 +8,7 @@ import BanTable from "../../components/admin/BanTable";
 
 import TableCreateAndUpdateModal from "../../components/modal/admin/TableCreateAndUpdateModal";
 
-import adminCategoriesService from "../../services/admin/adminCategoriesService";
-import { getCategories } from "../../services/userService";
+import adminTableService from "../../services/admin/adminTableService";
 
 import "../../assets/styles/AdminPages.css";
 
@@ -33,28 +32,23 @@ const AdminTable = () => {
   const [editForm] = Form.useForm();
 
   // ================= LOAD DATA =================
-  const fetchCategories = async () => {
+  const fetchTables = async () => {
     try {
       setLoading(true);
 
-      const res = await getCategories({
-        name: search || undefined,
-        page: page,
-        size: size,
+      const res = await adminTableService.getAllTable({
+        page,
+        size,
+        tableNumber: search || undefined,
       });
 
-      const data = res?.data?.data;
-      const content = data?.content || [];
+      const pageData = res?.data?.data;
 
-      const mapped = content.map((c) => ({
-        id: c.id,
-        name: c.name,
-      }));
-
-      setItems(mapped);
-      setTotal(data?.totalElements || 0);
+      setItems(pageData?.content || []);
+      setTotal(pageData?.totalElements || 0);
     } catch (err) {
-      console.error("Lỗi load categories:", err);
+      console.error("Lỗi load bàn:", err);
+      message.error("Không thể tải danh sách bàn");
     } finally {
       setLoading(false);
     }
@@ -65,15 +59,15 @@ const AdminTable = () => {
     try {
       const values = await addForm.validateFields();
 
-      await adminCategoriesService.createCategories({
-        name: values.name,
-        description: values.desc,
+      await adminTableService.createTable({
+        tableNumber: values.tableNumber,
+        capacity: values.capacity,
       });
 
-      message.success("Thêm danh mục thành công");
+      message.success("Thêm bàn thành công");
       setOpenAdd(false);
       addForm.resetFields();
-      fetchCategories();
+      fetchTables();
     } catch (err) {
       message.error("Thêm thất bại");
     }
@@ -84,14 +78,15 @@ const AdminTable = () => {
     try {
       const values = await editForm.validateFields();
 
-      await adminCategoriesService.updateCategories(editingRecord.id, {
-        name: values.name,
+      await adminTableService.updateTable(editingRecord.id, {
+        tableNumber: values.tableNumber,
+        capacity: values.capacity,
       });
 
       message.success("Cập nhật thành công");
       setOpenEdit(false);
       setEditingRecord(null);
-      fetchCategories();
+      fetchTables();
     } catch (err) {
       message.error("Cập nhật thất bại");
     }
@@ -100,18 +95,22 @@ const AdminTable = () => {
   // ================= DELETE =================
   const handleDelete = async (id) => {
     try {
-      await adminCategoriesService.deleteCategories(id);
+      await adminTableService.deleteTable(id);
       message.success("Xóa thành công");
-      fetchCategories();
+      fetchTables();
     } catch (err) {
       message.error("Xóa thất bại");
     }
   };
-
+  // xuat pdf
+  const handleExportQrPdf = () => {
+    console.log("Xuất QR PDF");
+    // gọi API hoặc xử lý tạo PDF ở đây
+  };
   // ================= EFFECT =================
   useEffect(() => {
     const delay = setTimeout(() => {
-      fetchCategories();
+      fetchTables();
     }, 300);
 
     return () => clearTimeout(delay);
@@ -121,10 +120,15 @@ const AdminTable = () => {
     <>
       {/* HEADER */}
       <UserHeader
-        title="Quản lý bàn ăn "
+        title="Quản lý bàn ăn"
         description="Quản lý bàn ăn trong nhà hàng"
-        buttonText=" Thêm bàn"
+        buttonText="Thêm bàn"
         handleAdd={() => setOpenAdd(true)}
+        extra={
+          <Button icon={<QrcodeOutlined />} onClick={handleExportQrPdf}>
+            Xuất QR PDF
+          </Button>
+        }
       />
 
       {/* STATS */}
@@ -137,8 +141,9 @@ const AdminTable = () => {
       <div className="filter-bar">
         <div style={{ flex: 1 }}>
           <Input
-            placeholder="Tìm bàn..."
+            placeholder="Tìm theo mã bàn..."
             allowClear
+            value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(0);
@@ -154,8 +159,12 @@ const AdminTable = () => {
           loading={loading}
           onEdit={(record) => {
             setEditingRecord(record);
-            editForm.resetFields();
-            editForm.setFieldsValue(record);
+
+            editForm.setFieldsValue({
+              tableNumber: record.tableNumber,
+              capacity: record.capacity,
+            });
+
             setOpenEdit(true);
           }}
           onDelete={(id) => handleDelete(id)}

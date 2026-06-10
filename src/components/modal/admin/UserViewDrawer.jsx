@@ -35,7 +35,6 @@ export default function UserViewDrawer({
 
   const avatarUrl = getImageUrl(avatar);
 
-  // 👉 format date dùng dayjs
   const formatDate = (date) =>
     date ? dayjs(date).format("DD/MM/YYYY HH:mm") : "—";
 
