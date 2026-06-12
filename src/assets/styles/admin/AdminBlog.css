@@ -1,0 +1,12 @@
+.blog-preview-wrapper {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  height: calc(100vh - 180px);
+}
+
+.blog-preview-wrapper iframe {
+  width: 100%;
+  height: calc(100% - 50px);
+  border: 0;
+}

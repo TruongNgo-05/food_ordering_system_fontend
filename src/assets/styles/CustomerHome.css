@@ -112,7 +112,6 @@
   white-space: nowrap;
 }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .back-to-top-btn {
     min-height: 124px;

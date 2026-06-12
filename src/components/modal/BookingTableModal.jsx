@@ -136,7 +136,6 @@ const BookingTableModal = ({
                     key={table.tableId}
                     className={[
                       "tpm__table-card",
-                      `tpm__status--${table.status || "available"}`,
                       isSelected ? "tpm__table-card--selected" : "",
                     ]
                       .filter(Boolean)
