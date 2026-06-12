@@ -47,7 +47,6 @@ const Register = () => {
             <div className="logo-container">
               <img src={logo} alt="Logo" className="logo" />
             </div>
-            <div className="restaurant-tag">NQT Restaurant</div>
             <h1>Tạo tài khoản mới</h1>
             <p>Đăng ký để đặt bàn, đặt món và nhận ưu đãi thành viên</p>
           </div>
@@ -173,8 +172,8 @@ const Register = () => {
 
         <div className="info-side">
           <div className="info-content">
-            <h2>Gia nhập cộng đồng NQT</h2>
-            <p>Tích điểm mỗi đơn hàng, theo dõi lịch sử và nhận quà ưu đãi.</p>
+            <h2>Ẩm thực trọn vị tại Jler Sky Restaurant</h2>
+            <p>Đăng ký để khám phá thực đơn, ưu đãi và đặt món dễ dàng.</p>
           </div>
         </div>
       </div>

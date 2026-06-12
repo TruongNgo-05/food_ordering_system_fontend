@@ -197,7 +197,7 @@ const Login = () => {
 
         <div className="info-side">
           <div className="info-content">
-            <h2>Ẩm thực trọn vị tại NQT</h2>
+            <h2>Ẩm thực trọn vị tại Jler Sky Restaurant</h2>
             <p>Đăng nhập để khám phá thực đơn, ưu đãi và đặt món dễ dàng.</p>
           </div>
         </div>

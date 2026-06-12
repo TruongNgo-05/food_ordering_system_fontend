@@ -28,30 +28,25 @@ const staffMenuItems = [
   },
   {
     id: 2,
-    title: "Quản lý kho",
-    path: "/staff/inventory",
-    icon: faBoxesStacked,
+    title: "Quản lý bàn ăn",
+    path: "/staff/table-restaurant",
+    icon: faTable,
   },
   {
     id: 3,
-    title: "Đơn hàng online",
-    path: "/staff/orders/online",
-    icon: faTruck,
-  },
-  {
-    id: 4,
     title: "Đơn hàng tại nhà hàng",
     path: "/staff/orders/restaurant",
     icon: faStore,
   },
   {
-    id: 5,
-    title: "Quản lý bàn ăn",
-    path: "/staff/table/restaurant",
-    icon: faTable,
+    id: 4,
+    title: "Đơn hàng online",
+    path: "/staff/orders/online",
+    icon: faTruck,
   },
+
   {
-    id: 6,
+    id: 5,
     title: "Quản lý đặt bàn",
     path: "/staff/table-bookings",
     icon: faCalendarCheck,
@@ -66,7 +61,7 @@ const Sider = ({ mobileOpen = false, onCloseMobile }) => {
       <div className="sider-content">
         <div className="sider-logo">
           <img src={logo} alt="Logo" className="logo-img" />
-          <span className="logo-text">Nhà Hàng NT</span>
+          <span className="logo-text">Jler Sky Restaurant</span>
         </div>
 
         <nav className="sider-menu">

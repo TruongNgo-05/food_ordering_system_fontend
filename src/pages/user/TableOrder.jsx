@@ -35,7 +35,11 @@ const TableOrder = () => {
   const [openQrModal, setOpenQrModal] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState("");
   const [orderInfo, setOrderInfo] = useState(null);
-
+  const PAYMENT_METHOD_MAP = {
+    COD: 1,
+    ONLINE: 2,
+    AT_TABLE: 3,
+  };
   useEffect(() => {
     loadMenuTable();
   }, [tableFromQr]);
@@ -132,7 +136,7 @@ const TableOrder = () => {
     }
 
     try {
-      const paymentMethodId = orderFormData.paymentMethod === "ONLINE" ? 2 : 1;
+      const paymentMethodId = PAYMENT_METHOD_MAP[orderFormData.paymentMethod];
 
       const payload = {
         tableNumber: tableNumber.trim(),

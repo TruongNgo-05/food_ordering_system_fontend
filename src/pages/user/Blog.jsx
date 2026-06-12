@@ -4,6 +4,7 @@ import "../../assets/styles/user/Blog.css";
 import BookingTableModal from "../../components/modal/BookingTableModal";
 import BookingModal from "../../components/modal/BookingModal";
 import tableService from "../../services/user/tableService";
+import { useNavigate } from "react-router-dom";
 import { getBanner, getFoods } from "../../services/userService";
 
 function genCaptcha() {
@@ -43,6 +44,8 @@ const Blog = () => {
   const [captcha, setCaptcha] = useState(genCaptcha);
   const [captchaInput, setCaptchaInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const navigate = useNavigate();
 
   /* scroll */
   useEffect(() => {
@@ -95,7 +98,7 @@ const Blog = () => {
     setTimeout(() => {
       setSlide(idx);
       setFading(false);
-    }, 500);
+    }, 300);
   };
 
   useEffect(() => {
@@ -145,7 +148,7 @@ const Blog = () => {
     }
   };
   if (slides.length === 0) {
-    return <div className="blog-loading-banner">Đang tải banner...</div>;
+    return <div className="blog-loading-banner">Đang tải blog...</div>;
   }
   return (
     <div className="blog-page">
@@ -183,7 +186,7 @@ const Blog = () => {
                 setMenuOpen(false);
               }}
             >
-              Đặt Ngay
+              Đặt Bàn
             </button>
           </li>
         </ul>
@@ -226,7 +229,7 @@ const Blog = () => {
             </>
           )}
           <p className="blog_hero-hours">
-            Mở cửa hàng ngày từ 8:00 sáng – 23:50 đêm
+            Mở cửa hàng ngày từ 8:00 sáng – 22:00 đêm
           </p>
           <div className="blog_hero-btns">
             <button
@@ -236,7 +239,7 @@ const Blog = () => {
               Đặt Bàn Ngay
             </button>
             <a
-              href="https://maps.app.goo.gl/K84QFPxF5bxJs9Qy7"
+              href="https://maps.app.goo.gl/ZRvU42F4GJAFyTDk8"
               target="_blank"
               rel="noreferrer"
               className="blog_btn-outline"
@@ -289,16 +292,15 @@ const Blog = () => {
               className="blog_btn-primary"
               onClick={() => setShowBookingModal(true)}
             >
-              Đặt Ngay
+              Đặt Bàn Ngay
             </button>
-            <a
-              href="https://solarrooftopbar.com/UploadFile/PDF-MENU/SOLAR-DRINKS.pdf"
-              target="_blank"
-              rel="noreferrer"
+
+            <button
               className="blog_btn-outline"
+              onClick={() => window.open("/customer", "_blank")}
             >
-              Xem Thực Đơn
-            </a>
+              Trang chủ nhà hàng
+            </button>
           </div>
         </div>
 
@@ -333,7 +335,7 @@ const Blog = () => {
             hợp tầm nhìn ngoạn mục thành phố.
           </p>
           <p className="blog_food-hours">
-            Phục vụ từ 11:00 – 22:00 · Gọi món cuối 21:30
+            Phục vụ từ 08:00 – 22:00 · Gọi món cuối 21:30
           </p>
         </div>
         <div className="blog_food-slider">
@@ -355,7 +357,7 @@ const Blog = () => {
         </div>
         <div style={{ textAlign: "center", marginTop: "32px" }}>
           <a
-            href="https://solarrooftopbar.com/UploadFile/PDF-MENU/VIET-RESTAURANT-MENU.pdf"
+            href="https://drive.google.com/file/d/1qpwItu_BH9yMxfeptIN0U2LPbvqX7Vqh/view?usp=sharing"
             target="_blank"
             rel="noreferrer"
             className="blog_btn-outline"
@@ -383,8 +385,8 @@ const Blog = () => {
               <span>🕐</span>
               <div>
                 <strong>Giờ mở cửa</strong>
-                <p>Hàng ngày: 08:00 – 23:50</p>
-                <p>Phục vụ ăn: 11:00 – 22:00</p>
+                <p>Hàng ngày: 08:00 – 22:00</p>
+                <p>Phục vụ ăn: 08:00 – 21:30</p>
               </div>
             </div>
             <div className="blog_loc-row">
@@ -409,8 +411,11 @@ const Blog = () => {
         <div className="blog_location-map">
           <iframe
             title="JLER Map"
-            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d14896.188703260403!2d105.8482558!3d21.0307983!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3136f943a5d2087f%3A0xff6abaadc9cb2efe!2sSolar%20Sky%20Bar!5e0!3m2!1svi!2s!4v1716394886072!5m2!1svi!2s"
-            allowFullScreen=""
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7449.639347082264!2d105.87513381083463!3d20.999864380561522!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135aeaa17c35b81%3A0x79d8becf2f06f8dc!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBLaW5oIGRvYW5oIHbDoCBDw7RuZyBuZ2jhu4cgSMOgIE7hu5lp!5e0!3m2!1svi!2s!4v1781265996050!5m2!1svi!2s"
+            width="100%"
+            height="450"
+            style={{ border: 0 }}
+            allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           />
@@ -451,7 +456,7 @@ const Blog = () => {
               Zalo
             </a>
             <a
-              href="https://maps.app.goo.gl/K84QFPxF5bxJs9Qy7"
+              href="https://maps.app.goo.gl/BmNLUiEoo7PGbsHm6"
               target="_blank"
               rel="noreferrer"
             >
