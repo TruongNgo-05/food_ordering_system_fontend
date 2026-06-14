@@ -4,10 +4,11 @@
   height: 100%;
   min-height: 100vh;
 }
-.customer-home-header-wrap {
+
+.customer-home-page .customer-home-header-wrap {
   padding: 28px 36px 0;
 }
-.customer-home-content-wrap {
+.customer-home-page .customer-home-content-wrap {
   padding: 20px;
 }
 .customer-category-list {
@@ -119,11 +120,11 @@
     top: 56%;
   }
 
-  .customer-home-header-wrap {
+  .customer-home-page .customer-home-header-wrap {
     padding: 20px 16px 0;
   }
 
-  .customer-home-content-wrap {
+  .customer-home-page .customer-home-content-wrap {
     padding: 16px;
   }
 

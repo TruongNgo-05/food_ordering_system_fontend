@@ -1,173 +1,253 @@
-.banner {
+/* ── Customer hero (blog-style) ── */
+.customer-hero {
+  --gold: #c9a84c;
+  --gold-light: #e8c96e;
+  --dark: #0a0a0a;
+  --muted: #9a9080;
+  --white: #ffffff;
+
+  height: 100vh;
+  min-height: 600px;
   position: relative;
-  height: 380px;
-  background: #111;
-  background-size: cover;
-  background-position: center;
-  transition: background-image 0.6s ease;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
   text-align: center;
-  overflow: hidden;
+  background: var(--dark);
 }
 
-.banner-overlay {
+.customer-hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  animation: customerHeroZoom 8s ease forwards;
+}
+
+.customer-hero-slide--active {
+  opacity: 1;
+}
+
+.customer-hero-slide--fading {
+  opacity: 0;
+}
+
+@keyframes customerHeroZoom {
+  from {
+    transform: scale(1.05);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.customer-hero-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    110deg,
-    rgba(15, 23, 42, 0.84),
-    rgba(120, 118, 160, 0.28)
+    to bottom,
+    rgba(0, 0, 0, 0.35) 0%,
+    rgba(0, 0, 0, 0.1) 40%,
+    rgba(0, 0, 0, 0.65) 100%
   );
-}
-
-.banner-content {
-  position: relative;
   z-index: 1;
-  max-width: 760px;
-  padding: 0 18px;
 }
 
-.banner-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  font-size: 26px;
-  line-height: 1;
-  cursor: pointer;
+.customer-hero-content {
+  position: relative;
   z-index: 2;
-  transition: background 0.15s ease;
+  padding: 0 20px;
+  max-width: 900px;
 }
 
-.banner-nav:hover {
-  background: rgba(255, 255, 255, 0.35);
+.customer-hero-sub {
+  font-family: "Montserrat", sans-serif;
+  font-size: 10px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+  animation: customerFadeUp 1s ease both;
 }
 
-.banner-nav-left {
-  left: 16px;
+.customer-hero-title {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(42px, 8vw, 88px);
+  font-weight: 300;
+  line-height: 0.95;
+  color: var(--white);
+  letter-spacing: 4px;
+  text-shadow: 0 4px 40px rgba(0, 0, 0, 0.5);
+  animation: customerFadeUp 1s 0.2s ease both;
 }
 
-.banner-nav-right {
-  right: 16px;
+.customer-hero-divider {
+  width: 58px;
+  height: 1px;
+  background: var(--gold);
+  margin: 26px auto;
+  animation: customerFadeUp 1s 0.35s ease both;
 }
 
-.banner-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  margin-bottom: 14px;
+.customer-hero-tagline {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 8px;
+  animation: customerFadeUp 1s 0.45s ease both;
 }
 
-.banner-content h1 {
-  margin: 0 0 10px;
-  font-size: clamp(32px, 5vw, 54px);
-  line-height: 1.1;
-  color: #8aa3d1;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+.customer-hero-hours {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(16px, 2.5vw, 20px);
+  font-style: italic;
+  color: var(--gold-light);
+  margin-bottom: 36px;
+  animation: customerFadeUp 1s 0.55s ease both;
 }
 
-.banner-content p {
-  margin: 0 auto;
-  max-width: 620px;
-  font-size: 16px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.95);
-}
-
-.banner-actions {
-  margin-top: 24px;
+.customer-hero-btns {
   display: flex;
+  gap: 14px;
   justify-content: center;
-  gap: 12px;
   flex-wrap: wrap;
+  animation: customerFadeUp 1s 0.7s ease both;
 }
 
-.banner-dots {
-  margin-top: 18px;
+.customer-btn-primary {
+  display: inline-block;
+  background: var(--gold);
+  color: var(--dark);
+  padding: 13px 32px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  transition:
+    background 0.3s,
+    transform 0.2s;
+  cursor: pointer;
+  border: none;
+}
+
+.customer-btn-primary:hover {
+  background: var(--gold-light);
+  transform: translateY(-2px);
+}
+
+.customer-hero-dots {
+  position: absolute;
+  z-index: 2;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  align-items: center;
-  justify-content: center;
   gap: 8px;
 }
 
-.banner-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-  border: none;
-  background: rgba(255, 255, 255, 0.45);
+.customer-hero-dot {
+  width: 28px;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.3s;
   cursor: pointer;
-  transition:
-    width 0.2s ease,
-    background 0.2s ease;
-}
-
-.banner-dot.active {
-  width: 22px;
-  background: #fff;
-}
-
-.banner-content button {
-  padding: 11px 24px;
   border: none;
-  border-radius: 999px;
-  cursor: pointer;
-  font-weight: 800;
-  font-size: 14px;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease;
+  padding: 0;
 }
 
-.banner-content button:hover {
-  transform: translateY(-1px);
+.customer-hero-dot--active {
+  background: var(--gold);
+  width: 46px;
 }
 
-.banner-btn-primary {
-  background: linear-gradient(135deg, var(--primary), var(--primary-600));
-  color: #fff;
-  box-shadow: 0 14px 28px rgba(79, 70, 229, 0.24);
+.customer-hero-scroll {
+  position: absolute;
+  z-index: 2;
+  bottom: 4%;
+  right: 5%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: customerFadeIn 2s 1.5s ease both;
 }
 
-.banner-btn-primary:hover {
-  filter: brightness(1.03);
+.customer-hero-scroll span {
+  font-family: "Montserrat", sans-serif;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-.banner-btn-secondary {
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+.customer-scroll-line {
+  width: 1px;
+  height: 44px;
+  background: linear-gradient(to bottom, var(--gold), transparent);
+  animation: customerScrollLine 1.8s ease-in-out infinite;
 }
 
-.banner-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.23);
+@keyframes customerScrollLine {
+  0% {
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  100% {
+    opacity: 0;
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+}
+
+@keyframes customerFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes customerFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 768px) {
-  .banner {
-    height: 330px;
+  .customer-hero {
+    min-height: 520px;
   }
 
-  .banner-nav {
+  .customer-hero-scroll {
     display: none;
   }
 
-  .banner-content p {
-    font-size: 14px;
+  .customer-hero-title {
+    letter-spacing: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-hero-slide,
+  .customer-scroll-line {
+    animation: none;
   }
 }

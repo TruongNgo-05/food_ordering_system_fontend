@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import "../../assets/styles/Banner.css";
 
 const Banner = ({ data = [], onViewMenu }) => {
   const [activeIdx, setActiveIdx] = useState(0);
+  const [fading, setFading] = useState(false);
+  const timerRef = useRef(null);
 
   const slides = useMemo(() => {
     return (data || []).filter((s) => s.active !== false);
@@ -12,69 +14,80 @@ const Banner = ({ data = [], onViewMenu }) => {
     setActiveIdx(0);
   }, [slides]);
 
+  const goSlide = (idx) => {
+    setFading(true);
+    setTimeout(() => {
+      setActiveIdx(idx);
+      setFading(false);
+    }, 300);
+  };
+
   useEffect(() => {
     if (!slides.length) return;
 
-    const timer = setInterval(() => {
+    timerRef.current = setInterval(() => {
       setActiveIdx((prev) => (prev + 1) % slides.length);
-    }, 3500);
+    }, 5500);
 
-    return () => clearInterval(timer);
-  }, [slides]);
+    return () => clearInterval(timerRef.current);
+  }, [slides.length]);
 
   const activeSlide = slides[activeIdx];
 
   if (!activeSlide) return null;
 
-  const goPrev = () => {
-    setActiveIdx((prev) => (prev - 1 + slides.length) % slides.length);
-  };
-
-  const goNext = () => {
-    setActiveIdx((prev) => (prev + 1) % slides.length);
-  };
-
   return (
-    <div
-      className="banner"
-      style={{
-        backgroundImage: `url("${activeSlide.image}")`,
-      }}
-    >
-      <div className="banner-overlay" />
-      <div className="banner-glow" />
+    <section className="customer-hero">
+      {slides.map((s, idx) => (
+        <div
+          key={s.id}
+          className={`customer-hero-slide ${
+            idx === activeIdx ? "customer-hero-slide--active" : ""
+          } ${fading && idx === activeIdx ? "customer-hero-slide--fading" : ""}`}
+          style={{ backgroundImage: `url("${s.image}")` }}
+        />
+      ))}
 
-      <button className="banner-nav banner-nav-left" onClick={goPrev}>
-        ‹
-      </button>
+      <div className="customer-hero-overlay" />
 
-      <button className="banner-nav banner-nav-right" onClick={goNext}>
-        ›
-      </button>
-
-      <div className="banner-content">
-        <span className="banner-badge">Nhanh - Ngon - Nóng hổi</span>
-
-        <h1>{activeSlide.title}</h1>
-        <p>{activeSlide.desc}</p>
-
-        <div className="banner-actions">
-          <button className="banner-btn-secondary" onClick={onViewMenu}>
-            Xem thực đơn
+      <div className="customer-hero-content">
+        <p className="customer-hero-sub">JLER SKY RESTAURANT</p>
+        <h1 className="customer-hero-title">{activeSlide.title}</h1>
+        <div className="customer-hero-divider" />
+        <p className="customer-hero-tagline">{activeSlide.desc}</p>
+        <p className="customer-hero-hours">
+          Mở cửa hàng ngày từ 8:00 sáng – 22:00 đêm
+        </p>
+        <div className="customer-hero-btns">
+          <button
+            type="button"
+            className="customer-btn-primary"
+            onClick={onViewMenu}
+          >
+            Xem Thực Đơn
           </button>
         </div>
-
-        <div className="banner-dots">
-          {slides.map((s, idx) => (
-            <button
-              key={s.id}
-              className={`banner-dot ${idx === activeIdx ? "active" : ""}`}
-              onClick={() => setActiveIdx(idx)}
-            />
-          ))}
-        </div>
       </div>
-    </div>
+
+      <div className="customer-hero-dots">
+        {slides.map((s, idx) => (
+          <button
+            key={s.id}
+            type="button"
+            className={`customer-hero-dot ${
+              idx === activeIdx ? "customer-hero-dot--active" : ""
+            }`}
+            onClick={() => goSlide(idx)}
+            aria-label={`Slide ${idx + 1}`}
+          />
+        ))}
+      </div>
+
+      <div className="customer-hero-scroll">
+        <span>Cuộn</span>
+        <div className="customer-scroll-line" />
+      </div>
+    </section>
   );
 };
 

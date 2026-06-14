@@ -317,7 +317,7 @@ const Home = () => {
   );
 
   const scrollToMenu = () => {
-    const bannerEl = document.querySelector(".banner");
+    const bannerEl = document.querySelector(".customer-hero");
     if (!bannerEl) return;
     const bottom = bannerEl.getBoundingClientRect().bottom + window.scrollY;
     window.scrollTo({ top: Math.max(0, bottom - 35), behavior: "smooth" });
