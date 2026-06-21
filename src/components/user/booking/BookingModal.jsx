@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Modal, message } from "antd";
 import BookingTableModal from "./BookingTableModal";
-import tableService from "../../services/user/tableService";
-import "../../assets/styles/user/BookingModal.css";
+import tableService from "../../../services/user/tableService";
+import "../../../assets/styles/user/BookingModal.css";
 
 const BookingModal = ({ open, onClose }) => {
   const [arrivalTime, setArrivalTime] = useState("");
@@ -10,6 +10,7 @@ const BookingModal = ({ open, onClose }) => {
   const [showTableModal, setShowTableModal] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
   const [note, setNote] = useState("");
   const [captcha, setCaptcha] = useState("");
   const [captchaInput, setCaptchaInput] = useState("");
@@ -24,6 +25,7 @@ const BookingModal = ({ open, onClose }) => {
   };
 
   const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const getMinDateTime = () => {
     const now = new Date();
@@ -37,6 +39,7 @@ const BookingModal = ({ open, onClose }) => {
       setSelectedTable(null);
       setCustomerName("");
       setCustomerPhone("");
+      setCustomerEmail("");
       setNote("");
       setArrivalTime("");
     }
@@ -57,7 +60,13 @@ const BookingModal = ({ open, onClose }) => {
         "Số điện thoại không hợp lệ. Ví dụ: 0912345678 hoặc +84912345678",
       );
     }
+    if (!customerEmail.trim()) {
+      return message.error("Vui lòng nhập email");
+    }
 
+    if (!emailRegex.test(customerEmail.trim())) {
+      return message.error("Email không hợp lệ");
+    }
     if (!arrivalTime) {
       return message.error("Vui lòng chọn thời gian đến");
     }
@@ -76,6 +85,7 @@ const BookingModal = ({ open, onClose }) => {
       await tableService.createBooking({
         customerName,
         customerPhone,
+        customerEmail,
         tableId: selectedTable.tableId,
         note,
         timeComes: `${arrivalTime}:00`,
@@ -142,8 +152,20 @@ const BookingModal = ({ open, onClose }) => {
             {phoneError && <span className="bm__error">{phoneError}</span>}
           </div>
 
+          {/* Email */}
+          <div className="bm__group">
+            <label className="bm__label">Email</label>
+            <input
+              className="bm__input"
+              type="email"
+              placeholder="nguyenvana@gmail.com"
+              value={customerEmail}
+              onChange={(e) => setCustomerEmail(e.target.value)}
+            />
+          </div>
+
           {/* Thời gian đến */}
-          <div className="bm__group bm__full">
+          <div className="bm__group">
             <label className="bm__label">Thời gian đến</label>
             <input
               className="bm__input"

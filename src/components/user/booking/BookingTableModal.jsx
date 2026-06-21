@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { InputNumber } from "antd";
-import "../../assets/styles/user/BookingTable.css";
-import tableService from "../../services/user/tableService";
+import "../../../assets/styles/user/BookingTable.css";
+import tableService from "../../../services/user/tableService";
 
 const BookingTableModal = ({
   isOpen,

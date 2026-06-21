@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { message } from "antd";
 import "../../assets/styles/user/Blog.css";
-import BookingTableModal from "../../components/modal/BookingTableModal";
-import BookingModal from "../../components/modal/BookingModal";
+import BookingTableModal from "../../components/user/booking/BookingTableModal";
+import BookingModal from "../../components/user/booking/BookingModal";
 import tableService from "../../services/user/tableService";
 import { useNavigate } from "react-router-dom";
 import { getBanner, getFoods } from "../../services/userService";

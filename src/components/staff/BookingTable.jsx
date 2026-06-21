@@ -1,4 +1,5 @@
 import React from "react";
+import dayjs from "dayjs";
 import TableActions from "../common/TableActions";
 import BaseTable from "../common/BaseTable";
 
@@ -20,6 +21,8 @@ const BookingTable = ({ data, loading, onEdit, onView }) => {
     {
       title: "Thời gian đến",
       dataIndex: "reservationTime",
+      render: (value) =>
+        value ? dayjs(value).format("HH:mm DD/MM/YYYY ") : "-",
     },
     {
       title: "Bàn",
@@ -29,7 +32,6 @@ const BookingTable = ({ data, loading, onEdit, onView }) => {
       title: "Trạng thái",
       dataIndex: "status",
     },
-
     {
       title: "Thao tác",
       align: "center",

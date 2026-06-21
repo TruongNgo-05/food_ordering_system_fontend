@@ -2,7 +2,7 @@ import React from "react";
 import { Modal, Button } from "antd";
 import { fmt } from "../../../constants/customerTheme";
 import FoodItemTable from "../../staff/FoodItemTable";
-
+import dayjs from "dayjs";
 const OrderDetailModal = ({ open, record, onClose, type = "online" }) => {
   const isOffline = type === "offline";
 
@@ -55,7 +55,11 @@ const OrderDetailModal = ({ open, record, onClose, type = "online" }) => {
 
             <div>
               <strong>Thời gian:</strong>
-              <p>{record.createdAt}</p>
+              <p>
+                {record.reservationTime
+                  ? dayjs(record.reservationTime).format("HH:mm DD/MM/YYYY ")
+                  : "-"}
+              </p>
             </div>
 
             <div>

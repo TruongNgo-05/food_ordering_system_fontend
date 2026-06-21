@@ -15,6 +15,18 @@ const STATUS_CLASS = {
   RESERVED: "tpm__status--reserved",
   UNAVAILABLE: "tpm__status--unavailable",
 };
+const MOCK_TABLES = [
+  { tableId: 1, tableNumber: 1, status: "AVAILABLE" },
+  { tableId: 2, tableNumber: 2, status: "OCCUPIED" },
+  { tableId: 3, tableNumber: 3, status: "RESERVED" },
+  { tableId: 4, tableNumber: 4, status: "AVAILABLE" },
+  { tableId: 5, tableNumber: 5, status: "OCCUPIED" },
+  { tableId: 6, tableNumber: 6, status: "RESERVED" },
+  { tableId: 7, tableNumber: 7, status: "AVAILABLE" },
+  { tableId: 8, tableNumber: 8, status: "OCCUPIED" },
+  { tableId: 9, tableNumber: 9, status: "AVAILABLE" },
+  { tableId: 10, tableNumber: 10, status: "RESERVED" },
+];
 
 const StaffTableRestaurantPage = ({ onOpenOrder, onCheckIn, onCheckout }) => {
   const [tables, setTables] = useState([]);
@@ -26,11 +38,12 @@ const StaffTableRestaurantPage = ({ onOpenOrder, onCheckIn, onCheckout }) => {
     const loadTables = async () => {
       try {
         setLoading(true);
-        const res = await tableService.getTables({
-          capacity: peopleFilter || undefined,
-        });
+        // const res = await tableService.getTables({
+        //   capacity: peopleFilter || undefined,
+        // });
 
-        const list = res?.data?.data || [];
+        // const list = res?.data?.data || [];
+        const list = MOCK_TABLES;
 
         setTables(
           list.map((t) => ({
