@@ -1,15 +1,15 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 import { T } from "../../constants/customerTheme";
 import { EmptyState } from "../../components/customer/SharedUI";
 import MenuItemCard from "../../components/customer/MenuItemCard";
 import Banner from "../../components/customer/Banner";
 import CustomerChatWidget from "../../components/customer/CustomerChatWidget";
-import UserHeader from "../../components/user/UserHeader";
+import SectionHeader from "../../components/common/SectionHeader";
+import Header from "../../layouts/customer/Header";
 import AppPagination from "../../components/common/AppPagination";
+import BackToTopButton from "../../components/common/BackToTopButton";
 import { getBanner, getCategories, getFoods } from "../../services/userService";
 import cartService from "../../services/customer/cartService";
 import favoriteService from "../../services/customer/favoriteService";
@@ -43,7 +43,6 @@ const Home = () => {
   const [greetingName, setGreetingName] = useState(
     () => localStorage.getItem("userFullName") || "Khách",
   );
-  const [showBackToTop, setShowBackToTop] = useState(false);
 
   // ─── Fetch banners ───────────────────────────────────────────────
   useEffect(() => {
@@ -192,14 +191,6 @@ const Home = () => {
     };
   }, []);
 
-  // ─── Back-to-top button ──────────────────────────────────────────
-  useEffect(() => {
-    const onScroll = () => setShowBackToTop(window.scrollY > 280);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   // ─── Cart map ────────────────────────────────────────────────────
   const cartMap = useMemo(
     () => Object.fromEntries(cart.map((c) => [c.item_id, c.qty])),
@@ -325,10 +316,10 @@ const Home = () => {
 
   return (
     <div className="customer-home-page" style={{ background: T.bg }}>
-      <Banner data={banners} onViewMenu={scrollToMenu} />
+      <Banner data={banners} onViewMenu={scrollToMenu} header={<Header />} />
 
       <div id="customer-menu-header" className="customer-home-header-wrap">
-        <UserHeader
+        <SectionHeader
           title="Thực đơn"
           description={`Xin chào ${greetingName} 👋`}
           extra={
@@ -412,20 +403,7 @@ const Home = () => {
       </div>
 
       <CustomerChatWidget />
-
-      {showBackToTop && (
-        <button
-          type="button"
-          className="back-to-top-btn"
-          aria-label="Về đầu trang"
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        >
-          <span className="back-to-top-icon">
-            <FontAwesomeIcon icon={faArrowUp} />
-          </span>
-          <span className="back-to-top-text">Về đầu trang</span>
-        </button>
-      )}
+      <BackToTopButton />
     </div>
   );
 };

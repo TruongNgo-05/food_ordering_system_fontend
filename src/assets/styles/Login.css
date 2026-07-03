@@ -56,9 +56,26 @@
   color: var(--primary-600);
 }
 
-.logo {
-  width: 86px;
+.logo-container {
+  display: flex;
+  justify-content: center;
   margin-bottom: 16px;
+}
+
+.brand-logo-login {
+  align-items: center;
+  gap: 4px;
+}
+
+.brand-logo-login .brand-logo__main {
+  font-size: 2rem;
+  color: var(--primary);
+}
+
+.brand-logo-login .brand-logo__sub {
+  font-size: 0.58rem;
+  letter-spacing: 0.24em;
+  color: var(--muted-2);
 }
 
 .login-header h1 {

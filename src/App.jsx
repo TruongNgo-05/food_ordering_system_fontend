@@ -19,6 +19,7 @@ import AdminReviews from "./pages/admin/AdminReviews";
 import AdminTable from "./pages/admin/AdminTable";
 import AdminBlog from "./pages/admin/AdminBlog";
 import AdminOrder from "./pages/admin/AdminOrder";
+import AdminSupport from "./pages/admin/AdminSupport";
 
 import StaffLayout from "./layouts/staff/StaffLayout";
 import StaffDashboard from "./pages/staff/StaffDashboard";
@@ -38,6 +39,7 @@ import CustomerTableQrSamples from "./pages/user/TableQrSamples";
 import CustomerBlog from "./pages/user/Blog";
 import CustomerLayout from "./layouts/customer/UserLayout";
 import FoodDetail from "./pages/customer/FoodDetail";
+import OAuthSuccess from "../src/components/modal/auth/OAuthSuccess";
 
 const App = () => {
   return (
@@ -56,6 +58,8 @@ const App = () => {
             </PublicRoute>
           }
         />
+
+        <Route path="/oauth-success" element={<OAuthSuccess />} />
         <Route
           path="/reset-password"
           element={
@@ -104,6 +108,7 @@ const App = () => {
           <Route path="tables" element={<AdminTable />} />
           <Route path="blog" element={<AdminBlog />} />
           <Route path="orders" element={<AdminOrder />} />
+          <Route path="support" element={<AdminSupport />} />
         </Route>
 
         {/* Staff Routes */}

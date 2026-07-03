@@ -2,55 +2,30 @@ import React from "react";
 import { Form, Input, Button } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faLock } from "@fortawesome/free-solid-svg-icons";
-import logo from "../../assets/images/logo.png";
 import "../../assets/styles/Login.css";
 import { useNavigate } from "react-router-dom";
 import Quenmatkhau from "../../components/modal/auth/Quenmatkhau";
+import BrandLogo from "../../components/common/BrandLogo";
 import { toast } from "react-toastify";
 import { useAuth } from "../../hooks/useAuth";
-import { GoogleLogin } from "@react-oauth/google";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+
 import api from "../../services/apiClient";
-import { useGoogleLogin } from "@react-oauth/google";
 
 const Login = () => {
   const [loading, setLoading] = React.useState(false);
   const [openForgot, setOpenForgot] = React.useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const { setUser } = useAuth(); // nếu có
+  const { login, setUser } = useAuth();
 
-  const loginWithGoogle = async (tokenGG) => {
-    const res = await api.post("/auth/google", {
-      token: tokenGG,
-    });
-
-    const user = res.data;
-
-    localStorage.setItem("token", user.token);
-
-    setUser(user);
-
-    return user;
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:8080/oauth2/authorization/google";
   };
-  const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        // Lấy access_token từ tokenResponse.access_token
-        const user = await loginWithGoogle(tokenResponse.access_token);
-        toast.success("Đăng nhập Google thành công!");
-        if (user.role === "ADMIN") {
-          navigate("/admin");
-        } else if (user.role === "STAFF") {
-          navigate("/staff");
-        } else {
-          navigate("/customer");
-        }
-      } catch {
-        toast.error("Login Google thất bại");
-      }
-    },
-    onError: () => toast.error("Login Google thất bại"),
-  });
+  const handleFacebookLogin = () => {
+    window.location.href =
+      "http://localhost:8080/oauth2/authorization/facebook";
+  };
   const onFinish = async (values) => {
     setLoading(true);
 
@@ -94,7 +69,16 @@ const Login = () => {
   const handleSocialLogin = (provider) => {
     toast.info(`Đăng nhập bằng ${provider} đang được phát triển`);
   };
+  const [params] = useSearchParams();
 
+  useEffect(() => {
+    const error = params.get("error");
+
+    if (error === "locked") {
+      toast.error("Tài khoản đã bị khóa");
+      navigate("/login", { replace: true }); // xoá query
+    }
+  }, []);
   return (
     <div className="login-wrapper">
       <div className="login-container">
@@ -106,7 +90,10 @@ const Login = () => {
               </a>
             </div>
             <div className="logo-container">
-              <img src={logo} alt="Ngô Quang Trường" className="logo" />
+              <BrandLogo
+                className="brand-logo-login"
+                ariaLabel="Jler Sky Restaurant"
+              />
             </div>
             <h1>Chào mừng trở lại</h1>
             <p>Đăng nhập để đặt món nhanh và theo dõi đơn hàng</p>
@@ -169,7 +156,7 @@ const Login = () => {
               <button
                 type="button"
                 className="social-login-btn google"
-                onClick={() => handleGoogleLogin()}
+                onClick={handleGoogleLogin}
               >
                 <span className="social-login-icon">G</span>
                 <span>Google</span>
@@ -177,7 +164,7 @@ const Login = () => {
               <button
                 type="button"
                 className="social-login-btn facebook"
-                onClick={() => handleSocialLogin("Facebook")}
+                onClick={handleFacebookLogin}
               >
                 <span className="social-login-icon">f</span>
                 <span>Facebook</span>

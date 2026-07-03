@@ -76,28 +76,28 @@ const BookingTableModal = ({
 
   return (
     <div
-      className="tpm__overlay"
+      className="btm__overlay"
       onClick={handleBackdrop}
       role="dialog"
       aria-modal="true"
       aria-label="Chọn bàn"
     >
-      <div className="tpm__panel">
+      <div className="btm__panel">
         {/* Header */}
-        <div className="tpm__header">
-          <div className="tpm__header-text">
-            <span className="tpm__eyebrow">Đặt Chỗ</span>
-            <h2 className="tpm__title">Chọn Bàn Của Bạn</h2>
+        <div className="btm__header">
+          <div className="btm__header-text">
+            <span className="btm__eyebrow">Đặt Chỗ</span>
+            <h2 className="btm__title">Chọn Bàn Của Bạn</h2>
           </div>
 
-          <button className="tpm__close" onClick={onClose} aria-label="Đóng">
+          <button className="btm__close" onClick={onClose} aria-label="Đóng">
             ✕
           </button>
         </div>
 
         {/* Bộ lọc */}
-        <div className="tpm__filter">
-          <label className="tpm__filter-label">Số lượng người</label>
+        <div className="btm__filter">
+          <label className="btm__filter-label">Số lượng người</label>
 
           <InputNumber
             min={1}
@@ -110,7 +110,7 @@ const BookingTableModal = ({
 
           <button
             type="button"
-            className="tpm__reset-filter"
+            className="btm__reset-filter"
             onClick={() => setPeopleFilter(null)}
           >
             Hiện tất cả bàn
@@ -118,16 +118,16 @@ const BookingTableModal = ({
         </div>
 
         {/* Grid */}
-        <div className="tpm__grid-wrap">
+        <div className="btm__grid-wrap">
           {loading ? (
-            <div className="tpm__loading">
-              <div className="tpm__spinner"></div>
+            <div className="btm__loading">
+              <div className="btm__spinner"></div>
               <span>Đang tải danh sách bàn…</span>
             </div>
           ) : tables.length === 0 ? (
-            <div className="tpm__empty">Không tìm thấy bàn phù hợp.</div>
+            <div className="btm__empty">Không tìm thấy bàn phù hợp.</div>
           ) : (
-            <div className="tpm__grid">
+            <div className="btm__grid">
               {tables.map((table) => {
                 const isSelected = selectedTable?.tableId === table.tableId;
 
@@ -135,8 +135,8 @@ const BookingTableModal = ({
                   <button
                     key={table.tableId}
                     className={[
-                      "tpm__table-card",
-                      isSelected ? "tpm__table-card--selected" : "",
+                      "btm__table-card",
+                      isSelected ? "btm__table-card--selected" : "",
                     ]
                       .filter(Boolean)
                       .join(" ")}
@@ -147,14 +147,14 @@ const BookingTableModal = ({
                     aria-pressed={isSelected}
                     aria-label={`Bàn ${table.tableNumber}`}
                   >
-                    <div className="tpm__card-accent"></div>
+                    <div className="btm__card-accent"></div>
 
-                    <div className="tpm__card-body">
-                      <div className="tpm__icon-wrap">
+                    <div className="btm__card-body">
+                      <div className="btm__icon-wrap">
                         <svg
                           viewBox="0 0 36 24"
                           fill="none"
-                          className="tpm__icon"
+                          className="btm__icon"
                         >
                           <rect
                             x="2"
@@ -195,16 +195,16 @@ const BookingTableModal = ({
                         </svg>
                       </div>
 
-                      <span className="tpm__table-number">
+                      <span className="btm__table-number">
                         {table.tableNumber}
                       </span>
 
-                      <span className="tpm__table-capacity">
+                      <span className="btm__table-capacity">
                         👥 {table.capacity} người
                       </span>
                     </div>
 
-                    {isSelected && <span className="tpm__check">✓</span>}
+                    {isSelected && <span className="btm__check">✓</span>}
                   </button>
                 );
               })}
@@ -213,14 +213,14 @@ const BookingTableModal = ({
         </div>
 
         {/* Footer */}
-        <div className="tpm__footer">
-          <span className="tpm__footer-note">
+        <div className="btm__footer">
+          <span className="btm__footer-note">
             {selectedTable
               ? `Đang chọn: ${selectedTable.tableNumber}`
               : "Chạm vào bàn để chọn"}
           </span>
 
-          <button className="tpm__close-btn" onClick={onClose}>
+          <button className="btm__close-btn" onClick={onClose}>
             Đóng
           </button>
         </div>

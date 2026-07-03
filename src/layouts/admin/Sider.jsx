@@ -12,6 +12,7 @@ import {
   faStar,
   faTable,
   faNewspaper,
+  faHeadset,
 } from "@fortawesome/free-solid-svg-icons";
 import "../../assets/styles/Sider.css";
 import logo from "../../assets/images/logo.png";
@@ -73,7 +74,13 @@ const adminMenuItems = [
   },
   {
     id: 10,
-    title: "Xem Đơn hàng",
+    title: "Quản lý hỗ trợ",
+    path: "/admin/support",
+    icon: faHeadset,
+  },
+  {
+    id: 11,
+    title: "Xem đơn hàng",
     path: "/admin/orders",
     icon: faClipboardList,
   },

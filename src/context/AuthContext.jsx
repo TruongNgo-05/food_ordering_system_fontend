@@ -28,6 +28,31 @@ export const AuthProvider = ({ children }) => {
   const [userFullName, setUserFullName] = useState(
     () => localStorage.getItem("userFullName") || "",
   );
+  const loginGoogle = async (token) => {
+    localStorage.setItem("accessToken", token);
+    localStorage.setItem("tokenTimestamp", Date.now().toString());
+
+    setIsLoggedIn(true);
+
+    try {
+      const res = await getCurrentUserApi();
+      const apiUser = res.data?.data;
+
+      if (apiUser) {
+        const fullName = getFullName(apiUser);
+
+        setUser(apiUser);
+        setUserFullName(fullName);
+        setRole(apiUser.role);
+
+        localStorage.setItem("user", JSON.stringify(apiUser));
+        localStorage.setItem("userFullName", fullName);
+        localStorage.setItem("role", apiUser.role);
+      }
+    } catch (err) {
+      console.error("Google login refresh user error:", err);
+    }
+  };
 
   useEffect(() => {
     if (localStorage.getItem("accessToken")) {
@@ -102,6 +127,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         refreshUser,
+        loginGoogle,
       }}
     >
       {children}

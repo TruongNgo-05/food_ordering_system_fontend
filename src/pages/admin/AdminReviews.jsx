@@ -206,7 +206,7 @@ const AdminReviews = () => {
   }
 
   return (
-    <div style={{ padding: "24px 0" }}>
+    <div>
       <UserHeader
         title="Quản lý đánh giá"
         description="Theo dõi phản hồi và xử lý bình luận"

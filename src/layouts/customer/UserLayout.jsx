@@ -1,12 +1,16 @@
 import React from "react";
 import Header from "./Header";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import "../../assets/styles/Layouts.css";
 const CustomerLayout = () => {
+  const location = useLocation();
+  const isHomeRoute =
+    location.pathname === "/customer" || location.pathname === "/customer/";
+
   return (
     <div className="layout layout--no-sider">
       <div className="main-content">
-        <Header />
+        {!isHomeRoute && <Header />}
         <div className="content">
           <Outlet />
         </div>

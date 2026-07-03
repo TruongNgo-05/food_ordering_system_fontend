@@ -1,8 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { message } from "antd";
+import "../../assets/styles/Banner.css";
+import "../../assets/styles/Header.css";
 import "../../assets/styles/user/Blog.css";
 import BookingTableModal from "../../components/user/booking/BookingTableModal";
 import BookingModal from "../../components/user/booking/BookingModal";
+import Banner from "../../components/customer/Banner";
+import CustomerChatWidget from "../../components/customer/CustomerChatWidget";
+import BackToTopButton from "../../components/common/BackToTopButton";
+import BrandLogo from "../../components/common/BrandLogo";
+import SectionHeader from "../../components/common/SectionHeader";
 import tableService from "../../services/user/tableService";
 import { useNavigate } from "react-router-dom";
 import { getBanner, getFoods } from "../../services/userService";
@@ -61,10 +68,9 @@ const Blog = () => {
 
         const banners = (res.data?.data || []).map((item) => ({
           id: item.id,
-          bg: item.imageUrl,
-          eye: "JLER SKY RESTAURANT",
           title: item.title,
-          sub: item.description,
+          desc: item.description,
+          image: item.imageUrl,
         }));
 
         setSlides(banners);
@@ -153,34 +159,51 @@ const Blog = () => {
   return (
     <div className="blog-page">
       {/* ══ NAVBAR ══ */}
-      <nav id="blog_navbar" className={scrolled ? "blog_scrolled" : ""}>
-        <div className="blog_nav-logo">
-          <a href="#blog_hero" className="blog_logo-text">
-            <span className="blog_logo-main">JLER</span>
-            <span className="blog_logo-sub">SKY RESTAURANT</span>
-          </a>
+      <header
+        id="blog_navbar"
+        className={`header header--customer ${scrolled ? "header--scrolled" : ""}`}
+      >
+        <div className="header-brand">
+          <BrandLogo
+            as="button"
+            className="header-logo-text"
+            onClick={() => navigate("/#blog_hero")}
+            ariaLabel="Về trang Blog"
+          />
         </div>
 
-        <ul className={`blog_nav-links ${menuOpen ? "blog_nav-open" : ""}`}>
+        <ul className={`header-nav ${menuOpen ? "header-nav--open" : ""}`}>
           <li>
-            <a href="#blog_about-us" onClick={() => setMenuOpen(false)}>
+            <a
+              className="header-nav-link"
+              href="#blog_about-us"
+              onClick={() => setMenuOpen(false)}
+            >
               Về Chúng Tôi
             </a>
           </li>
           <li>
-            <a href="#blog_food" onClick={() => setMenuOpen(false)}>
+            <a
+              className="header-nav-link"
+              href="#blog_food"
+              onClick={() => setMenuOpen(false)}
+            >
               Thực Đơn
             </a>
           </li>
           <li>
-            <a href="#blog_location" onClick={() => setMenuOpen(false)}>
+            <a
+              className="header-nav-link"
+              href="#blog_location"
+              onClick={() => setMenuOpen(false)}
+            >
               Địa Điểm
             </a>
           </li>
 
           <li>
             <button
-              className="blog_btn-primary blog_nav-book"
+              className="customer-banner-btn-primary"
               onClick={() => {
                 setShowBookingModal(true);
                 setMenuOpen(false);
@@ -192,7 +215,7 @@ const Blog = () => {
         </ul>
 
         <button
-          className={`blog_burger ${menuOpen ? "blog_burger-open" : ""}`}
+          className={`header-burger ${menuOpen ? "header-burger--open" : ""}`}
           onClick={() => setMenuOpen((v) => !v)}
           aria-label="menu"
         >
@@ -200,71 +223,36 @@ const Blog = () => {
           <span />
           <span />
         </button>
-      </nav>
+      </header>
 
       {/* ══ HERO SLIDER ══ */}
 
-      <section id="blog_hero" className="blog_hero">
-        {slides.map((s) => (
-          <div
-            key={s.id}
-            className={`blog_hero-slide ${
-              s.id === slides[slide]?.id ? "blog_slide-active" : ""
-            }`}
-            style={{ backgroundImage: `url(${s.bg})` }}
-          />
-        ))}
-        <div className="blog_hero-overlay" />
-
-        <div className="blog_hero-content">
-          {slides.length > 0 && (
+      <div id="blog_hero">
+        <Banner
+          data={slides}
+          className="blog_hero"
+          hoursText="Mở cửa hàng ngày từ 8:00 sáng – 22:00 đêm"
+          renderActions={() => (
             <>
-              <p className="blog_hero-sub">{slides[slide]?.eye}</p>
-
-              <h1 className="blog_hero-title">{slides[slide]?.title}</h1>
-
-              <div className="blog_hero-divider" />
-
-              <p className="blog_hero-tagline">{slides[slide]?.sub}</p>
+              <button
+                type="button"
+                className="customer-banner-btn-primary"
+                onClick={() => setShowBookingModal(true)}
+              >
+                Đặt Bàn Ngay
+              </button>
+              <a
+                href="https://maps.app.goo.gl/ZRvU42F4GJAFyTDk8"
+                target="_blank"
+                rel="noreferrer"
+                className="customer-banner-btn-outline"
+              >
+                Đánh Giá &amp; Bản Đồ Google
+              </a>
             </>
           )}
-          <p className="blog_hero-hours">
-            Mở cửa hàng ngày từ 8:00 sáng – 22:00 đêm
-          </p>
-          <div className="blog_hero-btns">
-            <button
-              className="blog_btn-primary"
-              onClick={() => setShowBookingModal(true)}
-            >
-              Đặt Bàn Ngay
-            </button>
-            <a
-              href="https://maps.app.goo.gl/ZRvU42F4GJAFyTDk8"
-              target="_blank"
-              rel="noreferrer"
-              className="blog_btn-outline"
-            >
-              Đánh Giá &amp; Bản Đồ Google
-            </a>
-          </div>
-        </div>
-
-        {/* dots */}
-        <div className="blog_hero-dots">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              className={`blog_hero-dot ${i === slide ? "blog_dot-active" : ""}`}
-              onClick={() => goSlide(i)}
-            />
-          ))}
-        </div>
-
-        <div className="blog_hero-scroll">
-          <span>Cuộn</span>
-          <div className="blog_scroll-line" />
-        </div>
-      </section>
+        />
+      </div>
 
       {/* ══ ABOUT ══ */}
       <section id="blog_about-us">
@@ -289,14 +277,14 @@ const Blog = () => {
           </div>
           <div style={{ display: "flex", gap: "14px", flexWrap: "wrap" }}>
             <button
-              className="blog_btn-primary"
+              className="customer-banner-btn-primary"
               onClick={() => setShowBookingModal(true)}
             >
               Đặt Bàn Ngay
             </button>
 
             <button
-              className="blog_btn-outline"
+              className="customer-banner-btn-outline"
               onClick={() => window.open("/customer", "_blank")}
             >
               Trang chủ nhà hàng
@@ -326,18 +314,18 @@ const Blog = () => {
 
       {/* ══ FOOD ══ */}
       <section id="blog_food" className="blog_food-section">
-        <div className="blog_section-header">
-          <span className="blog_section-label">Rooftop Dining</span>
-          <h2 className="blog_section-title">Thực Đơn Việt Nam</h2>
-          <div className="blog_section-rule" />
-          <p className="blog_food-desc">
-            Thưởng thức ẩm thực Việt Nam chính thống — hương vị địa phương kết
-            hợp tầm nhìn ngoạn mục thành phố.
-          </p>
-          <p className="blog_food-hours">
-            Phục vụ từ 08:00 – 22:00 · Gọi món cuối 21:30
-          </p>
-        </div>
+        <SectionHeader
+          label="Rooftop Dining"
+          title="Thực Đơn Việt Nam"
+          description="Thưởng thức ẩm thực Việt Nam chính thống — hương vị địa phương kết hợp tầm nhìn ngoạn mục thành phố."
+        >
+          <div>
+            <div className="section-header-rule" />
+            <p className="blog_food-hours">
+              Phục vụ từ 08:00 – 22:00 · Gọi món cuối 21:30
+            </p>
+          </div>
+        </SectionHeader>
         <div className="blog_food-slider">
           <div className="blog_food-track">
             {[...foods, ...foods].map((food, index) => (
@@ -360,7 +348,7 @@ const Blog = () => {
             href="https://drive.google.com/file/d/1qpwItu_BH9yMxfeptIN0U2LPbvqX7Vqh/view?usp=sharing"
             target="_blank"
             rel="noreferrer"
-            className="blog_btn-outline"
+            className="customer-banner-btn-outline"
           >
             Xem Thực Đơn Đầy Đủ
           </a>
@@ -370,9 +358,12 @@ const Blog = () => {
       {/* ══ LOCATION ══ */}
       <section id="blog_location" className="blog_location-section">
         <div className="blog_location-info">
-          <span className="blog_section-label">Địa Chỉ</span>
-          <h2 className="blog_section-title">Tìm Chúng Tôi</h2>
-          <div className="blog_section-rule" style={{ margin: "0 0 32px" }} />
+          <SectionHeader label="Địa Chỉ" title="Tìm Chúng Tôi">
+            <div
+              className="section-header-rule"
+              style={{ margin: "0 0 32px" }}
+            />
+          </SectionHeader>
           <div className="blog_loc-rows">
             <div className="blog_loc-row">
               <span>📍</span>
@@ -403,7 +394,7 @@ const Blog = () => {
             href="https://maps.app.goo.gl/K84QFPxF5bxJs9Qy7"
             target="_blank"
             rel="noreferrer"
-            className="blog_btn-primary"
+            className="customer-banner-btn-primary"
           >
             Google Maps &amp; Đánh Giá
           </a>
@@ -471,19 +462,13 @@ const Blog = () => {
       </footer>
 
       {/* ══ FLOAT BUTTONS ══ */}
-      <a
-        href="https://zalo.me/0389582843"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="blog_float-call"
-        title="Chat Zalo"
-      >
-        <span className="blog_float-ping" />
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg"
-          alt="Zalo"
-        />
-      </a>
+      <CustomerChatWidget
+        showChatButton={false}
+        showZaloButton={true}
+        zaloLabel="Zalo"
+        enableChat={false}
+      />
+      <BackToTopButton />
 
       {/* ══ LIGHTBOX ══ */}
       {lightbox && (

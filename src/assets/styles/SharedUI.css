@@ -1,0 +1,112 @@
+/* ═══════════════════════════════════════════════════════════════ */
+/* SHARED UI COMPONENTS STYLES                                    */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ─── STATUS BADGE ─── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+
+/* ─── EMPTY STATE ─── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  gap: 14px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 64px;
+}
+
+.empty-state-title {
+  margin: 0;
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--text);
+}
+
+.empty-state-desc {
+  margin: 0;
+  font-size: 14px;
+  color: var(--sub);
+  max-width: 360px;
+}
+
+.empty-state-btn {
+  margin-top: 8px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 32px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity 0.2s;
+}
+
+.empty-state-btn:hover {
+  opacity: 0.9;
+}
+
+/* ─── SECTION TITLE ─── */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.section-title-text {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.section-title-count {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 99px;
+}
+
+/* ─── MOBILE ─── */
+@media (max-width: 480px) {
+  .empty-state {
+    padding: 60px 20px;
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+  }
+
+  .empty-state-title {
+    font-size: 18px;
+  }
+
+  .empty-state-desc {
+    font-size: 13px;
+  }
+
+  .section-title {
+    margin-bottom: 16px;
+  }
+
+  .section-title-text {
+    font-size: 18px;
+  }
+}

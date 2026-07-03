@@ -2,11 +2,11 @@ import React from "react";
 import { Form, Input, Button, Row, Col } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faLock, faEnvelope } from "@fortawesome/free-solid-svg-icons";
-import logo from "../../assets/images/logo.png";
 import "../../assets/styles/Login.css";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { createAccount } from "../../services/userService";
+import BrandLogo from "../../components/common/BrandLogo";
 const Register = () => {
   const [loading, setLoading] = React.useState(false);
   const navigate = useNavigate();
@@ -45,7 +45,10 @@ const Register = () => {
               <a onClick={() => navigate("/login")}>← Quay lại trang Login</a>
             </div>
             <div className="logo-container">
-              <img src={logo} alt="Logo" className="logo" />
+              <BrandLogo
+                className="brand-logo-login"
+                ariaLabel="Jler Sky Restaurant"
+              />
             </div>
             <h1>Tạo tài khoản mới</h1>
             <p>Đăng ký để đặt bàn, đặt món và nhận ưu đãi thành viên</p>

@@ -57,19 +57,19 @@
   padding: 40px;
 }
 
-.back-to-top-btn {
+.customer-back-to-top-btn {
   position: fixed;
   top: 50%;
   right: 0;
   transform: translateY(-50%);
   z-index: 1001;
 
-  border: 1px solid rgba(156, 163, 175, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-right: none;
   border-radius: 14px 0 0 14px;
 
-  background: rgba(243, 244, 246, 0.42);
-  color: #4b5563;
+  background: rgba(15, 23, 42, 0.95);
+  color: #f9fafb;
 
   width: 36px;
   min-height: 140px;
@@ -86,26 +86,27 @@
   font-weight: 500;
   cursor: pointer;
 
-  box-shadow: -1px 6px 14px rgba(17, 24, 39, 0.06);
+  box-shadow: -1px 6px 14px rgba(0, 0, 0, 0.28);
 
   transition: all 0.2s ease;
 }
 
-.back-to-top-btn:hover {
-  background: rgba(229, 231, 235, 0.62);
-  color: #111827;
-  border-color: rgba(107, 114, 128, 0.62);
-  box-shadow: -2px 8px 18px rgba(17, 24, 39, 0.1);
+.customer-back-to-top-btn:hover {
+  background: rgba(30, 41, 59, 0.98);
+  color: #fff7ed;
+  border-color: rgba(251, 191, 36, 0.4);
+  box-shadow: -2px 8px 18px rgba(0, 0, 0, 0.34);
 }
 
-.back-to-top-icon {
+.customer-back-to-top-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
+  color: #fbbf24;
 }
 
-.back-to-top-text {
+.customer-back-to-top-text {
   writing-mode: vertical-rl;
   text-orientation: mixed;
   letter-spacing: 0.5px;
@@ -114,7 +115,7 @@
 }
 
 @media (max-width: 768px) {
-  .back-to-top-btn {
+  .customer-back-to-top-btn {
     min-height: 124px;
     width: 34px;
     top: 56%;

@@ -61,6 +61,20 @@
   z-index: 2;
   padding: 0 20px;
   max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.customer-hero-sub,
+.customer-hero-title,
+.customer-hero-divider,
+.customer-hero-tagline,
+.customer-hero-hours,
+.customer-hero-btns {
+  margin: 0;
 }
 
 .customer-hero-sub {
@@ -69,18 +83,19 @@
   letter-spacing: 5px;
   text-transform: uppercase;
   color: var(--gold);
-  margin-bottom: 16px;
   animation: customerFadeUp 1s ease both;
 }
 
 .customer-hero-title {
   font-family: "Cormorant Garamond", serif;
-  font-size: clamp(42px, 8vw, 88px);
-  font-weight: 300;
-  line-height: 0.95;
-  color: var(--white);
-  letter-spacing: 4px;
-  text-shadow: 0 4px 40px rgba(0, 0, 0, 0.5);
+  font-size: clamp(48px, 6vw, 78px) !important;
+  font-weight: 400 !important;
+  line-height: 1.05;
+  color: #ffffff !important;
+  letter-spacing: 0.06em;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  display: block;
+  max-width: 100%;
   animation: customerFadeUp 1s 0.2s ease both;
 }
 
@@ -88,7 +103,6 @@
   width: 58px;
   height: 1px;
   background: var(--gold);
-  margin: 26px auto;
   animation: customerFadeUp 1s 0.35s ease both;
 }
 
@@ -97,7 +111,6 @@
   font-size: 13px;
   letter-spacing: 1px;
   color: rgba(255, 255, 255, 0.75);
-  margin-bottom: 8px;
   animation: customerFadeUp 1s 0.45s ease both;
 }
 
@@ -106,7 +119,6 @@
   font-size: clamp(16px, 2.5vw, 20px);
   font-style: italic;
   color: var(--gold-light);
-  margin-bottom: 36px;
   animation: customerFadeUp 1s 0.55s ease both;
 }
 
@@ -118,26 +130,57 @@
   animation: customerFadeUp 1s 0.7s ease both;
 }
 
-.customer-btn-primary {
-  display: inline-block;
-  background: var(--gold);
-  color: var(--dark);
-  padding: 13px 32px;
-  font-family: "Montserrat", sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
+.customer-banner-btn-primary,
+.customer-banner-btn-outline {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 48px !important;
+  padding: 13px 30px !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 2.5px !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  border-radius: 999px !important;
+  min-width: max-content !important;
+  box-sizing: border-box !important;
   transition:
     background 0.3s,
-    transform 0.2s;
-  cursor: pointer;
-  border: none;
+    border-color 0.3s,
+    color 0.3s,
+    transform 0.2s !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  line-height: 1.2 !important;
 }
 
-.customer-btn-primary:hover {
-  background: var(--gold-light);
-  transform: translateY(-2px);
+.customer-banner-btn-primary {
+  background: transparent !important;
+  color: var(--gold) !important;
+  border: 1px solid var(--gold) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14) !important;
+}
+
+.customer-banner-btn-primary:hover {
+  background: rgba(201, 168, 76, 0.12) !important;
+  color: var(--gold-light) !important;
+  transform: translateY(-2px) !important;
+}
+
+.customer-banner-btn-outline {
+  background: transparent !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+}
+
+.customer-banner-btn-outline:hover {
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  transform: translateY(-2px) !important;
 }
 
 .customer-hero-dots {
