@@ -1,3 +1,34 @@
+/* ---- Search bar ---- */
+.ord-search {
+  display: flex;
+  gap: 10px;
+  margin: 16px 0 18px;
+}
+
+.ord-search input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--ord-border, #e5e5e5);
+  font-size: 14px;
+  outline: none;
+}
+
+.ord-search input:focus {
+  border-color: var(--ord-primary);
+}
+
+.ord-search button {
+  border: none;
+  border-radius: 12px;
+  background: var(--ord-primary);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 0 18px;
+  cursor: pointer;
+}
+
 /* ---- Back button ---- */
 .ord-back-btn {
   display: flex;
@@ -264,6 +295,10 @@
     border-color 0.15s;
 }
 
+.ord-card:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
 .ord-card-left {
   display: flex;
   gap: 12px;
@@ -335,4 +370,20 @@
   font-size: 12px;
   padding: 6px 10px;
   cursor: pointer;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 720px) {
+  .ord-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ord-card {
+    flex-direction: column;
+  }
+
+  .ord-card-right {
+    align-items: flex-start;
+    width: 100%;
+  }
 }

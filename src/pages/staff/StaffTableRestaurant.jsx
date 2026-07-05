@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "../../assets/styles/user/BookingTable.css";
+import "../../assets/styles/staff/TableRestaurant.css";
 import UserHeader from "../../components/user/UserHeader";
 import tableService from "../../services/user/tableService";
 
@@ -7,6 +7,7 @@ const STATUS_LABEL = {
   AVAILABLE: "Còn Trống",
   OCCUPIED: "Đang Có Khách",
   RESERVED: "Đã Đặt Trước",
+  UNAVAILABLE: "Ngừng Phục Vụ",
 };
 
 const STATUS_CLASS = {
@@ -15,17 +16,18 @@ const STATUS_CLASS = {
   RESERVED: "tpm__status--reserved",
   UNAVAILABLE: "tpm__status--unavailable",
 };
+
 const MOCK_TABLES = [
-  { tableId: 1, tableNumber: 1, status: "AVAILABLE" },
-  { tableId: 2, tableNumber: 2, status: "OCCUPIED" },
-  { tableId: 3, tableNumber: 3, status: "RESERVED" },
-  { tableId: 4, tableNumber: 4, status: "AVAILABLE" },
-  { tableId: 5, tableNumber: 5, status: "OCCUPIED" },
-  { tableId: 6, tableNumber: 6, status: "RESERVED" },
-  { tableId: 7, tableNumber: 7, status: "AVAILABLE" },
-  { tableId: 8, tableNumber: 8, status: "OCCUPIED" },
-  { tableId: 9, tableNumber: 9, status: "AVAILABLE" },
-  { tableId: 10, tableNumber: 10, status: "RESERVED" },
+  { tableId: 1, tableNumber: 1, capacity: 2, status: "AVAILABLE" },
+  { tableId: 2, tableNumber: 2, capacity: 4, status: "OCCUPIED" },
+  { tableId: 3, tableNumber: 3, capacity: 4, status: "RESERVED" },
+  { tableId: 4, tableNumber: 4, capacity: 2, status: "AVAILABLE" },
+  { tableId: 5, tableNumber: 5, capacity: 6, status: "OCCUPIED" },
+  { tableId: 6, tableNumber: 6, capacity: 4, status: "RESERVED" },
+  { tableId: 7, tableNumber: 7, capacity: 2, status: "AVAILABLE" },
+  { tableId: 8, tableNumber: 8, capacity: 8, status: "OCCUPIED" },
+  { tableId: 9, tableNumber: 9, capacity: 4, status: "AVAILABLE" },
+  { tableId: 10, tableNumber: 10, capacity: 2, status: "RESERVED" },
 ];
 
 const StaffTableRestaurantPage = ({ onOpenOrder, onCheckIn, onCheckout }) => {
@@ -38,23 +40,29 @@ const StaffTableRestaurantPage = ({ onOpenOrder, onCheckIn, onCheckout }) => {
     const loadTables = async () => {
       try {
         setLoading(true);
-        // const res = await tableService.getTables({
-        //   capacity: peopleFilter || undefined,
-        // });
 
-        // const list = res?.data?.data || [];
-        const list = MOCK_TABLES;
+        const res = await tableService.getTables();
+        const list = res?.data?.data ?? [];
 
         setTables(
-          list.map((t) => ({
-            tableId: t.tableId,
+          (list.length > 0 ? list : MOCK_TABLES).map((t) => ({
+            tableId: t.id ?? t.tableId,
             tableNumber: t.tableNumber,
+            capacity: t.capacity,
             status: t.status,
           })),
         );
       } catch (err) {
         console.error(err);
-        setTables([]);
+        // fallback sang mock nếu API lỗi, để không chặn UI khi BE chưa sẵn sàng
+        setTables(
+          MOCK_TABLES.map((t) => ({
+            tableId: t.tableId,
+            tableNumber: t.tableNumber,
+            capacity: t.capacity,
+            status: t.status,
+          })),
+        );
       } finally {
         setLoading(false);
       }
@@ -75,7 +83,7 @@ const StaffTableRestaurantPage = ({ onOpenOrder, onCheckIn, onCheckout }) => {
         break;
 
       case "RESERVED":
-        onCheckIn?.(table); // confirm khách đến
+        onCheckIn?.(table); // confirm khách đến (check-in)
         break;
 
       default:
@@ -127,6 +135,8 @@ const StaffTableRestaurantPage = ({ onOpenOrder, onCheckIn, onCheckout }) => {
             <div className="tpm__spinner"></div>
             <span>Đang tải...</span>
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="tpm__empty">Không có bàn nào phù hợp</div>
         ) : (
           <div className="tpm__grid">
             {filtered.map((table) => (
@@ -142,8 +152,14 @@ const StaffTableRestaurantPage = ({ onOpenOrder, onCheckIn, onCheckout }) => {
                     Bàn {table.tableNumber}
                   </div>
 
+                  {table.capacity ? (
+                    <div className="tpm__table-capacity">
+                      {table.capacity} người
+                    </div>
+                  ) : null}
+
                   <div className={`tpm__badge ${STATUS_CLASS[table.status]}`}>
-                    {STATUS_LABEL[table.status]}
+                    {STATUS_LABEL[table.status] ?? table.status}
                   </div>
 
                   {/* ACTION BUTTONS THEO ROLE STAFF */}

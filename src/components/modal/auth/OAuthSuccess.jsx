@@ -9,20 +9,19 @@ const OAuthSuccess = () => {
   const { loginGoogle } = useAuth();
 
   useEffect(() => {
-    const token = params.get("token");
+    const accessToken = params.get("accessToken");
     const isNew = params.get("new") === "true";
+    const handleLogin = async () => {
+      if (!accessToken) return;
 
-    if (token) {
-      loginGoogle(token).then(() => {
-        if (isNew) {
-          toast.success("Đăng ký tài khoản thành công!");
-        } else {
-          toast.success("Đăng nhập thành công!");
-        }
+      await loginGoogle(accessToken);
 
+      setTimeout(() => {
+        toast.success(isNew ? "Đăng ký thành công!" : "Đăng nhập thành công!");
         navigate("/customer", { replace: true });
-      });
-    }
+      }, 100);
+    };
+    handleLogin();
   }, []);
 
   return <h3>Đang đăng nhập...</h3>;

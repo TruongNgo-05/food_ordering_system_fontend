@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { message } from "antd";
-import "../../assets/styles/Banner.css";
+import "../../assets/styles/user/Banner.css";
 import "../../assets/styles/Header.css";
 import "../../assets/styles/user/Blog.css";
 import BookingTableModal from "../../components/user/booking/BookingTableModal";

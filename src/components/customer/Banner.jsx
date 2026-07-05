@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import "../../assets/styles/Banner.css";
+import "../../assets/styles/user/Banner.css";
 
 const Banner = ({
   data = [],

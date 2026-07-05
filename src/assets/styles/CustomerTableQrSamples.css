@@ -2,11 +2,6 @@
   min-height: 100%;
 }
 
-.table-qr-container {
-  max-width: 1150px;
-  margin: 0 auto;
-  padding: 1.5rem;
-}
 
 .table-qr-grid {
   display: grid;

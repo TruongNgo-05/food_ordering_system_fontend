@@ -3,13 +3,19 @@ import { Form, Input, Button } from "antd";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import "../../assets/styles/ResetPassword.css";
-import { resetPasswordApi } from "../../services/authService";
+import { resetPasswordApi, sendOtpApi } from "../../services/authService"; // <-- đổi sendOtpApi thành đúng tên hàm gọi API gửi OTP bên service của bạn
 import { CloseOutlined } from "@ant-design/icons";
+
 const ResetPassword = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [otpValues, setOtpValues] = useState(["", "", "", "", "", ""]);
   const otpInputRefs = useRef([]);
+
+  // ==== Đếm ngược 60s ====
+  const [countdown, setCountdown] = useState(60);
+  const [resending, setResending] = useState(false);
+  const timerRef = useRef(null);
 
   useEffect(() => {
     const email = localStorage.getItem("resetEmail");
@@ -19,28 +25,69 @@ const ResetPassword = () => {
     }
   }, [navigate]);
 
+  // Bắt đầu đếm ngược khi component mount
+  useEffect(() => {
+    startCountdown();
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  const startCountdown = () => {
+    clearInterval(timerRef.current);
+    setCountdown(60);
+    timerRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleResendOtp = async () => {
+    const email = localStorage.getItem("resetEmail");
+    if (!email) {
+      toast.error("Không tìm thấy email, vui lòng thực hiện lại từ đầu!");
+      navigate("/login");
+      return;
+    }
+
+    setResending(true);
+    try {
+      const res = await sendOtpApi({ email }); // <-- sửa lại payload cho khớp với API backend (vd: forgetpw.getEmail())
+      toast.success(res.data?.message || res.data || "OTP mới đã được gửi!");
+      startCountdown(); // reset lại 60s
+      setOtpValues(["", "", "", "", "", ""]); // xóa OTP cũ trên UI
+      otpInputRefs.current[0]?.focus();
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "Gửi lại OTP thất bại, vui lòng thử lại!",
+      );
+    } finally {
+      setResending(false);
+    }
+  };
+
   const handleOtpChange = (index, value) => {
-    // Chỉ cho phép số
     if (!/^\d*$/.test(value)) return;
 
     const newOtpValues = [...otpValues];
-    newOtpValues[index] = value.slice(-1); // Lấy ký tự cuối cùng
+    newOtpValues[index] = value.slice(-1);
     setOtpValues(newOtpValues);
 
-    // Tự động chuyển sang ô tiếp theo
     if (value && index < 5) {
       otpInputRefs.current[index + 1]?.focus();
     }
   };
 
   const handleOtpKeyDown = (index, e) => {
-    // Xử lý Backspace
     if (e.key === "Backspace") {
       if (!otpValues[index] && index > 0) {
         otpInputRefs.current[index - 1]?.focus();
       }
     }
-    // Xử lý Arrow keys
     if (e.key === "ArrowLeft" && index > 0) {
       otpInputRefs.current[index - 1]?.focus();
     }
@@ -52,7 +99,6 @@ const ResetPassword = () => {
   const otp = otpValues.join("");
 
   const onFinish = async (values) => {
-    // Kiểm tra OTP đầy đủ
     if (otp.length !== 6) {
       toast.error("Vui lòng nhập đầy đủ 6 chữ số OTP");
       return;
@@ -85,6 +131,7 @@ const ResetPassword = () => {
       );
     }
   };
+
   return (
     <div className="reset-password-wrapper">
       <div className="reset-password-container">
@@ -141,6 +188,22 @@ const ResetPassword = () => {
           >
             <Input.Password placeholder="Nhập lại mật khẩu" />
           </Form.Item>
+
+          {/* ==== Khu vực gửi lại OTP ==== */}
+          <div className="resend-otp-section">
+            {countdown > 0 ? (
+              <span className="resend-otp-countdown">
+                Gửi lại OTP sau {countdown}s
+              </span>
+            ) : (
+              <span
+                className="resend-otp-link"
+                onClick={!resending ? handleResendOtp : undefined}
+              >
+                {resending ? "Đang gửi..." : "Gửi lại OTP"}
+              </span>
+            )}
+          </div>
 
           <Button type="primary" htmlType="submit" block>
             Đặt lại mật khẩu
