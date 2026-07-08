@@ -40,6 +40,7 @@ import CustomerBlog from "./pages/user/Blog";
 import CustomerLayout from "./layouts/customer/UserLayout";
 import FoodDetail from "./pages/customer/FoodDetail";
 import OAuthSuccess from "../src/components/modal/auth/OAuthSuccess";
+import MySupport from "./pages/customer/MySupport";
 
 const App = () => {
   return (
@@ -83,10 +84,11 @@ const App = () => {
           <Route path="foods/:id" element={<FoodDetail />} />
           <Route path="carts" element={<CustomerCart />} />
           <Route path="orders" element={<CustomerOrders />} />
-          <Route path="/customer/orders/:id" element={<OrderDetail />} />
+          <Route path="orders/:id" element={<OrderDetail />} />
           <Route path="favorites" element={<CustomerFavorites />} />
           <Route path="blog" element={<CustomerBlog />} />
           <Route path="support" element={<CustomerSupport />} />
+          <Route path="my-support" element={<MySupport />} />
           <Route path="table-qr-samples" element={<CustomerTableQrSamples />} />
         </Route>
 

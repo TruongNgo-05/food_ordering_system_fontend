@@ -19,7 +19,7 @@
   inset: 0;
   background: radial-gradient(
     circle at 20% 20%,
-    rgba(79, 70, 229, 0.06),
+    rgba(var(--primary-rgb), 0.06),
     transparent 52%
   );
   pointer-events: none;
@@ -35,37 +35,10 @@
 
 .sider-logo {
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 14px;
   padding: 24px 20px;
   border-bottom: 1px solid var(--border);
-  background: var(--surface);
-}
-
-.logo-img {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  object-fit: contain;
-  background: white;
-  border: 2px solid var(--primary);
-  padding: 6px;
-  box-shadow: 0 10px 22px rgba(79, 70, 229, 0.22);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.sider-logo:hover .logo-img {
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 14px 28px rgba(79, 70, 229, 0.28);
-}
-
-.logo-text {
-  font-family: "Playfair Display", serif;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text);
 }
 
 .sider-menu {
@@ -131,11 +104,11 @@
 }
 
 .menu-item.active {
-  background: rgba(79, 70, 229, 0.08);
-  border: 1px solid rgba(79, 70, 229, 0.18);
+  background: rgba(var(--primary-rgb), 0.08);
+  border: 1px solid rgba(var(--primary-rgb), 0.18);
   color: var(--primary-600);
   font-weight: 600;
-  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.14);
+  box-shadow: 0 12px 28px rgba(var(--primary-rgb), 0.14);
   transform: translateX(6px);
 }
 
@@ -149,7 +122,7 @@
   height: 24px;
   background: var(--primary);
   border-radius: 4px 0 0 4px;
-  box-shadow: 0 0 10px rgba(79, 70, 229, 0.24);
+  box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.24);
 }
 
 .menu-icon {

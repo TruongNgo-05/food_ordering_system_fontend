@@ -1,8 +1,14 @@
+.customer-detail-page {
+  min-height: 100%;
+  font-family: "Montserrat", "Be Vietnam Pro", sans-serif;
+}
+
 .customer-detail-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 36px;
 }
+
 .fd-back-btn {
   display: flex;
   align-items: center;
@@ -14,6 +20,12 @@
   font-weight: 600;
   margin-bottom: 24px;
   padding: 0;
+  color: var(--muted);
+  transition: color 0.2s;
+}
+
+.fd-back-btn:hover {
+  color: var(--gold);
 }
 
 /* Main card grid */
@@ -24,6 +36,8 @@
   border-radius: 24px;
   border-width: 1px;
   border-style: solid;
+  border-color: var(--border);
+  background: var(--card);
   overflow: hidden;
 }
 
@@ -35,6 +49,7 @@
   flex-direction: column;
   gap: 10px;
   padding: 14px;
+  background: var(--surface-2);
 }
 
 .fd-image-main {
@@ -42,13 +57,12 @@
   height: 340px;
   border-radius: 18px;
   overflow: hidden;
-  background: #fff;
+  background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Đảm bảo ảnh con luôn fill đúng kích thước */
 .fd-image-main img,
 .fd-image-main > * {
   width: 100% !important;
@@ -56,7 +70,6 @@
   object-fit: cover !important;
 }
 
-/* Thumbnail strip */
 .fd-thumb-strip {
   display: flex;
   gap: 8px;
@@ -66,12 +79,18 @@
 .fd-thumb-btn {
   border-radius: 10px;
   padding: 0;
-  background: #fff;
+  background: var(--surface);
   cursor: pointer;
   width: 56px;
   height: 56px;
   overflow: hidden;
   flex-shrink: 0;
+  border: 1px solid var(--border);
+  transition: border-color 0.2s;
+}
+
+.fd-thumb-btn:hover {
+  border-color: var(--gold);
 }
 
 .fd-thumb-btn img,
@@ -96,36 +115,50 @@
 }
 
 .fd-category-badge {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   padding: 4px 12px;
   border-radius: 99px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: rgba(201, 168, 76, 0.12);
+  color: var(--gold);
 }
 
 .fd-fav-btn {
-  border: none;
+  border: 1px solid var(--border);
   border-radius: 10px;
   width: 38px;
   height: 38px;
   font-size: 18px;
   cursor: pointer;
+  background: var(--surface-2);
+  transition: border-color 0.2s;
+}
+
+.fd-fav-btn:hover {
+  border-color: var(--gold);
 }
 
 .fd-item-title {
   margin: 10px 0 8px;
-  font-size: 26px;
-  font-weight: 900;
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(28px, 3vw, 36px);
+  font-weight: 400;
   line-height: 1.2;
+  color: var(--text);
 }
 
 .fd-stats-row {
   display: flex;
   gap: 16px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 
 .fd-stats-row span {
   font-size: 14px;
+  color: var(--muted);
 }
 
 .fd-description {
@@ -133,9 +166,9 @@
   line-height: 1.8;
   flex: 1;
   margin: 0 0 24px;
+  color: var(--muted);
 }
 
-/* Quantity control */
 .fd-qty-box {
   border-radius: 14px;
   padding: 14px 18px;
@@ -143,11 +176,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 
 .fd-qty-label {
   font-size: 14px;
   font-weight: 700;
+  color: var(--text);
 }
 
 .fd-qty-controls {
@@ -160,12 +196,17 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  border-width: 1.5px;
-  border-style: solid;
-  background: #fff;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
   cursor: pointer;
   font-size: 18px;
   font-weight: 700;
+  transition: border-color 0.2s;
+}
+
+.fd-qty-dec:hover {
+  border-color: var(--gold);
 }
 
 .fd-qty-value {
@@ -173,6 +214,7 @@
   font-size: 20px;
   min-width: 28px;
   text-align: center;
+  color: var(--text);
 }
 
 .fd-qty-inc {
@@ -180,13 +222,13 @@
   height: 36px;
   border-radius: 10px;
   border: none;
-  color: #fff;
+  background: var(--gold);
+  color: #0a0a0a;
   cursor: pointer;
   font-size: 18px;
   font-weight: 700;
 }
 
-/* Price + Add to cart row */
 .fd-action-row {
   display: flex;
   gap: 12px;
@@ -196,12 +238,14 @@
 .fd-price-label {
   margin: 0 0 2px;
   font-size: 12px;
+  color: var(--muted);
 }
 
 .fd-price-total {
   margin: 0;
   font-size: 24px;
   font-weight: 900;
+  color: var(--gold);
 }
 
 .fd-add-btn {
@@ -209,40 +253,46 @@
   padding: 14px 24px;
   border: none;
   border-radius: 14px;
-  font-size: 15px;
-  font-weight: 800;
-  color: #fff;
-  cursor: pointer;
-}
-
-.fd-in-cart-msg {
-  margin: 10px 0 0;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #0a0a0a;
+  background: var(--gold);
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.2s;
 }
 
-/* Toggle reviews button */
+.fd-add-btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
 .fd-toggle-reviews-btn {
-  border-width: 1px;
-  border-style: solid;
-  background: #fff;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
   border-radius: 12px;
-  padding: 10px 14px;
-  font-weight: 800;
+  padding: 10px 18px;
+  font-weight: 700;
+  font-size: 13px;
   cursor: pointer;
   margin-top: 36px;
+  transition: border-color 0.2s, color 0.2s;
 }
 
-/* Reviews section */
+.fd-toggle-reviews-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
 .fd-reviews-section {
   margin-top: 16px;
 }
 
-/* Write review box */
 .fd-write-review-box {
   border-radius: 18px;
-  border-width: 1px;
-  border-style: solid;
+  border: 1px solid var(--border);
+  background: var(--card);
   padding: 16px;
   margin-bottom: 14px;
 }
@@ -250,6 +300,7 @@
 .fd-write-review-title {
   margin: 0 0 10px;
   font-weight: 800;
+  color: var(--text);
 }
 
 .fd-own-review-notice {
@@ -259,13 +310,14 @@
   justify-content: space-between;
   gap: 8px;
   border-radius: 10px;
-  border-width: 1px;
-  border-style: solid;
+  border: 1px solid rgba(201, 168, 76, 0.25);
   padding: 8px 10px;
+  background: rgba(201, 168, 76, 0.08);
 }
 
 .fd-own-review-notice span {
   font-size: 12px;
+  color: var(--text);
 }
 
 .fd-own-review-actions {
@@ -274,9 +326,10 @@
 }
 
 .fd-own-review-edit-btn {
-  border: none;
+  border: 1px solid var(--gold);
   border-radius: 8px;
-  background: #fff;
+  background: transparent;
+  color: var(--gold);
   font-size: 12px;
   font-weight: 700;
   padding: 4px 8px;
@@ -286,13 +339,14 @@
 .fd-own-review-delete-btn {
   border: none;
   border-radius: 8px;
+  background: rgba(220, 38, 38, 0.12);
+  color: #dc2626;
   font-size: 12px;
   font-weight: 700;
   padding: 4px 8px;
   cursor: pointer;
 }
 
-/* Star rating row */
 .fd-star-row {
   display: flex;
   align-items: center;
@@ -305,36 +359,44 @@
   background: transparent;
   font-size: 22px;
   padding: 0;
+  cursor: pointer;
 }
 
-/* Comment input row */
 .fd-comment-row {
   display: flex;
   gap: 8px;
 }
 
-.fd-comment-input {
+.fd-comment-input,
+.fd-comment-row input {
   flex: 1;
-  border-width: 1px;
-  border-style: solid;
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px 12px;
   outline: none;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.fd-comment-input:focus,
+.fd-comment-row input:focus {
+  border-color: var(--gold);
 }
 
 .fd-comment-submit-btn {
   border: none;
   border-radius: 10px;
-  color: #fff;
+  background: var(--gold);
+  color: #0a0a0a;
   font-weight: 700;
   padding: 0 16px;
+  cursor: pointer;
 }
 
-/* Review summary box */
 .fd-review-summary-box {
   border-radius: 18px;
-  border-width: 1px;
-  border-style: solid;
+  border: 1px solid var(--border);
+  background: var(--card);
   padding: 18px;
   margin-bottom: 14px;
 }
@@ -343,6 +405,7 @@
   margin: 0;
   font-size: 34px;
   font-weight: 900;
+  color: var(--text);
 }
 
 .fd-avg-stars {
@@ -360,47 +423,50 @@
 .fd-review-count {
   margin: 0;
   font-size: 13px;
+  color: var(--muted);
 }
 
-/* Sort buttons */
 .fd-sort-row {
   margin-top: 12px;
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .fd-sort-btn {
-  border-width: 1px;
-  border-style: solid;
+  border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 6px 10px;
+  padding: 6px 12px;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  background: var(--surface-2);
+  color: var(--text);
+  transition: all 0.2s;
 }
 
-/* Empty reviews */
+.fd-sort-btn:hover {
+  border-color: var(--gold);
+}
+
 .fd-no-reviews {
-  background: #fff;
-  border-width: 1px;
-  border-style: dashed;
+  background: var(--surface-2);
+  border: 1px dashed var(--border);
   border-radius: 14px;
   padding: 14px;
   font-size: 14px;
+  color: var(--muted);
 }
 
-/* Review list */
 .fd-review-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* Single review card */
 .fd-review-card {
-  background: #fff;
-  border-width: 1px;
-  border-style: solid;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 14px;
   padding: 12px 14px;
 }
@@ -416,10 +482,12 @@
 .fd-review-user {
   margin: 0;
   font-weight: 800;
+  color: var(--text);
 }
 
 .fd-review-date {
   font-size: 12px;
+  color: var(--muted);
 }
 
 .fd-review-stars {
@@ -432,6 +500,7 @@
   margin: 0;
   font-size: 14px;
   line-height: 1.6;
+  color: var(--muted);
 }
 
 .fd-review-own-actions {
@@ -443,6 +512,8 @@
 .fd-review-edit-btn {
   border: none;
   border-radius: 8px;
+  background: rgba(201, 168, 76, 0.12);
+  color: var(--gold);
   font-size: 12px;
   font-weight: 700;
   padding: 4px 8px;
@@ -452,13 +523,14 @@
 .fd-review-delete-btn {
   border: none;
   border-radius: 8px;
+  background: rgba(220, 38, 38, 0.12);
+  color: #dc2626;
   font-size: 12px;
   font-weight: 700;
   padding: 4px 8px;
   cursor: pointer;
 }
 
-/* Related section */
 .fd-related-section {
   margin-top: 36px;
 }
@@ -467,4 +539,18 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .fd-main-card {
+    grid-template-columns: 1fr;
+  }
+
+  .fd-info-panel {
+    padding: 0 24px 24px;
+  }
+
+  .customer-detail-container {
+    padding: 20px 16px;
+  }
 }

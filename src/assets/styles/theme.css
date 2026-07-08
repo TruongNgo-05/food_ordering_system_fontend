@@ -1,0 +1,266 @@
+/* ═══════════════════════════════════════════════════════════════ */
+/* Shared gold tokens (blog palette)                                */
+/* ═══════════════════════════════════════════════════════════════ */
+:root {
+  --gold: #c9a84c;
+  --gold-light: #e8c96e;
+  --gold-dark: #b8923f;
+  --primary-rgb: 201, 168, 76;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* Admin & Staff — nền trắng, nút vàng như blog                     */
+/* ═══════════════════════════════════════════════════════════════ */
+.layout.layout--dashboard {
+  --bg: #f6f7fb;
+  --surface: #ffffff;
+  --surface-2: #fbfcfe;
+  --text: #0f172a;
+  --muted: #475569;
+  --muted-2: #64748b;
+  --border: #e2e8f0;
+  --border-2: #cbd5e1;
+  --primary: #c9a84c;
+  --primary-600: #b8923f;
+  --primary-100: rgba(201, 168, 76, 0.12);
+  --card: #ffffff;
+  --primary-light: rgba(201, 168, 76, 0.12);
+  --sub: #475569;
+}
+
+.layout.layout--dashboard .content {
+  background: var(--bg);
+}
+
+/* Ant Design buttons inside admin/staff */
+.layout.layout--dashboard .ant-btn-primary {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark)) !important;
+  border: none !important;
+  color: #0a0a0a !important;
+  font-weight: 700 !important;
+}
+
+.layout.layout--dashboard .ant-btn-primary:hover {
+  filter: brightness(1.06);
+}
+
+.layout.layout--dashboard .ant-pagination-item-active {
+  border-color: var(--gold) !important;
+}
+
+.layout.layout--dashboard .ant-pagination-item-active a {
+  color: var(--gold) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* Customer — giao diện tối + vàng như blog                         */
+/* ═══════════════════════════════════════════════════════════════ */
+.layout.layout--customer,
+.layout--customer-page {
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --surface-2: #1a1a1a;
+  --card: #111111;
+  --text: #e8e0d0;
+  --muted: #9a9080;
+  --muted-2: #9a9080;
+  --sub: #9a9080;
+  --border: rgba(201, 168, 76, 0.2);
+  --border-2: rgba(201, 168, 76, 0.35);
+  --primary: #c9a84c;
+  --primary-600: #b8923f;
+  --primary-100: rgba(201, 168, 76, 0.12);
+  --primary-light: rgba(201, 168, 76, 0.12);
+  --ord-primary: #c9a84c;
+  --ord-border: rgba(201, 168, 76, 0.2);
+  --red: #dc2626;
+  --red-bg: rgba(220, 38, 38, 0.12);
+  --green: #16a34a;
+  --gold: #c9a84c;
+  --gold-light: #e8c96e;
+  color-scheme: dark;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.layout.layout--customer .content {
+  background: var(--bg);
+}
+
+.layout.layout--customer .content h1 {
+  color: var(--text);
+}
+
+/* Customer dark: inputs & forms */
+.layout.layout--customer input,
+.layout.layout--customer textarea,
+.layout.layout--customer select,
+.layout--customer-page input,
+.layout--customer-page textarea,
+.layout--customer-page select {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.layout.layout--customer input::placeholder,
+.layout.layout--customer textarea::placeholder,
+.layout--customer-page input::placeholder,
+.layout--customer-page textarea::placeholder {
+  color: var(--muted);
+}
+
+.layout.layout--customer input:focus,
+.layout.layout--customer textarea:focus,
+.layout--customer-page input:focus,
+.layout--customer-page textarea:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
+}
+
+/* Ant Design inside customer dark */
+.layout.layout--customer .ant-modal-content,
+.layout--customer-page .ant-modal-content {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+}
+
+.layout.layout--customer .ant-modal-header,
+.layout--customer-page .ant-modal-header {
+  background: var(--surface) !important;
+  border-bottom-color: var(--border) !important;
+}
+
+.layout.layout--customer .ant-modal-title,
+.layout--customer-page .ant-modal-title {
+  color: var(--text) !important;
+}
+
+.layout.layout--customer .ant-btn-primary,
+.layout--customer-page .ant-btn-primary {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark)) !important;
+  border: none !important;
+  color: #0a0a0a !important;
+  font-weight: 700 !important;
+}
+
+/* Customer section headers — blog typography */
+.layout.layout--customer .section-header-label {
+  color: var(--gold);
+  letter-spacing: 4px;
+  font-size: 10px;
+}
+
+.layout.layout--customer .section-header-title {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: var(--text);
+}
+
+.layout.layout--customer .section-header-description {
+  color: var(--muted);
+}
+
+.layout.layout--customer .section-header-rule {
+  background: var(--gold);
+  opacity: 1;
+}
+
+/* Customer support page */
+.layout.layout--customer .support-section {
+  background: var(--card);
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+.layout.layout--customer .form-group input:focus,
+.layout.layout--customer .form-group textarea:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12);
+}
+
+.layout.layout--customer .support-submit-btn {
+  color: #0a0a0a;
+  font-weight: 700;
+}
+
+.layout.layout--customer .support-submit-btn:hover:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+/* Delivery address modal — dark customer theme */
+.layout.layout--customer .dam-address-card {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.layout.layout--customer .dam-address-card--default {
+  background: rgba(201, 168, 76, 0.1);
+  border-color: rgba(201, 168, 76, 0.35);
+}
+
+.layout.layout--customer .dam-address-card__phone {
+  color: var(--muted);
+}
+
+.layout.layout--customer .dam-badge--default {
+  color: var(--gold);
+}
+
+.layout.layout--customer .dam-btn--cancel-edit {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+/* Staff/Admin — profile update modal: simple yellow buttons */
+.profile-update-modal .ant-modal-content {
+  border-radius: 16px;
+}
+
+.profile-update-modal .ant-modal-title {
+  font-weight: 700;
+}
+
+.profile-update-modal .ant-btn-default {
+  border-radius: 10px;
+  height: 42px;
+  font-weight: 600;
+}
+
+.profile-update-modal .ant-btn-primary {
+  background: var(--gold) !important;
+  border: none !important;
+  color: #0a0a0a !important;
+  font-weight: 700 !important;
+  border-radius: 10px !important;
+  height: 42px !important;
+  box-shadow: none !important;
+}
+
+.profile-update-modal .ant-btn-primary:hover {
+  filter: brightness(1.06) !important;
+  transform: none !important;
+}
+
+.profile-update-modal .profile-upload-label {
+  cursor: pointer;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface);
+  transition: border-color 0.2s;
+}
+
+.profile-update-modal .profile-upload-label:hover {
+  border-color: var(--gold);
+  color: var(--gold-dark);
+}

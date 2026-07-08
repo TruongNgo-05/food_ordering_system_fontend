@@ -215,19 +215,7 @@ const Capnhatthongtin = ({
         >
           <label
             htmlFor="avatar-upload-input"
-            style={{
-              cursor: "pointer",
-              padding: "8px 14px",
-              border: "1px solid #d1d5db",
-              borderRadius: 8,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              fontSize: 14,
-              color: "#374151",
-              background: "#fff",
-              transition: "border-color 0.2s",
-            }}
+            className="profile-upload-label"
           >
             <UploadOutlined />
             Chọn ảnh từ máy tính
@@ -297,6 +285,7 @@ const Capnhatthongtin = ({
       footer={null}
       width={500}
       destroyOnHidden
+      className="profile-update-modal"
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         {/* Avatar */}

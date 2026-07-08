@@ -8,7 +8,7 @@ const CustomerLayout = () => {
     location.pathname === "/customer" || location.pathname === "/customer/";
 
   return (
-    <div className="layout layout--no-sider">
+    <div className="layout layout--no-sider layout--customer">
       <div className="main-content">
         {!isHomeRoute && <Header />}
         <div className="content">

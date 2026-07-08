@@ -69,7 +69,7 @@ export default function PaymentMethodSection({
             marginBottom: 6,
             cursor: "pointer",
             border: `1.5px solid ${payMethod === value ? T.primary : T.border}`,
-            background: payMethod === value ? T.primaryLight : "#fff",
+            background: payMethod === value ? T.primaryLight : T.surface,
             transition: "all .15s",
           }}
         >

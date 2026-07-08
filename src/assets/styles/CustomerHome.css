@@ -1,16 +1,17 @@
 .customer-home-page {
   display: flex;
   flex-direction: column;
-  height: 100%;
   min-height: 100vh;
 }
 
 .customer-home-page .customer-home-header-wrap {
   padding: 28px 36px 0;
 }
+
 .customer-home-page .customer-home-content-wrap {
-  padding: 20px;
+  padding: 20px 36px 40px;
 }
+
 .customer-category-list {
   display: flex;
   gap: 8px;
@@ -18,12 +19,27 @@
   padding-bottom: 8px;
   -webkit-overflow-scrolling: touch;
 }
+.customer-category-list::-webkit-scrollbar {
+  height: 6px;
+}
+
+.customer-category-list::-webkit-scrollbar-thumb {
+  background: rgba(201,168,76,.35);
+  border-radius: 999px;
+}
 .customer-category-btn {
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: 999px;
   cursor: pointer;
   transition: 0.2s;
   white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.customer-category-btn:hover {
+  border-color: rgba(201, 168, 76, 0.5) !important;
 }
 
 .customer-home-recent-grid,
@@ -52,9 +68,25 @@
   background: transparent;
 }
 
+.customer-search-input::placeholder {
+  color: var(--muted);
+}
+
 .customer-loading {
   text-align: center;
   padding: 40px;
+}
+
+/* Section header on home — blog typography */
+.layout--customer .customer-home-header-wrap .section-header-label {
+  color: var(--gold);
+  letter-spacing: 4px;
+}
+
+.layout--customer .customer-home-header-wrap .section-header-title {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 400;
+  letter-spacing: 1px;
 }
 
 .customer-back-to-top-btn {
@@ -63,38 +95,30 @@
   right: 0;
   transform: translateY(-50%);
   z-index: 1001;
-
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(201, 168, 76, 0.25);
   border-right: none;
   border-radius: 14px 0 0 14px;
-
-  background: rgba(15, 23, 42, 0.95);
-  color: #f9fafb;
-
+  background: rgba(10, 10, 10, 0.95);
+  color: #e8e0d0;
   width: 36px;
   min-height: 140px;
-
   padding: 7px 4px 8px;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   gap: 9px;
-
   font-size: 0.68rem;
   font-weight: 500;
   cursor: pointer;
-
   box-shadow: -1px 6px 14px rgba(0, 0, 0, 0.28);
-
   transition: all 0.2s ease;
 }
 
 .customer-back-to-top-btn:hover {
-  background: rgba(30, 41, 59, 0.98);
-  color: #fff7ed;
-  border-color: rgba(251, 191, 36, 0.4);
+  background: rgba(26, 26, 26, 0.98);
+  color: var(--gold-light);
+  border-color: rgba(201, 168, 76, 0.5);
   box-shadow: -2px 8px 18px rgba(0, 0, 0, 0.34);
 }
 
@@ -103,7 +127,7 @@
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  color: #fbbf24;
+  color: var(--gold);
 }
 
 .customer-back-to-top-text {

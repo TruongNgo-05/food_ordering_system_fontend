@@ -1,16 +1,15 @@
 import React from "react";
-import "../../assets/styles/BrandLogo.css";
+import "../../assets/styles/user/BrandLogo.css";
 
 const BrandLogo = ({
-  as = "a",
-  href = "#",
+  as: Component = "a",
+  href,
+  to,
   onClick,
   className = "",
   ariaLabel = "Về trang chủ",
   ...props
 }) => {
-  const Component = as === "button" ? "button" : "a";
-
   const sharedProps = {
     className: `brand-logo ${className}`.trim(),
     onClick,
@@ -18,17 +17,17 @@ const BrandLogo = ({
     ...props,
   };
 
-  if (as === "button") {
+  if (Component === "button") {
     return (
-      <Component type="button" {...sharedProps}>
+      <button type="button" {...sharedProps}>
         <span className="brand-logo__main">JLER</span>
         <span className="brand-logo__sub">SKY RESTAURANT</span>
-      </Component>
+      </button>
     );
   }
 
   return (
-    <Component href={href} {...sharedProps}>
+    <Component {...sharedProps} {...(to ? { to } : { href })}>
       <span className="brand-logo__main">JLER</span>
       <span className="brand-logo__sub">SKY RESTAURANT</span>
     </Component>

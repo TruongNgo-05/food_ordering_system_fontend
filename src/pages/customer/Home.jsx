@@ -16,6 +16,7 @@ import favoriteService from "../../services/customer/favoriteService";
 import { confirmLoginWithModal } from "../../utils/authGuards";
 import { useAuth } from "../../hooks/useAuth";
 import "../../assets/styles/CustomerHome.css";
+import Footer from "../../layouts/Footer";
 
 const CART_UPDATED_EVENT = "cart-updated-event";
 
@@ -38,7 +39,6 @@ const Home = () => {
 
   const [cart, setCart] = useState([]);
   const [favorites, setFavorites] = useState([]);
-  const [loadingFavorites, setLoadingFavorites] = useState(false);
 
   const [greetingName, setGreetingName] = useState(
     () => localStorage.getItem("userFullName") || "Khách",
@@ -132,11 +132,10 @@ const Home = () => {
     fetchFoods();
   }, [page, activeCat, debouncedSearch]);
 
-  // ─── Load favorites from API on mount ───────────────────────────
+  // Load favorites
   useEffect(() => {
     const loadFavorites = async () => {
       try {
-        setLoadingFavorites(true);
         const res = await favoriteService.getMyFavorite();
 
         const favIds = res.data?.data?.favoriteIds || [];
@@ -145,8 +144,6 @@ const Home = () => {
       } catch (err) {
         console.error("Load favorites error:", err);
         setFavorites([]);
-      } finally {
-        setLoadingFavorites(false);
       }
     };
 
@@ -156,27 +153,28 @@ const Home = () => {
       setFavorites([]);
     }
   }, [isLoggedIn]);
-  // ─── Load cart from API on mount ─────────────────────────────────
-  useEffect(() => {
-    const loadCartFromAPI = async () => {
-      try {
-        const res = await cartService.getCart();
-        const data = res.data?.data;
-        const mapped = (data?.items || []).map((i) => ({
-          item_id: i.itemId,
-          name: i.foodName,
-          price: i.price,
-          image: i.image,
-          qty: i.quantity,
-        }));
-        setCart(mapped);
-      } catch (err) {
-        console.error("Load cart error:", err);
-      }
-    };
 
-    loadCartFromAPI();
+  const loadCart = useCallback(async () => {
+    const res = await cartService.getCart();
+    const data = res.data?.data;
+
+    setCart(
+      (data?.items || []).map((i) => ({
+        item_id: i.itemId,
+        name: i.foodName,
+        price: i.price,
+        image: i.image,
+        qty: i.quantity,
+      })),
+    );
   }, []);
+
+  // ─── Load cart ───────────────────────────────────────────
+  useEffect(() => {
+    loadCart().catch((err) => {
+      console.error("Load cart error:", err);
+    });
+  }, [loadCart]);
 
   // ─── Sync greeting name ──────────────────────────────────────────
   useEffect(() => {
@@ -216,16 +214,7 @@ const Home = () => {
         });
 
         // Reload cart from API
-        const res = await cartService.getCart();
-        const data = res.data?.data;
-        const mapped = (data?.items || []).map((i) => ({
-          item_id: i.itemId,
-          name: i.foodName,
-          price: i.price,
-          image: i.image,
-          qty: i.quantity,
-        }));
-        setCart(mapped);
+        await loadCart();
 
         window.dispatchEvent(new Event(CART_UPDATED_EVENT));
         toast.success("Thêm vào giỏ hàng thành công");
@@ -234,38 +223,32 @@ const Home = () => {
         toast.error("Thêm vào giỏ hàng thất bại");
       }
     },
-    [isLoggedIn, requireLoginAction],
+    [isLoggedIn, requireLoginAction, loadCart],
   );
 
   // ─── Dec cart ────────────────────────────────────────────────────
-  const decCart = useCallback(async (item) => {
-    try {
-      if (item.qty <= 1) {
-        await cartService.deleteCart(item.item_id);
-      } else {
-        await cartService.updateCart(item.item_id, {
-          quantity: item.qty - 1,
-        });
-      }
+  const decCart = useCallback(
+    async (item) => {
+      try {
+        if (item.qty <= 1) {
+          await cartService.deleteCart(item.item_id);
+        } else {
+          await cartService.updateCart(item.item_id, {
+            quantity: item.qty - 1,
+          });
+        }
 
-      // Reload cart from API
-      const res = await cartService.getCart();
-      const data = res.data?.data;
-      const mapped = (data?.items || []).map((i) => ({
-        item_id: i.itemId,
-        name: i.foodName,
-        price: i.price,
-        image: i.image,
-        qty: i.quantity,
-      }));
-      setCart(mapped);
-      // Dispatch event to notify Header.jsx of cart update
-      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
-    } catch (err) {
-      console.error("Dec cart error:", err);
-      toast.error("Cập nhật giỏ hàng thất bại");
-    }
-  }, []);
+        // Reload cart from API
+        await loadCart();
+        // Dispatch event to notify Header.jsx of cart update
+        window.dispatchEvent(new Event(CART_UPDATED_EVENT));
+      } catch (err) {
+        console.error("Dec cart error:", err);
+        toast.error("Cập nhật giỏ hàng thất bại");
+      }
+    },
+    [loadCart],
+  );
 
   const toggleFav = useCallback(
     async (id) => {
@@ -354,7 +337,7 @@ const Home = () => {
                     ? `1px solid ${T.primary}`
                     : `1px solid ${T.border}`,
                 background: activeCat === cat.id ? T.primary : T.card,
-                color: activeCat === cat.id ? "#fff" : T.text,
+                color: activeCat === cat.id ? "#0a0a0a" : T.text,
               }}
             >
               {cat.icon} {cat.name}
@@ -389,19 +372,15 @@ const Home = () => {
         )}
 
         {totalFoods > 0 && (
-          <div
-            style={{ marginTop: 18, display: "flex", justifyContent: "center" }}
-          >
-            <AppPagination
-              page={page}
-              size={pageSize}
-              total={totalFoods}
-              onChange={(newPage) => setPage(newPage)}
-            />
-          </div>
+          <AppPagination
+            page={page}
+            size={pageSize}
+            total={totalFoods}
+            onChange={(newPage) => setPage(newPage)}
+          />
         )}
       </div>
-
+      <Footer />
       <CustomerChatWidget />
       <BackToTopButton />
     </div>

@@ -644,7 +644,8 @@ const FoodDetail = () => {
                     }
                   }}
                   placeholder="Chia sẻ cảm nhận của bạn..."
-                  style={{ borderColor: T.border, background: "#fff" }}
+                  className="fd-comment-input"
+                  style={{ borderColor: T.border }}
                 />
                 <button
                   onClick={
@@ -690,7 +691,8 @@ const FoodDetail = () => {
                     className="fd-sort-btn"
                     style={{
                       borderColor: reviewSort === key ? T.primary : T.border,
-                      background: reviewSort === key ? T.primaryLight : "#fff",
+                      background:
+                        reviewSort === key ? T.primaryLight : "transparent",
                       color: reviewSort === key ? T.primary : T.text,
                     }}
                   >

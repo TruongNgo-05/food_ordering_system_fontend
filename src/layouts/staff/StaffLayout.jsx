@@ -15,7 +15,7 @@ const   StaffLayouts = () => {
   }, []);
 
   return (
-    <div className="layout">
+    <div className="layout layout--dashboard">
       <Sider
         mobileOpen={mobileMenuOpen}
         onCloseMobile={() => setMobileMenuOpen(false)}

@@ -1,5 +1,5 @@
 .login-wrapper {
-  font-family: "Inter", sans-serif;
+  font-family: "Montserrat", "Be Vietnam Pro", sans-serif;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -7,11 +7,11 @@
   background:
     radial-gradient(
       circle at 12% 18%,
-      rgba(79, 70, 229, 0.12),
+      rgba(201, 168, 76, 0.15),
       transparent 34%
     ),
-    radial-gradient(circle at 85% 78%, rgba(2, 6, 23, 0.06), transparent 30%),
-    linear-gradient(135deg, var(--bg), #eef2ff);
+    radial-gradient(circle at 85% 78%, rgba(201, 168, 76, 0.08), transparent 30%),
+    linear-gradient(135deg, #faf8f3, #ffffff);
   padding: 20px;
 }
 
@@ -22,9 +22,9 @@
   display: flex;
   border-radius: 26px;
   overflow: hidden;
-  background: var(--surface);
-  box-shadow: 0 30px 60px rgba(2, 6, 23, 0.18);
-  border: 1px solid var(--border);
+  background: #ffffff;
+  box-shadow: 0 30px 60px rgba(10, 10, 10, 0.12);
+  border: 1px solid rgba(201, 168, 76, 0.2);
 }
 
 .login-box {
@@ -32,7 +32,7 @@
   padding: 46px;
   display: flex;
   flex-direction: column;
-  background: var(--surface);
+  background: #ffffff;
 }
 
 .login-header {
@@ -46,14 +46,14 @@
 }
 
 .back-customer-link a {
-  color: var(--muted-2);
+  color: #9a9080;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
 }
 
 .back-customer-link a:hover {
-  color: var(--primary-600);
+  color: var(--gold-dark);
 }
 
 .logo-container {
@@ -69,24 +69,26 @@
 
 .brand-logo-login .brand-logo__main {
   font-size: 2rem;
-  color: var(--primary);
+  color: var(--gold);
 }
 
 .brand-logo-login .brand-logo__sub {
   font-size: 0.58rem;
   letter-spacing: 0.24em;
-  color: var(--muted-2);
+  color: #9a9080;
 }
 
 .login-header h1 {
-  font-size: 30px;
-  font-weight: 800;
-  color: var(--text);
+  font-family: "Cormorant Garamond", serif;
+  font-size: 32px;
+  font-weight: 400;
+  color: #0a0a0a;
   margin: 0;
+  letter-spacing: 1px;
 }
 
 .login-header p {
-  color: var(--muted-2);
+  color: #9a9080;
   margin-top: 7px;
   font-size: 14px;
 }
@@ -101,7 +103,7 @@
 
 .login-form .ant-form-item-label > label {
   font-weight: 600;
-  color: var(--text);
+  color: #0a0a0a;
   margin-bottom: 8px;
   display: block;
 }
@@ -110,8 +112,8 @@
 .login-form .ant-input-affix-wrapper {
   height: 50px;
   border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  background: #faf8f3;
   padding: 0 16px;
   display: flex;
   align-items: center;
@@ -126,13 +128,13 @@
 
 .login-form .ant-input:hover,
 .login-form .ant-input-affix-wrapper:hover {
-  border-color: var(--border-2);
+  border-color: rgba(201, 168, 76, 0.45);
 }
 
 .login-form .ant-input:focus,
 .login-form .ant-input-affix-wrapper-focused {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.14);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.14);
 }
 
 .login-form .ant-input-affix-wrapper input {
@@ -144,16 +146,16 @@
 }
 
 .ant-input::placeholder {
-  color: rgba(100, 116, 139, 0.85);
+  color: rgba(154, 144, 128, 0.85);
 }
 
 .ant-input-affix-wrapper input::placeholder {
-  color: rgba(100, 116, 139, 0.85);
+  color: rgba(154, 144, 128, 0.85);
 }
 
 .login-form .ant-input-prefix {
   margin-right: 10px;
-  color: var(--muted-2);
+  color: #9a9080;
   display: flex;
   align-items: center;
 }
@@ -166,12 +168,12 @@
 }
 
 .login-form .ant-input-password-icon {
-  color: var(--muted-2);
+  color: #9a9080;
   transition: 0.3s;
 }
 
 .login-form .ant-input-password-icon:hover {
-  color: var(--primary-600);
+  color: var(--gold-dark);
 }
 
 .login-form .ant-form-item-explain-error {
@@ -189,32 +191,34 @@
 .forgot-password:visited {
   font-size: 14px;
   font-weight: 500;
-  color: var(--primary-600);
+  color: var(--gold-dark);
   text-decoration: none;
   transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .forgot-password:hover {
-  color: var(--primary);
+  color: var(--gold);
   text-decoration: none;
 }
 
 .login-form .ant-btn-primary {
   height: 50px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-600));
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
   border: none;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  color: #0a0a0a !important;
   transition: 0.3s;
   margin-top: 6px;
 }
 
 .login-form .ant-btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(79, 70, 229, 0.22);
-  filter: brightness(1.03);
+  box-shadow: 0 12px 24px rgba(201, 168, 76, 0.28);
+  filter: brightness(1.04);
 }
 
 .social-divider {
@@ -226,9 +230,9 @@
 .social-divider span {
   display: inline-block;
   padding: 0 10px;
-  color: var(--muted-2);
+  color: #9a9080;
   font-size: 13px;
-  background: var(--surface);
+  background: #ffffff;
   position: relative;
   z-index: 2;
 }
@@ -239,7 +243,7 @@
   left: 0;
   right: 0;
   top: 50%;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(201, 168, 76, 0.2);
   z-index: 1;
 }
 
@@ -252,9 +256,9 @@
 .social-login-btn {
   height: 44px;
   border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  background: #faf8f3;
+  color: #0a0a0a;
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
@@ -267,16 +271,8 @@
 
 .social-login-btn:hover {
   transform: translateY(-1px);
-}
-
-.social-login-btn.google:hover {
-  border-color: #ef4444;
-  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.15);
-}
-
-.social-login-btn.facebook:hover {
-  border-color: #1877f2;
-  box-shadow: 0 8px 18px rgba(24, 119, 242, 0.15);
+  border-color: var(--gold);
+  background: rgba(201, 168, 76, 0.08);
 }
 
 .social-login-icon {
@@ -304,12 +300,12 @@
   text-align: center;
   margin-top: 16px;
   font-size: 13px;
-  color: var(--muted-2);
+  color: #9a9080;
 }
 
 .info-side {
   width: 380px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-600));
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
   padding: 48px;
   display: flex;
   align-items: center;
@@ -325,7 +321,7 @@
   left: -50px;
   width: 200px;
   height: 200px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 50%;
 }
 
@@ -336,7 +332,7 @@
   right: -80px;
   width: 300px;
   height: 300px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
   border-radius: 50%;
 }
 
@@ -346,15 +342,17 @@
 }
 
 .info-content h2 {
+  font-family: "Cormorant Garamond", serif;
   font-size: 30px;
-  font-weight: 800;
-  color: white;
+  font-weight: 400;
+  color: #0a0a0a;
   margin-bottom: 12px;
   line-height: 1.2;
+  letter-spacing: 0.5px;
 }
 
 .info-content p {
-  color: rgba(255, 255, 255, 0.93);
+  color: rgba(10, 10, 10, 0.75);
   line-height: 1.6;
 }
 
@@ -380,26 +378,31 @@
   }
 
   .login-header h1 {
-    font-size: 24px;
+    font-size: 26px;
   }
 }
 
 .auth-switch {
   text-align: center;
   margin-top: 12px;
-  color: var(--muted-2);
+  color: #9a9080;
   font-size: 14px;
 }
 
 .auth-switch a {
-  color: var(--primary-600);
+  color: var(--gold-dark);
   font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-switch a:hover {
+  color: var(--gold);
 }
 
 .forgot-modal .ant-modal-content {
   border-radius: 14px;
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(201, 168, 76, 0.2);
 }
 
 .forgot-modal .ant-modal-header {
@@ -407,7 +410,7 @@
 }
 
 .forgot-modal .ant-modal-title {
-  color: var(--text);
+  color: #0a0a0a;
   font-weight: 800;
 }
 
@@ -417,12 +420,13 @@
   border: none;
   font-weight: 700;
   font-size: 15px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-600));
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: #0a0a0a !important;
   transition: all 0.25s ease;
 }
 
 .forgot-modal .ant-btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
-  filter: brightness(1.03);
+  box-shadow: 0 10px 20px rgba(201, 168, 76, 0.22);
+  filter: brightness(1.04);
 }

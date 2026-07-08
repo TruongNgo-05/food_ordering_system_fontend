@@ -73,7 +73,7 @@ export default function OrderSummarySection({
           width: "100%",
           padding: 16,
           background: T.primary,
-          color: "#fff",
+          color: "#0a0a0a",
           border: "none",
           borderRadius: 14,
           fontSize: 16,

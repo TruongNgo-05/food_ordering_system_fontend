@@ -56,7 +56,7 @@ export default function VoucherSection({
           style={{
             padding: "11px 22px",
             background: T.primary,
-            color: "#fff",
+            color: "#0a0a0a",
             border: "none",
             borderRadius: 11,
             fontWeight: 700,

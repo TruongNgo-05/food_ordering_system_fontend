@@ -99,7 +99,8 @@
   width: 30px;
   height: 30px;
   border: 1.5px solid var(--border);
-  background: #fff;
+  background: var(--surface-2);
+  color: var(--text);
   border-radius: 8px;
   cursor: pointer;
   font-weight: 700;
@@ -111,7 +112,7 @@
   height: 30px;
   border: none;
   background: var(--primary);
-  color: #fff;
+  color: #0a0a0a;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 700;
@@ -245,7 +246,7 @@
   border: none;
   border-radius: 10px;
   background: var(--primary);
-  color: #fff;
+  color: #0a0a0a;
   font-weight: 800;
   padding: 10px 16px;
   cursor: pointer;

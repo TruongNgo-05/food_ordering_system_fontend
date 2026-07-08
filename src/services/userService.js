@@ -51,3 +51,7 @@ export const getFoods = (params) => {
 export const getFoodByIdDetail = (id) => {
   return api.get(`/users/foods/${id}`);
 };
+
+export const getFAQ = () => {
+  return api.get("/users/faq");
+};

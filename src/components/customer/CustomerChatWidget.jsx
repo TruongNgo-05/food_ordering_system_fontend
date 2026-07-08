@@ -131,7 +131,7 @@ const CustomerChatWidget = ({
                 <div
                   className={`chat-message-bubble ${m.role}`}
                   style={{
-                    background: m.role === "user" ? T.primary : "#fff",
+                    background: m.role === "user" ? T.primary : T.surface,
                     borderColor: m.role === "ai" ? T.border : undefined,
                   }}
                 >

@@ -17,7 +17,7 @@ import {
   faTable,
 } from "@fortawesome/free-solid-svg-icons";
 import "../../assets/styles/Sider.css";
-import logo from "../../assets/images/logo.png";
+import BrandLogo from "../../components/common/BrandLogo";
 
 const staffMenuItems = [
   {
@@ -60,8 +60,12 @@ const Sider = ({ mobileOpen = false, onCloseMobile }) => {
     <aside className={`sider ${mobileOpen ? "mobile-open" : ""}`}>
       <div className="sider-content">
         <div className="sider-logo">
-          <img src={logo} alt="Logo" className="logo-img" />
-          <span className="logo-text">Jler Sky Restaurant</span>
+          <BrandLogo
+            as={Link}
+            to="/staff"
+            className="sider-brand-logo"
+            ariaLabel="JLER Sky Restaurant"
+          />
         </div>
 
         <nav className="sider-menu">

@@ -145,7 +145,7 @@ STATS CARD .ant-card {
 }
 
 .ant-tag-blue {
-  background: rgba(79, 70, 229, 0.08) !important;
+  background: rgba(var(--primary-rgb), 0.08) !important;
   color: var(--primary-600) !important;
 }
 
@@ -181,7 +181,7 @@ STATS CARD .ant-card {
 }
 
 .ant-table-tbody > tr:hover > td {
-  background: rgba(79, 70, 229, 0.03) !important;
+  background: rgba(var(--primary-rgb), 0.03) !important;
 }
 
 @media (max-width: 768px) {

@@ -202,7 +202,7 @@ const Orders = () => {
           label: "Tất cả",
           icon: <FontAwesomeIcon icon={faListCheck} />,
           color: T.text,
-          bg: "#fff",
+          bg: T.surface || "#111111",
         };
       }
 
@@ -259,7 +259,7 @@ const Orders = () => {
                 className="ord-filter-btn"
                 style={{
                   borderColor: active ? T.primary : T.border,
-                  background: active ? T.primaryLight : "#fff",
+                  background: active ? T.primaryLight : "transparent",
                   color: active ? T.primary : T.text,
                 }}
               >

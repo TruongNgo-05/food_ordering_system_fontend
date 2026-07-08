@@ -1,26 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
-import { message } from "antd";
-import "../../assets/styles/user/Banner.css";
-import "../../assets/styles/Header.css";
+import React, { useState, useEffect } from "react";
 import "../../assets/styles/user/Blog.css";
-import BookingTableModal from "../../components/user/booking/BookingTableModal";
+
 import BookingModal from "../../components/user/booking/BookingModal";
 import Banner from "../../components/customer/Banner";
 import CustomerChatWidget from "../../components/customer/CustomerChatWidget";
 import BackToTopButton from "../../components/common/BackToTopButton";
 import BrandLogo from "../../components/common/BrandLogo";
 import SectionHeader from "../../components/common/SectionHeader";
-import tableService from "../../services/user/tableService";
+import Footer from "../../layouts/Footer";
+
 import { useNavigate } from "react-router-dom";
 import { getBanner, getFoods } from "../../services/userService";
-
-function genCaptcha() {
-  const c = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  return Array.from(
-    { length: 5 },
-    () => c[Math.floor(Math.random() * c.length)],
-  ).join("");
-}
 
 const Blog = () => {
   /* ── nav ── */
@@ -29,10 +19,6 @@ const Blog = () => {
 
   /* ── hero slider ── */
   const [slides, setSlides] = useState([]);
-  const [slide, setSlide] = useState(0);
-  const [fading, setFading] = useState(false);
-  const timerRef = useRef(null);
-  // food
   const [foods, setFoods] = useState([]);
 
   /* ── gallery lightbox ── */
@@ -40,17 +26,6 @@ const Blog = () => {
 
   /* ── modals ── */
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-
-  /* ── booking form ── */
-  const [selectedTable, setSelectedTable] = useState(null);
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
-  const [arrivalTime, setArrivalTime] = useState("");
-  const [note, setNote] = useState("");
-  const [captcha, setCaptcha] = useState(genCaptcha);
-  const [captchaInput, setCaptchaInput] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
   const navigate = useNavigate();
 
@@ -98,61 +73,9 @@ const Blog = () => {
 
     loadFoods();
   }, []);
-  /* hero auto-slide */
-  const goSlide = (idx) => {
-    setFading(true);
-    setTimeout(() => {
-      setSlide(idx);
-      setFading(false);
-    }, 300);
-  };
 
-  useEffect(() => {
-    if (!slides.length) return;
 
-    timerRef.current = setInterval(() => {
-      setSlide((prev) => (prev + 1) % slides.length);
-    }, 5500);
 
-    return () => clearInterval(timerRef.current);
-  }, [slides.length]);
-
-  /* booking submit */
-  const handleBook = async (e) => {
-    e.preventDefault();
-    if (!customerName.trim()) return message.error("Vui lòng nhập họ tên");
-    if (!customerPhone.trim())
-      return message.error("Vui lòng nhập số điện thoại");
-    if (!arrivalTime) return message.error("Vui lòng chọn thời gian đến");
-    if (!selectedTable) return message.error("Vui lòng chọn bàn");
-    if (captchaInput.trim().toUpperCase() !== captcha) {
-      setCaptcha(genCaptcha());
-      setCaptchaInput("");
-      return message.error("Mã bảo mật không chính xác");
-    }
-    setSubmitting(true);
-    try {
-      await tableService.createBooking({
-        customerName,
-        customerPhone,
-        tableId: selectedTable.tableId,
-        note,
-        timeComes: `${arrivalTime}:00`,
-      });
-      message.success("Đặt bàn thành công!");
-      setCustomerName("");
-      setCustomerPhone("");
-      setNote("");
-      setArrivalTime("");
-      setSelectedTable(null);
-      setCaptcha(genCaptcha());
-      setCaptchaInput("");
-    } catch (err) {
-      message.error(err?.response?.data?.message || "Đặt bàn thất bại");
-    } finally {
-      setSubmitting(false);
-    }
-  };
   if (slides.length === 0) {
     return <div className="blog-loading-banner">Đang tải blog...</div>;
   }
@@ -414,52 +337,7 @@ const Blog = () => {
       </section>
 
       {/* ══ FOOTER ══ */}
-      <footer>
-        <div className="blog_footer-top">
-          <div className="blog_footer-brand">
-            <p
-              className="blog_logo-main"
-              style={{ fontSize: "2rem", marginBottom: "4px" }}
-            >
-              JLER
-            </p>
-            <p className="blog_logo-sub" style={{ marginBottom: "16px" }}>
-              SKY RESTAURANT
-            </p>
-            <p className="blog_footer-desc">
-              Tận hưởng vẻ đẹp trọn vẹn khung cảnh Hà Nội với những món ăn đậm
-              bản sắc Việt Nam từ tầng cao.
-            </p>
-          </div>
-          <div>
-            <h5>Giờ Mở Cửa</h5>
-            <p>Hàng ngày: 08:00 – 23:50</p>
-            <p>Phục vụ ăn: 11:00 – 22:00</p>
-          </div>
-          <div>
-            <h5>Liên Hệ</h5>
-            <a href="tel:+84389582843">+84 389 582 843</a>
-            <a
-              href="https://zalo.me/0389582843"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Zalo
-            </a>
-            <a
-              href="https://maps.app.goo.gl/BmNLUiEoo7PGbsHm6"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Google Maps
-            </a>
-          </div>
-        </div>
-        <div className="blog_footer-bottom">
-          <span>© 2026 JLER Sky Restaurant. Bản quyền thuộc về chúng tôi.</span>
-          <span>Nhà hàng NQT Premium · Kinh Công</span>
-        </div>
-      </footer>
+      <Footer />
 
       {/* ══ FLOAT BUTTONS ══ */}
       <CustomerChatWidget
@@ -487,12 +365,6 @@ const Blog = () => {
       <BookingModal
         open={showBookingModal}
         onClose={() => setShowBookingModal(false)}
-      />
-      <BookingTableModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onSelect={(table) => setSelectedTable(table)}
-        selectedTable={selectedTable}
       />
     </div>
   );

@@ -12,6 +12,8 @@
   border: 1.5px solid var(--ord-border, #e5e5e5);
   font-size: 14px;
   outline: none;
+  background: var(--surface-2);
+  color: var(--text);
 }
 
 .ord-search input:focus {
@@ -22,7 +24,7 @@
   border: none;
   border-radius: 12px;
   background: var(--ord-primary);
-  color: #fff;
+  color: #0a0a0a;
   font-weight: 800;
   font-size: 13px;
   padding: 0 18px;
@@ -247,7 +249,7 @@
   border: none;
   border-radius: 12px;
   background: var(--ord-primary);
-  color: #fff;
+  color: #0a0a0a;
   font-weight: 800;
   padding: 10px 12px;
   cursor: pointer;

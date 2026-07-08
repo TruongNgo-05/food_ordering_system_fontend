@@ -17,30 +17,31 @@
   min-width: 0;
   flex: 1 1 auto;
 }
-
 .section-header-label {
   display: inline-block;
   margin-bottom: 8px;
   font-size: 10px;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   text-transform: uppercase;
-  color: #6b7280;
+  color: var(--gold, #c9a84c);
 }
 
 .section-header-title {
   margin: 0;
-  font-size: clamp(28px, 3vw, 48px);
-  line-height: 1.05;
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(36px, 4vw, 52px);
+  font-weight: 300;
+  line-height: 1.1;
   color: inherit;
 }
 
 .section-header-description {
   margin: 12px 0 0;
-  color: #6b7280;
-  line-height: 1.75;
+  color: inherit;
+  opacity: 0.75;
+  line-height: 1.8;
   max-width: 760px;
 }
-
 .section-header-extra {
   display: flex;
   align-items: center;
