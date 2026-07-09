@@ -11,29 +11,15 @@ export default function UserViewDrawer({
 }) {
   if (!user) return null;
 
-  const avatar = user.avatar || "";
+  const avatar = user?.avatar || "";
 
-  const getImageUrl = (src) => {
-    if (!src || typeof src !== "string") return "";
-    const trimmed = src.trim();
+  const IMG_URL = import.meta.env.VITE_IMG_URL;
 
-    if (
-      trimmed.startsWith("data:image/") ||
-      trimmed.startsWith("http://") ||
-      trimmed.startsWith("https://") ||
-      trimmed.startsWith("blob:")
-    ) {
-      return trimmed;
-    }
-
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
-    const baseUrl = apiUrl.replace("/api", "");
-
-    if (trimmed.startsWith("/")) return baseUrl + trimmed;
-    return baseUrl + "/" + trimmed;
-  };
-
-  const avatarUrl = getImageUrl(avatar);
+  const avatarUrl = avatar
+    ? avatar.startsWith("http")
+      ? avatar
+      : `${IMG_URL}${avatar}`
+    : "";
 
   const formatDate = (date) =>
     date ? dayjs(date).format("DD/MM/YYYY HH:mm") : "—";
@@ -82,7 +68,7 @@ export default function UserViewDrawer({
             marginBottom: 16,
           }}
         >
-          {avatar ? (
+          {avatarUrl ? (
             <img
               src={avatarUrl}
               alt="avatar-user"
@@ -95,7 +81,10 @@ export default function UserViewDrawer({
               }}
               onError={(e) => {
                 e.currentTarget.onerror = null;
-                e.currentTarget.src = "";
+                e.currentTarget.src =
+                  "https://ui-avatars.com/api/?name=" +
+                  encodeURIComponent(user.fullName || "User") +
+                  "&background=4f46e5&color=fff&size=128";
               }}
             />
           ) : (

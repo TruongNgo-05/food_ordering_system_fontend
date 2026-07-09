@@ -1,87 +1,77 @@
-.admin-support-page {
-  min-height: 100vh;
-  box-sizing: border-box;
+:root {
+  --gold: #d4af37;
+  --gold-hover: #c79c18;
+  --green: #52c41a;
+  --red: #ff4d4f;
+  --gray: #999;
 }
 
-/* ===== TABS ===== */
+.admin-support-page {
+  min-height: 100vh;
+  padding: 20px;
+  background: #f5f5f5;
+}
+
+.admin-support-container {
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* ================= Tabs ================= */
+
 .admin-support-tabs {
   display: flex;
-  gap: 8px;
-  margin: 24px 0;
-  border-bottom: 1px solid #e5e7eb;
+  gap: 10px;
+  margin: 20px 0;
 }
 
 .admin-tab-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  font-size: 15px;
-  font-weight: 600;
-  color: #6b7280;
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  background: #fff;
   cursor: pointer;
-  transition:
-    color 0.2s ease,
-    border-color 0.2s ease;
+  border-radius: 6px;
+  transition: 0.2s;
 }
 
 .admin-tab-btn:hover {
-  color: #ff6b35;
+  border-color: var(--gold);
 }
 
 .admin-tab-btn.active {
-  color: #ff6b35;
-  border-bottom-color: #ff6b35;
+  background: var(--gold);
+  color: #fff;
+  border-color: var(--gold);
 }
 
 .admin-tab-count {
-  min-width: 22px;
-  height: 22px;
-  padding: 0 6px;
-  border-radius: 11px;
-  background: #f3f4f6;
-  color: #6b7280;
-  font-size: 12px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  margin-left: 6px;
 }
 
-.admin-tab-btn.active .admin-tab-count {
-  background: #ff6b35;
-  color: #fff;
-}
+/* ================= Section ================= */
 
-/* ===== SECTION ===== */
 .admin-support-section {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  margin-bottom: 24px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
 }
 
 .admin-section-toolbar {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
+  align-items: center;
   margin-bottom: 20px;
+  gap: 15px;
+  flex-wrap: wrap;
 }
 
 .admin-section-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1f2937;
   margin: 0;
 }
 
-/* ===== FILTERS ===== */
+/* ================= Filter ================= */
+
 .admin-filter-group {
   display: flex;
   gap: 8px;
@@ -90,421 +80,304 @@
 
 .admin-filter-btn {
   padding: 6px 14px;
-  border-radius: 999px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #ccc;
   background: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  color: #6b7280;
   cursor: pointer;
-  transition: all 0.2s ease;
+  border-radius: 4px;
+  transition: 0.2s;
 }
 
 .admin-filter-btn:hover {
-  border-color: #ff6b35;
-  color: #ff6b35;
+  border-color: var(--gold);
 }
 
 .admin-filter-btn.active {
-  background: #ff6b35;
-  border-color: #ff6b35;
-  color: #fff;
+  background: var(--gold);
+  color: white;
+  border-color: var(--gold);
 }
 
-/* ===== ADD BUTTON ===== */
+/* ================= Add Button ================= */
+
 .admin-add-btn {
-  padding: 9px 18px;
-  border-radius: 8px;
+  padding: 8px 16px;
+  background: var(--gold);
+  color: white;
   border: none;
-  background: #ff6b35;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: 4px;
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    transform 0.15s ease;
+  transition: 0.2s;
 }
 
 .admin-add-btn:hover {
-  background: #e85a2a;
-  transform: translateY(-1px);
+  background: var(--gold-hover);
 }
 
-/* ===== EMPTY STATE ===== */
-.admin-empty-state {
-  text-align: center;
-  padding: 40px 0;
-  color: #9ca3af;
-  font-size: 14px;
-}
+/* ================= Ticket & FAQ ================= */
 
-/* ===== TICKET LIST ===== */
-.admin-ticket-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.admin-ticket-item {
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 16px;
-  border: 1px solid #eef0f2;
-  border-radius: 10px;
-  padding: 16px;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.admin-ticket-item:hover {
-  border-color: #ffd6c2;
-  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.08);
-}
-
-.admin-ticket-main {
-  flex: 1;
-  cursor: pointer;
-  min-width: 0;
+.admin-ticket-item,
+.admin-faq-item {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
 }
 
 .admin-ticket-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 
 .admin-ticket-subject {
-  font-size: 15px;
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.admin-ticket-status {
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
+  font-weight: 600;
 }
 
 .admin-ticket-meta {
   display: flex;
+  gap: 15px;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
   flex-wrap: wrap;
-  gap: 12px;
-  font-size: 12.5px;
-  color: #9ca3af;
-  margin-bottom: 8px;
 }
 
 .admin-ticket-preview {
-  font-size: 13.5px;
-  color: #6b7280;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  color: #555;
 }
 
-.admin-ticket-actions {
+.admin-ticket-actions,
+.admin-faq-actions {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-/* ===== ACTION BUTTONS (shared: tickets + faq) ===== */
-.admin-action-btn {
-  padding: 7px 14px;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-}
-
-.admin-action-btn.resolve {
-  color: #27ae60;
-  border-color: #cdeedb;
-}
-.admin-action-btn.resolve:hover {
-  background: #27ae60;
-  color: #fff;
-  border-color: #27ae60;
-}
-
-.admin-action-btn.edit {
-  color: #2563eb;
-  border-color: #dbe6fd;
-}
-.admin-action-btn.edit:hover {
-  background: #2563eb;
-  color: #fff;
-  border-color: #2563eb;
-}
-
-.admin-action-btn.delete {
-  color: #e74c3c;
-  border-color: #fbd8d4;
-}
-.admin-action-btn.delete:hover {
-  background: #e74c3c;
-  color: #fff;
-  border-color: #e74c3c;
-}
-
-/* ===== FAQ LIST ===== */
-.admin-faq-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.admin-faq-item {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  border: 1px solid #eef0f2;
-  border-radius: 10px;
-  padding: 16px;
-}
-
-.admin-faq-content {
-  flex: 1;
-  min-width: 0;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
 }
 
 .admin-faq-question {
-  font-size: 14.5px;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 6px;
+  font-weight: bold;
+  margin-bottom: 8px;
 }
 
 .admin-faq-answer {
-  font-size: 13.5px;
-  color: #6b7280;
-  line-height: 1.5;
+  color: #555;
+  line-height: 1.6;
 }
 
-.admin-faq-actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
+/* ================= Buttons ================= */
+
+.admin-action-btn,
+.admin-primary-btn,
+.admin-secondary-btn {
+  padding: 8px 16px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: 0.2s;
 }
 
-/* ===== MODAL (dùng chung cho ticket detail + faq form) ===== */
+.admin-primary-btn {
+  background: var(--gold);
+  color: white;
+}
+
+.admin-primary-btn:hover {
+  background: var(--gold-hover);
+}
+
+.admin-secondary-btn {
+  background: var(--gray);
+  color: white;
+}
+
+.admin-secondary-btn:hover {
+  opacity: 0.9;
+}
+
+.admin-action-btn.edit {
+  background: var(--gold);
+  color: white;
+}
+
+.admin-action-btn.edit:hover {
+  background: var(--gold-hover);
+}
+
+.admin-action-btn.resolve {
+  background: var(--green);
+  color: white;
+}
+
+.admin-action-btn.resolve:hover {
+  opacity: 0.9;
+}
+
+.admin-action-btn.delete {
+  background: var(--red);
+  color: white;
+}
+
+.admin-action-btn.delete:hover {
+  opacity: 0.9;
+}
+
+/* ================= Modal ================= */
+
 .admin-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(17, 24, 39, 0.5);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
-  align-items: center;
   justify-content: center;
-  z-index: 1000;
-  padding: 16px;
+  align-items: center;
+  z-index: 999;
 }
 
 .admin-modal {
-  background: #fff;
-  border-radius: 14px;
-  width: 100%;
-  max-width: 540px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  width: 600px;
+  max-width: 95%;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .admin-modal-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 18px 22px;
-  border-bottom: 1px solid #eef0f2;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
 }
 
-.admin-modal-header h3 {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 700;
-  color: #1f2937;
+.admin-modal-body {
+  padding: 20px;
+}
+
+.admin-modal-footer {
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .admin-modal-close {
   border: none;
   background: transparent;
-  font-size: 22px;
-  line-height: 1;
-  color: #9ca3af;
+  font-size: 24px;
   cursor: pointer;
-  padding: 4px;
 }
 
-.admin-modal-close:hover {
-  color: #1f2937;
-}
+/* ================= Form ================= */
 
-.admin-modal-body {
-  padding: 20px 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.admin-modal-meta p {
-  margin: 0 0 6px;
-  font-size: 13.5px;
-  color: #4b5563;
-}
-
-.admin-modal-meta p strong {
-  color: #1f2937;
-  margin-right: 4px;
-}
-
-.admin-modal-message p {
-  margin: 6px 0 0;
-  font-size: 14px;
-  color: #374151;
-  line-height: 1.6;
-  background: #f9fafb;
-  border-radius: 8px;
-  padding: 12px;
-}
-
-.admin-modal-reply label {
-  display: block;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 6px;
-}
-
-.admin-modal-reply textarea {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  font-size: 14px;
-  font-family: inherit;
-  resize: vertical;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-.admin-modal-reply textarea:focus {
-  border-color: #ff6b35;
-}
-
-.admin-modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 16px 22px;
-  border-top: 1px solid #eef0f2;
-}
-
-.admin-primary-btn {
-  padding: 9px 20px;
-  border-radius: 8px;
-  border: none;
-  background: #ff6b35;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.admin-primary-btn:hover:not(:disabled) {
-  background: #e85a2a;
-}
-
-.admin-primary-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.admin-secondary-btn {
-  padding: 9px 20px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  color: #374151;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.admin-secondary-btn:hover {
-  border-color: #d1d5db;
-  background: #f9fafb;
-}
-
-/* ===== FORM (dùng lại cho FAQ modal, giống style form phía khách hàng) ===== */
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  margin-bottom: 15px;
 }
 
 .form-group label {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #1f2937;
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
 }
 
 .form-group input,
-.form-group textarea {
+.form-group textarea,
+.admin-modal textarea {
   width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
   box-sizing: border-box;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  font-size: 14px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s ease;
+  resize: vertical;
 }
 
 .form-group input:focus,
-.form-group textarea:focus {
-  border-color: #ff6b35;
+.form-group textarea:focus,
+.admin-modal textarea:focus {
+  outline: none;
+  border-color: var(--gold);
 }
 
 .input-error {
-  border-color: #e74c3c !important;
+  border-color: var(--red) !important;
 }
 
 .error-text {
-  font-size: 12px;
-  color: #e74c3c;
+  color: var(--red);
+  font-size: 13px;
+  margin-top: 4px;
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-  .admin-support-page {
-    padding: 16px;
-  }
+/* ================= Empty ================= */
 
-  .admin-ticket-item,
-  .admin-faq-item {
+.admin-empty-state {
+  text-align: center;
+  padding: 30px;
+  color: #777;
+}
+/* Tabs */
+
+.admin-support-tabs {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.admin-tab-btn {
+  position: relative;
+  padding: 10px 24px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: 0.2s;
+}
+
+.admin-tab-btn:hover {
+  border-color: #d8b45b;
+}
+
+.admin-tab-btn.active {
+  background: #d8b45b;
+  color: #fff;
+  border-color: #d8b45b;
+}
+
+/* Badge số */
+
+.admin-tab-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+
+  width: 22px;
+  height: 22px;
+
+  border-radius: 50%;
+  background: #89890e;
+  color: #fff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+/* ================= Responsive ================= */
+
+@media (max-width: 768px) {
+  .admin-section-toolbar,
+  .admin-ticket-header {
     flex-direction: column;
+    align-items: flex-start;
   }
 
   .admin-ticket-actions,
   .admin-faq-actions {
-    flex-direction: row;
     width: 100%;
   }
 
@@ -512,8 +385,116 @@
     flex: 1;
   }
 
-  .admin-section-toolbar {
+  .admin-modal {
+    width: 95%;
+  }
+}
+/* ===== Ticket Modal ===== */
+
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.admin-modal {
+  width: 650px;
+  max-width: 95%;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.admin-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+  background: #fff8e8;
+}
+
+.admin-modal-header h3 {
+  margin: 0;
+  color: #c79c18;
+}
+
+.admin-modal-close {
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.admin-modal-body {
+  padding: 20px;
+}
+
+.admin-modal-meta {
+  margin-bottom: 20px;
+}
+
+.admin-modal-meta p {
+  margin: 8px 0;
+}
+
+.admin-modal-message {
+  margin-bottom: 20px;
+}
+
+.admin-modal-message p {
+  margin-top: 8px;
+  padding: 12px;
+  background: #f8f8f8;
+  border-radius: 6px;
+  line-height: 1.6;
+}
+
+.admin-modal-reply label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.admin-modal-reply textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.admin-modal-reply textarea:focus {
+  outline: none;
+  border-color: #d8b45b;
+}
+
+.admin-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid #eee;
+}
+
+@media (max-width: 768px) {
+  .admin-modal {
+    width: 95%;
+  }
+
+  .admin-modal-footer {
     flex-direction: column;
-    align-items: flex-start;
+  }
+
+  .admin-primary-btn,
+  .admin-secondary-btn {
+    width: 100%;
   }
 }

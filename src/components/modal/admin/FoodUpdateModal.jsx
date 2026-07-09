@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Form,
   Input,
@@ -8,11 +8,12 @@ import {
   message,
   Row,
   Col,
+  Space,
 } from "antd";
 import { Upload, Image, Button } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import GalleryUpload from "./GalleryUpload";
-
+import adminFoodService from "../../../services/admin/adminFoodService";
 const fileToDataUrl = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -20,7 +21,6 @@ const fileToDataUrl = (file) =>
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
-
 const FoodUpdateModal = ({
   open,
   onCancel,
@@ -29,31 +29,42 @@ const FoodUpdateModal = ({
   form,
   record,
 }) => {
+  const [deletedImages, setDeletedImages] = React.useState([]);
+  const [removeMainImage, setRemoveMainImage] = React.useState(false);
   useEffect(() => {
-    if (open && record) {
-      form.setFieldsValue({
-        name: record.name,
-        desc: record.description || "",
-        image: record.image || "",
+    if (!open || !record) return;
 
-        additionalImages: (record.images || [])
-          .map((img) => img.url)
-          .join("\n"),
-        existingImages: record.images || [],
+    const images = record.images || [];
 
-        category: record.category_id,
-        priceInThousand: Math.round(record.price / 1000),
+    form.setFieldsValue({
+      name: record.name,
 
-        imageFile: null,
-        imageFiles: [],
-        removeImage: false,
-      });
-    }
-  }, [open, record]);
+      desc: record.description || "",
+
+      image: record.image || "",
+
+      category: record.category_id,
+
+      priceInThousand: Math.round(record.price / 1000),
+
+      existingImages: images,
+
+      additionalImages: images.map((img) => img.url).join("\n"),
+
+      imageFile: null,
+
+      imageFiles: [],
+
+      removeImage: false,
+    });
+  }, [open, record, form]);
 
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
+
+      values.deletedImages = deletedImages;
+
       onSubmit(values);
     } catch {
       message.error("Vui lòng điền đầy đủ thông tin");
@@ -61,7 +72,11 @@ const FoodUpdateModal = ({
   };
 
   const handleCancel = () => {
-    form.resetFields();
+    form.setFieldsValue({
+      imageFiles: form.getFieldValue("imageFiles") || [],
+      imageFile: form.getFieldValue("imageFile") || null,
+    });
+
     onCancel();
   };
 
@@ -120,12 +135,29 @@ const FoodUpdateModal = ({
                 label="Giá bán (nghìn đồng)"
                 rules={[{ required: true, message: "Nhập giá bán" }]}
               >
-                <InputNumber
-                  min={1}
-                  style={{ width: "100%" }}
-                  addonAfter=".000 đ"
-                  placeholder="Ví dụ: 179"
-                />
+                <Space.Compact style={{ width: "100%" }}>
+                  <InputNumber
+                    min={1}
+                    placeholder="Ví dụ: 179"
+                    style={{ width: "100%" }}
+                  />
+                  <span
+                    style={{
+                      minWidth: 70,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "0 12px",
+                      border: "1px solid #d9d9d9",
+                      borderLeft: "none",
+                      borderRadius: "0 6px 6px 0",
+                      background: "#fafafa",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    .000 đ
+                  </span>
+                </Space.Compact>
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -210,9 +242,10 @@ const FoodUpdateModal = ({
                             icon={<DeleteOutlined />}
                             style={{ position: "absolute", top: 6, right: 6 }}
                             onClick={() => {
+                              setRemoveMainImage(true);
+
                               form.setFieldValue("image", null);
                               form.setFieldValue("imageFile", null);
-                              form.setFieldValue("removeImage", true);
                             }}
                           />
                         </>
@@ -245,6 +278,14 @@ const FoodUpdateModal = ({
         </Form.Item>
 
         <Form.Item name="imageFiles" hidden>
+          <Input />
+        </Form.Item>
+
+        <Form.Item name="additionalImages" hidden>
+          <Input />
+        </Form.Item>
+
+        <Form.Item name="existingImages" hidden>
           <Input />
         </Form.Item>
       </Form>

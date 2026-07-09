@@ -24,6 +24,10 @@ export const updateProfileApi = (data, avatarFile) => {
     headers: { "Content-Type": "multipart/form-data" },
   });
 };
+
+export const deleteAvatarApi = () => {
+  return api.delete("/users/me");
+};
 /**
  * Đổi mật khẩu
  * POST /api/users/change-password
@@ -52,6 +56,11 @@ export const getFoodByIdDetail = (id) => {
   return api.get(`/users/foods/${id}`);
 };
 
-export const getFAQ = () => {
-  return api.get("/users/faq");
+export const getFAQ = (page = 0, size = 5) => {
+  return api.get("/users/faq", {
+    params: {
+      page,
+      size,
+    },
+  });
 };

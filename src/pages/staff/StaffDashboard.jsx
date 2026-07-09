@@ -3,6 +3,7 @@ import "../../assets/styles/Dashboard.css";
 import UserHeader from "../../components/user/UserHeader";
 import { mockStaffDashboard } from "../../data/mockStaffData";
 import { fmt } from "../../constants/customerTheme";
+import StaffChatButton from "../../components/staff/StaffChatButton";
 
 const StaffDashboard = () => {
   const { statCards, revenueByDay, recentActivities } = mockStaffDashboard;
@@ -17,6 +18,7 @@ const StaffDashboard = () => {
   );
 
   return (
+    <>
     <section className="admin-page">
       <div className="admin-hero">
         <UserHeader
@@ -106,6 +108,13 @@ const StaffDashboard = () => {
         </div>
       </div>
     </section>
+    <StaffChatButton
+    onClick={() => {
+      console.log("Open Staff Chat");
+      // navigate("/staff/chat");
+    }}
+  />
+    </>
   );
 };
 

@@ -1,36 +1,3 @@
-/* ---- Search bar ---- */
-.ord-search {
-  display: flex;
-  gap: 10px;
-  margin: 16px 0 18px;
-}
-
-.ord-search input {
-  flex: 1;
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1.5px solid var(--ord-border, #e5e5e5);
-  font-size: 14px;
-  outline: none;
-  background: var(--surface-2);
-  color: var(--text);
-}
-
-.ord-search input:focus {
-  border-color: var(--ord-primary);
-}
-
-.ord-search button {
-  border: none;
-  border-radius: 12px;
-  background: var(--ord-primary);
-  color: #0a0a0a;
-  font-weight: 800;
-  font-size: 13px;
-  padding: 0 18px;
-  cursor: pointer;
-}
-
 /* ---- Back button ---- */
 .ord-back-btn {
   display: flex;
@@ -87,22 +54,6 @@
   font-size: 13px;
 }
 
-/* Step badges strip */
-.ord-steps-strip {
-  margin-top: 16px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.ord-step-badge {
-  border-radius: 99px;
-  border-width: 1px;
-  border-style: solid;
-  padding: 6px 10px;
-  font-size: 12px;
-  font-weight: 800;
-}
 
 /* ---- Detail: 2-col layout ---- */
 .ord-detail-grid {

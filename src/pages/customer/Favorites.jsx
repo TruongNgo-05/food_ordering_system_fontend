@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { Modal } from "antd";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { T } from "../../constants/customerTheme";
@@ -11,6 +12,7 @@ import { getFoods } from "../../services/userService";
 import { useAuth } from "../../hooks/useAuth";
 import { confirmLoginWithModal } from "../../utils/authGuards";
 import "../../assets/styles/CustomerFavorites.css";
+import CustomerSearch from "../../components/common/CustomerSearch";
 
 const CART_UPDATED_EVENT = "cart-updated-event";
 
@@ -131,16 +133,32 @@ const Favorites = () => {
   );
 
   // ─── Clear all favorites (API-safe) ────
-  const clearAllFavorites = async () => {
-    try {
-      await Promise.all(
-        favorites.map((id) => favoriteService.toggleFavorite(id)),
-      );
-      setFavorites([]);
-      toast.success("Đã xóa tất cả yêu thích");
-    } catch (err) {
-      toast.error("Xóa thất bại");
-    }
+  const clearAllFavorites = () => {
+    if (favorites.length === 0) return;
+
+    Modal.confirm({
+      title: "Xóa tất cả món yêu thích?",
+      content:
+        "Bạn có chắc chắn muốn xóa toàn bộ món khỏi danh sách yêu thích không?",
+      okText: "Xóa tất cả",
+      cancelText: "Hủy",
+      okButtonProps: {
+        danger: true,
+      },
+      async onOk() {
+        try {
+          await Promise.all(
+            favorites.map((id) => favoriteService.toggleFavorite(id)),
+          );
+
+          setFavorites([]);
+          toast.success("Đã xóa tất cả yêu thích");
+        } catch (err) {
+          console.error(err);
+          toast.error("Xóa thất bại");
+        }
+      },
+    });
   };
 
   // ─── Load cart from API on mount ─────────────────────────────
@@ -239,26 +257,23 @@ const Favorites = () => {
   return (
     <div className="customer-favorites-page" style={{ background: T.bg }}>
       <div className="customer-favorites-container">
-        <UserHeader
-          title="Món yêu thích"
-          description="Những món bạn đã lưu"
-          extra={
-            <div className="favorites-header-extra">
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Tìm trong yêu thích..."
-              />
+        <UserHeader title="Món yêu thích" description="Những món bạn đã lưu" />
 
-              <button
-                onClick={clearAllFavorites}
-                disabled={favorites.length === 0}
-              >
-                Xóa tất cả
-              </button>
-            </div>
-          }
-        />
+        <div className="favorites-toolbar">
+          <CustomerSearch
+            keyword={search}
+            onKeywordChange={setSearch}
+            placeholder="Tìm trong yêu thích..."
+          />
+
+          <button
+            className="favorites-clear-btn"
+            onClick={clearAllFavorites}
+            disabled={favorites.length === 0}
+          >
+            Xóa tất cả
+          </button>
+        </div>
 
         {items.length === 0 ? (
           <EmptyState

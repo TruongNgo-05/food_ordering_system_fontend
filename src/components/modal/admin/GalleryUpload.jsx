@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Input, Button, Image, Upload, message } from "antd";
+import { Input, Button, Image, Upload, message, Form } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import adminFoodService from "../../../services/admin/adminFoodService";
 
@@ -17,14 +17,14 @@ const parseAdditionalImages = (value) =>
     .map((s) => s.trim())
     .filter(Boolean);
 
-const GalleryUpload = ({ form }) => {
-  const imageUrls = parseAdditionalImages(
-    form.getFieldValue("additionalImages") || "",
-  );
+const GalleryUpload = ({ form, onDeleteImage }) => {
+  const imageFiles = Form.useWatch("imageFiles", form) || [];
 
-  const imageFiles = form.getFieldValue("imageFiles") || [];
+  const additionalImages = Form.useWatch("additionalImages", form) || "";
 
-  const existingImages = form.getFieldValue("existingImages") || [];
+  const existingImages = Form.useWatch("existingImages", form) || [];
+
+  const imageUrls = parseAdditionalImages(additionalImages);
 
   const [imageFilePreviews, setImageFilePreviews] = useState({});
 
@@ -42,19 +42,14 @@ const GalleryUpload = ({ form }) => {
     generatePreviews();
   }, [imageFiles]);
 
-  // ================= DELETE IMAGE URL =================
   const handleDeleteUrl = (img, index) => {
-    try {
-      const list = [...imageUrls];
-      list.splice(index, 1);
+    const list = [...imageUrls];
 
-      form.setFieldValue("additionalImages", list.join("\n"));
+    list.splice(index, 1);
 
-      message.success("Đã xóa khỏi danh sách (sẽ cập nhật khi bấm Lưu)");
-    } catch (err) {
-      console.error(err);
-      message.error("Xóa ảnh thất bại");
-    }
+    form.setFieldValue("additionalImages", list.join("\n"));
+
+    message.success("Đã xóa ảnh phụ");
   };
 
   // ================= DELETE FILE =================
@@ -63,6 +58,7 @@ const GalleryUpload = ({ form }) => {
     list.splice(index, 1);
     form.setFieldValue("imageFiles", list);
   };
+  const IMG_URL = import.meta.env.VITE_IMG_URL;
 
   return (
     <>
@@ -109,6 +105,7 @@ const GalleryUpload = ({ form }) => {
         ))}
 
         {/* ================= FILE IMAGES ================= */}
+        {/* ================= FILE IMAGES ================= */}
         {imageFiles.map((file, i) => (
           <div
             key={`file-${i}`}
@@ -124,14 +121,21 @@ const GalleryUpload = ({ form }) => {
                   src={imageFilePreviews[i]}
                   width={80}
                   height={80}
-                  style={{ objectFit: "cover", borderRadius: 8 }}
+                  style={{
+                    objectFit: "cover",
+                    borderRadius: 8,
+                  }}
                 />
 
                 <Button
                   danger
                   size="small"
                   icon={<DeleteOutlined />}
-                  style={{ position: "absolute", top: 2, right: 2 }}
+                  style={{
+                    position: "absolute",
+                    top: 2,
+                    right: 2,
+                  }}
                   onClick={() => handleDeleteFile(i)}
                 />
               </>
@@ -161,7 +165,9 @@ const GalleryUpload = ({ form }) => {
           showUploadList={false}
           beforeUpload={(file) => {
             const current = form.getFieldValue("imageFiles") || [];
+
             form.setFieldValue("imageFiles", [...current, file]);
+
             return false;
           }}
         >

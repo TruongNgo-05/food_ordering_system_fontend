@@ -157,18 +157,27 @@
   border-radius: 10px;
   background: linear-gradient(
     135deg,
-    var(--primary) 0%,
-    var(--primary-600) 100%
+    #f8d568 0%,
+    #e6b84d 100%
   );
+
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+
+  color: #6b4f00;
+
   font-size: 16px;
-  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.22);
+
+  box-shadow: 0 6px 16px rgba(230, 184, 77, 0.28);
+
   transition: transform 0.3s ease;
   overflow: hidden;
   flex: 0 0 auto;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
 }
 
 .user-avatar-img {

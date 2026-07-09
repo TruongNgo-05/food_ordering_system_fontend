@@ -1,34 +1,20 @@
 import React, { useEffect, useState } from "react";
+import { message } from "antd";
 import "../../assets/styles/staff/TableRestaurant.css";
 import UserHeader from "../../components/user/UserHeader";
-import tableService from "../../services/user/tableService";
+import tablesStaffService from "../../services/staff/tablesStaffService";
 
 const STATUS_LABEL = {
   AVAILABLE: "Còn Trống",
   OCCUPIED: "Đang Có Khách",
   RESERVED: "Đã Đặt Trước",
-  UNAVAILABLE: "Ngừng Phục Vụ",
 };
 
 const STATUS_CLASS = {
   AVAILABLE: "tpm__status--available",
   OCCUPIED: "tpm__status--occupied",
   RESERVED: "tpm__status--reserved",
-  UNAVAILABLE: "tpm__status--unavailable",
 };
-
-const MOCK_TABLES = [
-  { tableId: 1, tableNumber: 1, capacity: 2, status: "AVAILABLE" },
-  { tableId: 2, tableNumber: 2, capacity: 4, status: "OCCUPIED" },
-  { tableId: 3, tableNumber: 3, capacity: 4, status: "RESERVED" },
-  { tableId: 4, tableNumber: 4, capacity: 2, status: "AVAILABLE" },
-  { tableId: 5, tableNumber: 5, capacity: 6, status: "OCCUPIED" },
-  { tableId: 6, tableNumber: 6, capacity: 4, status: "RESERVED" },
-  { tableId: 7, tableNumber: 7, capacity: 2, status: "AVAILABLE" },
-  { tableId: 8, tableNumber: 8, capacity: 8, status: "OCCUPIED" },
-  { tableId: 9, tableNumber: 9, capacity: 4, status: "AVAILABLE" },
-  { tableId: 10, tableNumber: 10, capacity: 2, status: "RESERVED" },
-];
 
 const StaffTableRestaurantPage = ({ onOpenOrder, onCheckIn, onCheckout }) => {
   const [tables, setTables] = useState([]);
@@ -41,28 +27,22 @@ const StaffTableRestaurantPage = ({ onOpenOrder, onCheckIn, onCheckout }) => {
       try {
         setLoading(true);
 
-        const res = await tableService.getTables();
-        const list = res?.data?.data ?? [];
+        const res = await tablesStaffService.getAllTableStaff();
+        const list = res?.data?.data;
 
         setTables(
-          (list.length > 0 ? list : MOCK_TABLES).map((t) => ({
-            tableId: t.id ?? t.tableId,
+          list.map((t) => ({
+            tableId: t.id,
             tableNumber: t.tableNumber,
             capacity: t.capacity,
             status: t.status,
+            statusText: t.statusText,
           })),
         );
       } catch (err) {
         console.error(err);
-        // fallback sang mock nếu API lỗi, để không chặn UI khi BE chưa sẵn sàng
-        setTables(
-          MOCK_TABLES.map((t) => ({
-            tableId: t.tableId,
-            tableNumber: t.tableNumber,
-            capacity: t.capacity,
-            status: t.status,
-          })),
-        );
+        message.error("Không tải được danh sách bàn");
+        setTables([]);
       } finally {
         setLoading(false);
       }
@@ -159,7 +139,7 @@ const StaffTableRestaurantPage = ({ onOpenOrder, onCheckIn, onCheckout }) => {
                   ) : null}
 
                   <div className={`tpm__badge ${STATUS_CLASS[table.status]}`}>
-                    {STATUS_LABEL[table.status] ?? table.status}
+                    {table.statusText || STATUS_LABEL[table.status]}
                   </div>
 
                   {/* ACTION BUTTONS THEO ROLE STAFF */}

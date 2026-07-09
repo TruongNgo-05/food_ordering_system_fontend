@@ -1,0 +1,30 @@
+.customer-search {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.customer-search input {
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0 14px;
+  background: var(--surface);
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.customer-search input[type="text"] {
+  flex: 1;
+  min-width: 260px;
+}
+
+.customer-search input[type="date"] {
+  width: 170px;
+}
+
+.customer-search input:focus {
+  outline: none;
+  border-color: var(--primary);
+}

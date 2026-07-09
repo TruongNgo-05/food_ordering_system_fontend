@@ -9,6 +9,7 @@ import { getFAQ } from "../../services/userService";
 import supportService from "../../services/customer/supportService";
 import Footer from "../../layouts/Footer";
 import "../../assets/styles/Support.css";
+import AppPagination from "../../components/common/AppPagination";
 
 const Support = () => {
   const navigate = useNavigate();
@@ -18,6 +19,9 @@ const Support = () => {
   const [faqData, setFaqData] = useState([]);
   const [openFaq, setOpenFaq] = useState(null);
 
+  const [page, setPage] = useState(0);
+  const [size] = useState(5);
+  const [total, setTotal] = useState(0);
   const [form, setForm] = useState({
     subject: "",
     message: "",
@@ -27,14 +31,19 @@ const Support = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchFAQ();
+    fetchFAQ(page, size);
+  }, [page, size]);
+
+  useEffect(() => {
     generateCaptcha();
   }, []);
 
-  const fetchFAQ = async () => {
+  const fetchFAQ = async (page, size) => {
     try {
-      const res = await getFAQ();
-      setFaqData(res.data.data || []);
+      const res = await getFAQ(page, size);
+
+      setFaqData(res.data.data.content || []);
+      setTotal(res.data.data.totalElements || 0);
     } catch (err) {
       message.error("Không thể tải FAQ");
     }
@@ -175,6 +184,15 @@ const Support = () => {
               </div>
             ))}
           </div>
+          <AppPagination
+            page={page}
+            size={size}
+            total={total}
+            onChange={(newPage) => {
+              setPage(newPage);
+              setOpenFaq(null);
+            }}
+          />
         </div>
 
         <div className="support-section">

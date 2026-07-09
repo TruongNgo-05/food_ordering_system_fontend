@@ -5,6 +5,7 @@ import { AuthContext } from "../../../context/authContext";
 import {
   getCurrentUserApi,
   updateProfileApi,
+  deleteAvatarApi,
 } from "../../../services/userService";
 
 const fileToDataUrl = (file) =>
@@ -72,7 +73,9 @@ const Capnhatthongtin = ({
       const res = await getCurrentUserApi();
       const user = res.data.data;
       form.setFieldsValue({
-        fullName: user.fullName || "",
+        fullName:
+          user.fullName ||
+          `${user.firstName || ""} ${user.lastName || ""}`.trim(),
         email: user.email || "",
         phone: user.phone || "",
       });
@@ -96,26 +99,23 @@ const Capnhatthongtin = ({
       if (avatarPreview?.startsWith("data:")) {
         const res = await fetch(avatarPreview);
         const blob = await res.blob();
-        avatarFile = new File([blob], "avatar.jpg", { type: blob.type });
+
+        avatarFile = new File([blob], "avatar.jpg", {
+          type: blob.type,
+        });
       } else {
         avatarUrl = avatarPreview;
       }
 
-      await updateProfileApi(
-        {
-          fullName: values.fullName,
-          email: values.email,
-          phone: values.phone,
-          avatar: avatarUrl,
-        },
+      await onUpdate({
+        fullName: values.fullName,
+        email: values.email,
+        phone: values.phone,
+        avatar: avatarUrl,
         avatarFile,
-      );
+      });
 
-      message.success("Cập nhật thành công");
-
-      await refreshUser();
       await loadCurrentUser();
-
       onCancel();
     } catch (error) {
       console.error(error);
@@ -187,13 +187,37 @@ const Capnhatthongtin = ({
   };
 
   const handleDeleteAvatar = () => {
-    setAvatarPreview("");
-    setAvatarUrlInput("");
-    setAvatarLoadError(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-    message.success("Đã xóa ảnh!");
+    Modal.confirm({
+      title: "Xóa ảnh đại diện?",
+      content: "Bạn có chắc chắn muốn xóa ảnh đại diện hiện tại không?",
+      okText: "Xóa",
+      cancelText: "Hủy",
+      okType: "danger",
+
+      async onOk() {
+        try {
+          await deleteAvatarApi();
+
+          setAvatarPreview("");
+          setAvatarUrlInput("");
+          setAvatarLoadError(false);
+
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+
+          await refreshUser();
+
+          message.success("Đã xóa ảnh đại diện!");
+        } catch (error) {
+          console.error("Delete avatar error:", error);
+
+          message.error(
+            error.response?.data?.message || "Xóa ảnh đại diện thất bại!",
+          );
+        }
+      },
+    });
   };
 
   const tabItems = [
@@ -213,10 +237,7 @@ const Capnhatthongtin = ({
             paddingTop: 8,
           }}
         >
-          <label
-            htmlFor="avatar-upload-input"
-            className="profile-upload-label"
-          >
+          <label htmlFor="avatar-upload-input" className="profile-upload-label">
             <UploadOutlined />
             Chọn ảnh từ máy tính
           </label>

@@ -1,78 +1,11 @@
-import React, { useState } from "react";
-import { T } from "../../constants/customerTheme";
+import React, { useState, useEffect } from "react";
 import UserHeader from "../../components/user/UserHeader";
 import "../../assets/styles/admin/AdminSupport.css";
+import adminSupportService from "../../services/admin/adminSupportService";
+import adminFAQService from "../../services/admin/adminFAQService";
+import { getFAQ } from "../../services/userService";
 import { message, Modal } from "antd";
-
-// ===== MOCK DATA =====
-// FAQ (quản lý được: thêm / sửa / xóa)
-const INIT_FAQ_DATA = [
-  {
-    id: 1,
-    question: "Làm sao để đặt món trên hệ thống?",
-    answer:
-      "Bạn chỉ cần chọn nhà hàng/quán mong muốn, thêm món vào giỏ hàng và tiến hành thanh toán. Đơn hàng sẽ được xác nhận ngay sau khi bạn hoàn tất bước đặt hàng.",
-  },
-  {
-    id: 2,
-    question: "Tôi có thể hủy đơn hàng sau khi đã đặt không?",
-    answer:
-      "Bạn có thể hủy đơn trong vòng 5 phút sau khi đặt nếu đơn chưa được nhà hàng xác nhận. Sau thời gian này, vui lòng liên hệ hotline để được hỗ trợ.",
-  },
-  {
-    id: 3,
-    question: "Thanh toán bằng hình thức nào?",
-    answer:
-      "Hệ thống hỗ trợ thanh toán tiền mặt khi nhận hàng, chuyển khoản ngân hàng và các ví điện tử phổ biến như Momo, ZaloPay, VNPay.",
-  },
-  {
-    id: 4,
-    question: "Tôi quên mật khẩu, phải làm sao?",
-    answer:
-      'Tại trang đăng nhập, chọn "Quên mật khẩu" và làm theo hướng dẫn để đặt lại mật khẩu qua email đã đăng ký.',
-  },
-  {
-    id: 5,
-    question: "Thời gian phản hồi yêu cầu hỗ trợ là bao lâu?",
-    answer:
-      "Đội ngũ hỗ trợ sẽ phản hồi trong vòng 24 giờ làm việc. Với các yêu cầu khẩn cấp, vui lòng gọi trực tiếp hotline để được xử lý nhanh nhất.",
-  },
-];
-
-// Yêu cầu hỗ trợ do người dùng gửi lên (từ trang Support.jsx phía khách hàng)
-const INIT_TICKETS = [
-  {
-    id: 101,
-    name: "Nguyễn Văn A",
-    email: "vana@example.com",
-    subject: "Lỗi đơn hàng",
-    message: "Tôi đặt đơn nhưng trạng thái vẫn hiển thị đang xử lý sau 2 giờ.",
-    status: "pending", // pending | replied | resolved
-    createdAt: "2026-07-01 09:12",
-    reply: "",
-  },
-  {
-    id: 102,
-    name: "Trần Thị B",
-    email: "thib@example.com",
-    subject: "Thanh toán không thành công",
-    message:
-      "Tôi thanh toán qua Momo nhưng tiền đã bị trừ mà đơn hàng chưa được ghi nhận.",
-    status: "replied",
-    createdAt: "2026-07-01 14:45",
-    reply: "Chúng tôi đã kiểm tra và hoàn tiền vào ví của bạn trong vòng 24h.",
-  },
-  {
-    id: 103,
-    name: "Lê Văn C",
-    email: "vanc@example.com",
-    subject: "Quên mật khẩu",
-    message: "Tôi không nhận được email đặt lại mật khẩu.",
-    status: "resolved",
-    createdAt: "2026-06-30 08:20",
-    reply: "Đã gửi lại email đặt lại mật khẩu, vui lòng kiểm tra hộp thư.",
-  },
-];
+import AppPagination from "../../components/common/AppPagination";
 
 const STATUS_LABEL = {
   pending: "Chưa xử lý",
@@ -90,14 +23,19 @@ const AdminSupport = () => {
   const [activeTab, setActiveTab] = useState("tickets"); // tickets | faq
 
   // ===== TICKETS STATE =====
-  const [tickets, setTickets] = useState(INIT_TICKETS);
+  const [tickets, setTickets] = useState([]);
+  const [loadingTickets, setLoadingTickets] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
+  const [ticketPage, setTicketPage] = useState(0);
+  const [ticketSize] = useState(5);
+  const [ticketTotal, setTicketTotal] = useState(0);
 
-  // ===== FAQ STATE =====
-  const [faqList, setFaqList] = useState(INIT_FAQ_DATA);
+  // ===== FAQ STATE (đưa lên trước để tránh lỗi TDZ) =====
+  const [faqList, setFaqList] = useState([]);
+  const [loadingFAQ, setLoadingFAQ] = useState(false);
   const [faqForm, setFaqForm] = useState({
     id: null,
     question: "",
@@ -105,6 +43,76 @@ const AdminSupport = () => {
   });
   const [faqModalOpen, setFaqModalOpen] = useState(false);
   const [faqErrors, setFaqErrors] = useState({});
+  const [faqPage, setFaqPage] = useState(0);
+  const [faqSize] = useState(5);
+  const [faqTotal, setFaqTotal] = useState(0);
+
+  const fetchTickets = async () => {
+    try {
+      setLoadingTickets(true);
+
+      const params =
+        statusFilter === "all"
+          ? {}
+          : {
+              status: statusFilter.toUpperCase(),
+            };
+
+      const res = await adminSupportService.getAllTickets({
+        ...params,
+        page: ticketPage,
+        size: ticketSize,
+      });
+
+      const list = res.data.data.content.map((item) => ({
+        id: item.id,
+        name: item.fullName,
+        email: item.email,
+        subject: item.subject,
+        message: item.message,
+        status: item.status.toLowerCase(),
+        createdAt: new Date(item.createdAt).toLocaleString("vi-VN"),
+        reply: item.reply || "",
+        supportCode: item.supportCode,
+        userId: item.userId,
+      }));
+      setTicketTotal(res.data.data.totalElements);
+      setTickets(list);
+    } catch (error) {
+      console.error(error);
+      message.error("Không thể tải danh sách yêu cầu hỗ trợ");
+    } finally {
+      setLoadingTickets(false);
+    }
+  };
+
+  const fetchFAQ = async () => {
+    try {
+      setLoadingFAQ(true);
+
+      const res = await getFAQ(faqPage, faqSize);
+
+      setFaqList(res.data.data.content || res.data.data);
+      setFaqTotal(res.data.data.totalElements);
+    } catch (error) {
+      console.error(error);
+      message.error("Không thể tải danh sách FAQ");
+    } finally {
+      setLoadingFAQ(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTickets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter, ticketPage]);
+
+  useEffect(() => {
+    if (activeTab === "faq") {
+      fetchFAQ();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, faqPage]);
 
   // ---------- TICKET HANDLERS ----------
   const filteredTickets =
@@ -112,9 +120,26 @@ const AdminSupport = () => {
       ? tickets
       : tickets.filter((t) => t.status === statusFilter);
 
-  const openTicket = (ticket) => {
-    setSelectedTicket(ticket);
-    setReplyText(ticket.reply || "");
+  const openTicket = async (ticket) => {
+    try {
+      const res = await adminSupportService.getTicketById(ticket.id);
+      const data = res.data.data;
+
+      setSelectedTicket({
+        id: data.id,
+        name: data.fullName,
+        email: data.email,
+        subject: data.subject,
+        message: data.message,
+        reply: data.reply || "",
+        status: data.status.toLowerCase(),
+        createdAt: new Date(data.createdAt).toLocaleString("vi-VN"),
+      });
+
+      setReplyText(data.reply || "");
+    } catch (error) {
+      message.error("Không thể tải chi tiết yêu cầu");
+    }
   };
 
   const closeTicket = () => {
@@ -122,38 +147,74 @@ const AdminSupport = () => {
     setReplyText("");
   };
 
-  const handleSendReply = () => {
+  const handleSendReply = async () => {
     if (!replyText.trim()) {
       message.warning("Vui lòng nhập nội dung phản hồi");
       return;
     }
-    setSendingReply(true);
-    setTimeout(() => {
-      setTickets((prev) =>
-        prev.map((t) =>
-          t.id === selectedTicket.id
-            ? { ...t, reply: replyText, status: "replied" }
-            : t,
-        ),
-      );
+
+    try {
+      setSendingReply(true);
+
+      await adminSupportService.replyTicket(selectedTicket.id, {
+        reply: replyText,
+      });
+
+      message.success("Đã gửi phản hồi");
+
       setSelectedTicket((prev) => ({
         ...prev,
         reply: replyText,
         status: "replied",
       }));
+
+      fetchTickets();
+    } catch (error) {
+      message.error("Gửi phản hồi thất bại");
+    } finally {
       setSendingReply(false);
-      message.success("Đã gửi phản hồi cho khách hàng!");
-    }, 800);
+    }
   };
 
   const handleMarkResolved = (ticket) => {
-    setTickets((prev) =>
-      prev.map((t) => (t.id === ticket.id ? { ...t, status: "resolved" } : t)),
-    );
-    if (selectedTicket?.id === ticket.id) {
-      setSelectedTicket((prev) => ({ ...prev, status: "resolved" }));
+    if (!replyText.trim()) {
+      message.warning("Bạn cần nhập nội dung phản hồi trước.");
+      return;
     }
-    message.success("Đã đánh dấu yêu cầu là đã giải quyết");
+
+    Modal.confirm({
+      title: "Xác nhận",
+      content: "Bạn có chắc chắn muốn đánh dấu yêu cầu này đã được giải quyết?",
+      okText: "Đồng ý",
+      cancelText: "Hủy",
+      centered: true,
+
+      onOk: async () => {
+        try {
+          await adminSupportService.replyTicket(ticket.id, {
+            reply: replyText,
+          });
+
+          await adminSupportService.resolveTicket(ticket.id);
+
+          message.success("Đã phản hồi và đánh dấu yêu cầu đã giải quyết");
+
+          setSelectedTicket((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  reply: replyText,
+                  status: "resolved",
+                }
+              : prev,
+          );
+
+          fetchTickets();
+        } catch (error) {
+          message.error("Không thể cập nhật trạng thái");
+        }
+      },
+    });
   };
 
   const handleDeleteTicket = (ticket) => {
@@ -163,23 +224,41 @@ const AdminSupport = () => {
       okText: "Xóa",
       okType: "danger",
       cancelText: "Hủy",
-      onOk: () => {
-        setTickets((prev) => prev.filter((t) => t.id !== ticket.id));
-        if (selectedTicket?.id === ticket.id) closeTicket();
-        message.success("Đã xóa yêu cầu hỗ trợ");
+      onOk: async () => {
+        try {
+          await adminSupportService.deleteTicket(ticket.id);
+
+          setTickets((prev) => prev.filter((t) => t.id !== ticket.id));
+
+          if (selectedTicket?.id === ticket.id) closeTicket();
+
+          message.success("Đã xóa yêu cầu hỗ trợ");
+        } catch (error) {
+          message.error("Xóa thất bại");
+        }
       },
     });
   };
 
   // ---------- FAQ HANDLERS ----------
   const openAddFaq = () => {
-    setFaqForm({ id: null, question: "", answer: "" });
+    setFaqForm({
+      id: null,
+      question: "",
+      answer: "",
+    });
+
     setFaqErrors({});
     setFaqModalOpen(true);
   };
 
   const openEditFaq = (item) => {
-    setFaqForm(item);
+    setFaqForm({
+      id: item.id,
+      question: item.question,
+      answer: item.answer,
+    });
+
     setFaqErrors({});
     setFaqModalOpen(true);
   };
@@ -203,44 +282,40 @@ const AdminSupport = () => {
     return newErrors;
   };
 
-  const handleSaveFaq = () => {
+  const handleSaveFaq = async () => {
     const newErrors = validateFaq();
+
     if (Object.keys(newErrors).length > 0) {
       setFaqErrors(newErrors);
       return;
     }
 
-    if (faqForm.id) {
-      // update
-      setFaqList((prev) =>
-        prev.map((f) => (f.id === faqForm.id ? { ...faqForm } : f)),
-      );
-      message.success("Đã cập nhật câu hỏi thường gặp");
-    } else {
-      // create
-      const newId = Math.max(0, ...faqList.map((f) => f.id)) + 1;
-      setFaqList((prev) => [...prev, { ...faqForm, id: newId }]);
-      message.success("Đã thêm câu hỏi thường gặp mới");
-    }
-    closeFaqModal();
-  };
+    try {
+      const data = {
+        question: faqForm.question,
+        answer: faqForm.answer,
+      };
 
-  const handleDeleteFaq = (item) => {
-    Modal.confirm({
-      title: "Xóa câu hỏi thường gặp",
-      content: `Bạn có chắc muốn xóa câu hỏi "${item.question}"?`,
-      okText: "Xóa",
-      okType: "danger",
-      cancelText: "Hủy",
-      onOk: () => {
-        setFaqList((prev) => prev.filter((f) => f.id !== item.id));
-        message.success("Đã xóa câu hỏi thường gặp");
-      },
-    });
+      if (faqForm.id) {
+        await adminFAQService.updateFAQ(faqForm.id, data);
+        message.success("Cập nhật FAQ thành công");
+      } else {
+        await adminFAQService.createFAQ(data);
+        message.success("Thêm FAQ thành công");
+      }
+
+      setFaqPage(0);
+      await fetchFAQ();
+
+      closeFaqModal();
+    } catch (error) {
+      console.error(error);
+      message.error("Lưu FAQ thất bại");
+    }
   };
 
   return (
-    <div className="admin-support-page" style={{ background: T.bg }}>
+    <div className="admin-support-page">
       <div className="admin-support-container">
         <UserHeader
           title="Quản lý Hỗ trợ và thắc mắc"
@@ -254,14 +329,14 @@ const AdminSupport = () => {
             onClick={() => setActiveTab("tickets")}
           >
             Yêu cầu hỗ trợ
-            <span className="admin-tab-count">{tickets.length}</span>
+            <span className="admin-tab-count">{ticketTotal}</span>
           </button>
           <button
             className={`admin-tab-btn ${activeTab === "faq" ? "active" : ""}`}
             onClick={() => setActiveTab("faq")}
           >
             Câu hỏi thường gặp
-            <span className="admin-tab-count">{faqList.length}</span>
+            <span className="admin-tab-count">{faqTotal}</span>
           </button>
         </div>
 
@@ -284,6 +359,9 @@ const AdminSupport = () => {
             </div>
 
             <div className="admin-ticket-list">
+              {loadingTickets && (
+                <div className="admin-empty-state">Đang tải dữ liệu...</div>
+              )}
               {filteredTickets.length === 0 && (
                 <div className="admin-empty-state">Không có yêu cầu nào</div>
               )}
@@ -314,14 +392,6 @@ const AdminSupport = () => {
                   </div>
 
                   <div className="admin-ticket-actions">
-                    {ticket.status !== "resolved" && (
-                      <button
-                        className="admin-action-btn resolve"
-                        onClick={() => handleMarkResolved(ticket)}
-                      >
-                        Đánh dấu đã giải quyết
-                      </button>
-                    )}
                     <button
                       className="admin-action-btn delete"
                       onClick={() => handleDeleteTicket(ticket)}
@@ -332,6 +402,14 @@ const AdminSupport = () => {
                 </div>
               ))}
             </div>
+            <AppPagination
+              page={ticketPage}
+              size={ticketSize}
+              total={ticketTotal}
+              onChange={(page) => {
+                setTicketPage(page);
+              }}
+            />
           </div>
         )}
 
@@ -348,6 +426,9 @@ const AdminSupport = () => {
             </div>
 
             <div className="admin-faq-list">
+              {loadingFAQ && (
+                <div className="admin-empty-state">Đang tải dữ liệu...</div>
+              )}
               {faqList.map((item) => (
                 <div key={item.id} className="admin-faq-item">
                   <div className="admin-faq-content">
@@ -371,6 +452,14 @@ const AdminSupport = () => {
                 </div>
               ))}
             </div>
+            <AppPagination
+              page={faqPage}
+              size={faqSize}
+              total={faqTotal}
+              onChange={(page) => {
+                setFaqPage(page);
+              }}
+            />
           </div>
         )}
       </div>
@@ -424,20 +513,23 @@ const AdminSupport = () => {
 
             <div className="admin-modal-footer">
               {selectedTicket.status !== "resolved" && (
-                <button
-                  className="admin-secondary-btn"
-                  onClick={() => handleMarkResolved(selectedTicket)}
-                >
-                  Đánh dấu đã giải quyết
-                </button>
+                <>
+                  <button
+                    className="admin-secondary-btn"
+                    onClick={() => handleMarkResolved(selectedTicket)}
+                  >
+                    Đánh dấu đã giải quyết
+                  </button>
+
+                  <button
+                    className="admin-primary-btn"
+                    disabled={sendingReply}
+                    onClick={handleSendReply}
+                  >
+                    {sendingReply ? "Đang gửi..." : "Gửi phản hồi"}
+                  </button>
+                </>
               )}
-              <button
-                className="admin-primary-btn"
-                disabled={sendingReply}
-                onClick={handleSendReply}
-              >
-                {sendingReply ? "Đang gửi..." : "Gửi phản hồi"}
-              </button>
             </div>
           </div>
         </div>

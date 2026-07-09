@@ -1,4 +1,5 @@
 import React, { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dropdown, message } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -20,25 +21,38 @@ import Capnhatmatkhau from "../../components/modal/auth/Capnhatmatkhau";
 
 const Header = ({ onMenuToggle }) => {
   const { logout, userFullName, refreshUser, user } = useContext(AuthContext);
+  const IMG_URL = import.meta.env.VITE_IMG_URL;
+
+  const avatarSrc = user?.avatar
+    ? user.avatar.startsWith("http")
+      ? user.avatar
+      : `${IMG_URL}${user.avatar}`
+    : "";
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = React.useState(false);
 
   const handleProfileUpdate = async (values) => {
     try {
-      const [firstName, ...lastNameParts] = values.fullName.trim().split(" ");
-      const lastName = lastNameParts.join(" ") || "";
-      const updateData = {
-        firstName,
-        lastName,
-        email: values.email,
-      };
-      await updateProfileApi(updateData);
+      await updateProfileApi(
+        {
+          fullName: values.fullName,
+          email: values.email,
+          phone: values.phone,
+          avatar: values.avatar,
+        },
+        values.avatarFile,
+      );
+
       toast.success("Cập nhật thông tin thành công!");
+
       await refreshUser();
+
+      setIsModalOpen(false);
     } catch (error) {
-      const msg = error.response?.data?.message || "Email đã tồn tại!";
+      const msg = error.response?.data?.message || "Cập nhật thất bại!";
+
       toast.error(msg);
-      throw new Error(msg);
+      throw error;
     }
   };
 
@@ -59,15 +73,17 @@ const Header = ({ onMenuToggle }) => {
     }
   };
 
+  const navigate = useNavigate();
+
   const handleLogout = () => {
     localStorage.removeItem("userRole");
     localStorage.removeItem("userInfo");
     localStorage.removeItem("accessToken");
+
     logout();
     message.success("Đăng xuất thành công!");
-    window.location.href = "/";
+    navigate("/login");
   };
-
   const menuItems = [
     {
       key: "profile",
@@ -115,27 +131,29 @@ const Header = ({ onMenuToggle }) => {
         >
           <div className="user-info">
             <div className="user-avatar">
-              <img
-                src={
-                  user?.avatar ||
-                  "https://ui-avatars.com/api/?name=" +
-                    encodeURIComponent(displayName) +
-                    "&background=4f46e5&color=fff&size=128"
-                }
-                alt="avatar"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  borderRadius: "50%",
-                }}
-                onError={(e) => {
-                  e.currentTarget.src =
+              {avatarSrc ? (
+                <img
+                  src={avatarSrc}
+                  alt="avatar"
+                  className="user-avatar-img"
+                  onError={(e) => {
+                    e.currentTarget.src =
+                      "https://ui-avatars.com/api/?name=" +
+                      encodeURIComponent(displayName) +
+                      "&background=4f46e5&color=fff&size=128";
+                  }}
+                />
+              ) : (
+                <img
+                  src={
                     "https://ui-avatars.com/api/?name=" +
                     encodeURIComponent(displayName) +
-                    "&background=4f46e5&color=fff&size=128";
-                }}
-              />
+                    "&background=4f46e5&color=fff&size=128"
+                  }
+                  alt="avatar"
+                  className="user-avatar-img"
+                />
+              )}
             </div>
             <span className="user-name">{displayName}</span>
             <FontAwesomeIcon icon={faCog} className="dropdown-icon" />

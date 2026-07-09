@@ -15,6 +15,8 @@ import { useNavigate } from "react-router-dom";
 
 import UserHeader from "../../components/user/UserHeader";
 import supportService from "../../services/customer/supportService";
+import SupportTable from "../../components/customer/SupportTable";
+import AppPagination from "../../components/common/AppPagination";
 
 import "../../assets/styles/customer/MySupport.css";
 
@@ -25,21 +27,26 @@ const MySupport = () => {
 
   const [loading, setLoading] = useState(false);
   const [supports, setSupports] = useState([]);
-
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(5);
+  const [total, setTotal] = useState(0);
   const [openDetail, setOpenDetail] = useState(false);
   const [selectedSupport, setSelectedSupport] = useState(null);
 
   useEffect(() => {
     loadSupports();
-  }, []);
+  }, [page, size]);
 
   const loadSupports = async () => {
     try {
       setLoading(true);
 
-      const res = await supportService.getMySupport();
+      const res = await supportService.getMySupport(page, size);
 
-      setSupports(res.data.data || []);
+      const data = res.data.data;
+
+      setSupports(data.content || []);
+      setTotal(data.totalElements || 0);
     } catch (error) {
       message.error("Không thể tải danh sách yêu cầu hỗ trợ.");
     } finally {
@@ -62,50 +69,6 @@ const MySupport = () => {
         return <Tag>{status}</Tag>;
     }
   };
-
-  const columns = [
-    {
-      title: "Mã hỗ trợ",
-      dataIndex: "supportCode",
-      width: 160,
-      align: "center",
-    },
-    {
-      title: "Chủ đề",
-      dataIndex: "subject",
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      width: 170,
-      align: "center",
-      render: (status) => getStatusTag(status),
-    },
-    {
-      title: "Ngày gửi",
-      dataIndex: "createdAt",
-      width: 190,
-      align: "center",
-      render: (value) => (value ? new Date(value).toLocaleString("vi-VN") : ""),
-    },
-    {
-      title: "Thao tác",
-      width: 140,
-      align: "center",
-      render: (_, record) => (
-        <Button
-          className="btn-view"
-          icon={<EyeOutlined />}
-          onClick={() => {
-            setSelectedSupport(record);
-            setOpenDetail(true);
-          }}
-        >
-          Xem
-        </Button>
-      ),
-    },
-  ];
 
   return (
     <div className="my-support-page">
@@ -132,16 +95,26 @@ const MySupport = () => {
           ) : supports.length === 0 ? (
             <Empty description="Bạn chưa gửi yêu cầu hỗ trợ nào." />
           ) : (
-            <Table
-              className="my-support-table"
-              rowKey="id"
-              columns={columns}
-              dataSource={supports}
-              pagination={{
-                pageSize: 5,
-                showSizeChanger: false,
-              }}
-            />
+            <>
+              <SupportTable
+                data={supports}
+                loading={loading}
+                onView={(record) => {
+                  setSelectedSupport(record);
+                  setOpenDetail(true);
+                }}
+              />
+
+              <AppPagination
+                page={page}
+                size={size}
+                total={total}
+                onChange={(newPage, newSize) => {
+                  setPage(newPage);
+                  setSize(newSize);
+                }}
+              />
+            </>
           )}
         </Card>
 

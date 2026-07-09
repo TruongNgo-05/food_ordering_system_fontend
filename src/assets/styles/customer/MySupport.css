@@ -1,0 +1,167 @@
+/* ================= SUPPORT PAGE ================= */
+
+.my-support-back {
+  margin: 20px 0;
+}
+
+.my-support-card {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Loading */
+.my-support-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 250px;
+}
+
+/* ================= SUPPORT TABLE ================= */
+
+.my-support-card .ant-table {
+  background: transparent;
+}
+
+/* Header */
+.my-support-card .ant-table-thead > tr > th {
+  background: #1f1f1f !important;
+  color: #d6b36a !important;
+
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+
+  border-bottom: 1px solid rgba(214, 179, 106, 0.3);
+}
+
+/* Body */
+.my-support-card .ant-table-tbody > tr > td {
+  background: var(--surface);
+  color: var(--text);
+
+  font-size: 14px;
+
+  border-bottom: 1px solid var(--border);
+}
+
+/* Hover */
+.my-support-card .ant-table-tbody > tr:hover > td {
+  background: rgba(214, 179, 106, 0.08) !important;
+}
+
+/* Mã hỗ trợ */
+.my-support-card .ant-table-tbody > tr > td:first-child {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ================= BUTTON ================= */
+
+.btn-view {
+  width: 38px;
+  height: 38px;
+
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  border-radius: 10px !important;
+
+  border: 1px solid var(--border) !important;
+
+  background: var(--surface) !important;
+  color: var(--primary) !important;
+
+  transition: all 0.25s ease;
+}
+
+.btn-view:hover {
+  background: var(--primary) !important;
+  color: #111 !important;
+  border-color: var(--primary) !important;
+}
+
+/* ================= STATUS TAG ================= */
+
+.status-pending,
+.status-replied,
+.status-resolved {
+  padding: 5px 12px !important;
+  border-radius: 20px !important;
+  font-weight: 600;
+}
+
+/* Chờ xử lý */
+.status-pending {
+  color: #d97706 !important;
+  background: #fff7e6 !important;
+  border-color: #ffd591 !important;
+}
+
+/* Đã phản hồi */
+.status-replied {
+  color: #1677ff !important;
+  background: #e6f4ff !important;
+  border-color: #91caff !important;
+}
+
+/* Đã xử lý */
+.status-resolved {
+  color: #389e0d !important;
+  background: #f6ffed !important;
+  border-color: #b7eb8f !important;
+}
+
+/* ================= MODAL ================= */
+
+.support-detail-modal .ant-modal-content {
+  border-radius: 14px;
+}
+
+.support-info {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+
+  row-gap: 14px;
+  column-gap: 20px;
+
+  margin-bottom: 24px;
+}
+
+.support-label {
+  font-weight: 600;
+  color: #666;
+}
+
+.support-value {
+  color: #222;
+}
+
+.support-box {
+  margin-top: 18px;
+}
+
+.support-box-title {
+  margin-bottom: 10px;
+
+  font-weight: 600;
+  color: #222;
+}
+
+.reply-card {
+  background: #f6ffed;
+  border-radius: 10px;
+}
+
+.reply-empty {
+  padding: 16px;
+
+  border: 1px dashed #d9d9d9;
+  border-radius: 10px;
+
+  text-align: center;
+  color: #999;
+}

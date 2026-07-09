@@ -82,6 +82,13 @@ const Header = () => {
   const { isLoggedIn, logout, userFullName, refreshUser, user } =
     useContext(AuthContext);
 
+  const IMG_URL = import.meta.env.VITE_IMG_URL;
+
+  const avatarSrc = user?.avatar
+    ? user.avatar.startsWith("http")
+      ? user.avatar
+      : `${IMG_URL}${user.avatar}`
+    : "";
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   const [isPasswordModalOpen, setIsPasswordModalOpen] = React.useState(false);
@@ -108,41 +115,26 @@ const Header = () => {
 
   const handleProfileUpdate = async (values) => {
     try {
-      const firstName = values.firstName || "";
-
-      const lastName = values.lastName || "";
-
-      const updateData = {
-        firstName,
-
-        lastName,
-
-        email: values.email,
-      };
-
-      await updateProfileApi(updateData);
-
-      if (values.avatar) {
-        const storedUser = localStorage.getItem("user");
-
-        const parsedUser = storedUser ? JSON.parse(storedUser) : {};
-
-        const nextUser = { ...parsedUser, avatar: values.avatar };
-
-        localStorage.setItem("user", JSON.stringify(nextUser));
-
-        localStorage.setItem("userInfo", JSON.stringify(nextUser));
-      }
+      await updateProfileApi(
+        {
+          fullName: values.fullName,
+          email: values.email,
+          phone: values.phone,
+          avatar: values.avatar,
+        },
+        values.avatarFile,
+      );
 
       toast.success("Cập nhật thông tin thành công!");
 
       await refreshUser();
+
+      setIsModalOpen(false);
     } catch (error) {
-      const msg = error.response?.data?.message || "Email đã tồn tại!";
+      const msg = error.response?.data?.message || "Cập nhật thất bại!";
 
       toast.error(msg);
-
-      throw new Error(msg);
+      throw error;
     }
   };
 
@@ -179,7 +171,7 @@ const Header = () => {
 
     message.success("Đăng xuất thành công!");
 
-    navigate("/customer");
+    navigate("/login");
   };
 
   const menuItems = [
@@ -222,8 +214,6 @@ const Header = () => {
 
   const displayName = userFullName || "Khách hàng";
 
-  const avatarSrc = user?.avatar || "";
-
   const requireAuthPaths = new Set(["/customer/orders", "/customer/favorites"]);
 
   const [cartOpen, setCartOpen] = useState(false);
@@ -235,9 +225,14 @@ const Header = () => {
   const [favorites, setFavorites] = useState([]);
 
   const [loadingFavorites, setLoadingFavorites] = useState(false);
-
   useEffect(() => {
     const loadCart = async () => {
+      // Chưa đăng nhập không gọi API cart
+      if (!isLoggedIn) {
+        setCart([]);
+        return;
+      }
+
       try {
         setLoadingCart(true);
 
@@ -247,13 +242,9 @@ const Header = () => {
 
         const mapped = (data?.items || []).map((i) => ({
           item_id: i.itemId,
-
           name: i.foodName,
-
           price: i.price,
-
           image: i.image,
-
           qty: i.quantity,
         }));
 
@@ -274,7 +265,7 @@ const Header = () => {
     return () => {
       window.removeEventListener(CART_UPDATED_EVENT, loadCart);
     };
-  }, []);
+  }, [isLoggedIn]);
 
   useEffect(() => {
     const loadFavorites = async () => {
@@ -324,6 +315,9 @@ const Header = () => {
 
   const updateCart = useCallback(
     async (id, delta) => {
+      if (!isLoggedIn) {
+        return;
+      }
       try {
         const item = cart.find((c) => c.item_id === id);
 
@@ -361,36 +355,42 @@ const Header = () => {
       }
     },
 
-    [cart],
+    [cart, , isLoggedIn],
   );
 
-  const removeItem = useCallback(async (id) => {
-    try {
-      await cartService.deleteCart(id);
+  const removeItem = useCallback(
+    async (id) => {
+      if (!isLoggedIn) {
+        return;
+      }
+      try {
+        await cartService.deleteCart(id);
 
-      const res = await cartService.getCart();
+        const res = await cartService.getCart();
 
-      const data = res.data?.data;
+        const data = res.data?.data;
 
-      const mapped = (data?.items || []).map((i) => ({
-        item_id: i.itemId,
+        const mapped = (data?.items || []).map((i) => ({
+          item_id: i.itemId,
 
-        name: i.foodName,
+          name: i.foodName,
 
-        price: i.price,
+          price: i.price,
 
-        image: i.image,
+          image: i.image,
 
-        qty: i.quantity,
-      }));
+          qty: i.quantity,
+        }));
 
-      setCart(mapped);
-    } catch (err) {
-      console.error("Remove cart item error:", err);
+        setCart(mapped);
+      } catch (err) {
+        console.error("Remove cart item error:", err);
 
-      toast.error("Xóa món thất bại");
-    }
-  }, []);
+        toast.error("Xóa món thất bại");
+      }
+    },
+    [isLoggedIn],
+  );
 
   const handleNavClick = (e, to) => {
     if (requireAuthPaths.has(to) && !isLoggedIn) {
@@ -404,7 +404,6 @@ const Header = () => {
 
     setMenuOpen(false);
   };
-
   return (
     <header
       id="customer_navbar"

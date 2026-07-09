@@ -52,30 +52,39 @@ const AdminFoods = () => {
 
       const data = res.data?.data || {};
       const content = Array.isArray(data.content) ? data.content : [];
+      const IMG_URL = import.meta.env.VITE_IMG_URL;
 
       const mapped = content.map((item) => ({
         id: item.id,
         name: item.name,
         description: item.description,
         price: item.price,
-        image: item.image || "",
+
+        image: item.image
+          ? item.image.startsWith("http")
+            ? item.image
+            : `${IMG_URL}${item.image}`
+          : "",
+
         images: (item.images || []).map((img) => ({
           id: img.id,
-          url: img.url,
+          url: img.url.startsWith("http") ? img.url : `${IMG_URL}${img.url}`,
+          rawUrl: img.url,
         })),
+
         rating: item.rating,
         soldCount: item.soldCount,
         status: item.status ? "active" : "inactive",
+
         category_id:
           item.categoryId ??
           item.category_id ??
           (item.category && item.category.id) ??
           null,
+
         category_name:
-          item.categoryName ||
-          (item.category && item.category.name) ||
-          item.categoryName ||
-          "—",
+          item.categoryName || (item.category && item.category.name) || "—",
+
         createdAt: item.createdAt,
       }));
 
@@ -185,13 +194,13 @@ const AdminFoods = () => {
   };
   const handleEdit = async (values) => {
     try {
-      const existingImages = values.existingImages || [];
-
-      const currentUrls = parseAdditionalImages(values.additionalImages);
-
-      // giữ ảnh chưa bị xoá
-      const finalExisting = existingImages.filter((img) =>
-        currentUrls.includes(img.url),
+      const currentUrls = parseAdditionalImages(values.additionalImages).map(
+        (url) => {
+          if (url.startsWith(import.meta.env.VITE_IMG_URL)) {
+            return url.replace(import.meta.env.VITE_IMG_URL, "");
+          }
+          return url;
+        },
       );
 
       await adminFoodService.updateFood(
@@ -201,26 +210,34 @@ const AdminFoods = () => {
           description: values.desc || "",
           categoryId: Number(values.category),
           price: (values.priceInThousand || 0) * 1000,
+
           imageUrl: values.imageFile
             ? null
             : values.removeImage
               ? ""
               : values.image || "",
-          imageUrls: finalExisting.map((img) => img.url),
+
+          imageUrls: currentUrls,
+
+          deletedImages: values.deletedImages || [],
 
           removeImage: values.removeImage || false,
         },
+
         values.imageFile,
-        values.imageFiles || [], // file upload riêng
+        values.imageFiles || [],
       );
 
       message.success("Cập nhật thành công");
+
       setOpenEdit(false);
       setEditingRecord(null);
+
       fetchFoods();
     } catch (err) {
-      console.error(err);
-      message.error("Cập nhật thất bại");
+      console.error("UPDATE FOOD ERROR:", err.response?.data || err);
+
+      message.error(err.response?.data?.message || "Cập nhật thất bại");
     }
   };
   const handleDelete = async (id) => {
@@ -295,15 +312,8 @@ const AdminFoods = () => {
           onToggleStatus={toggleStatus}
           onView={handleView}
           onEdit={(r) => {
+          
             setEditingRecord(r);
-            editForm.setFieldsValue({
-              ...r,
-              category: r.category_id,
-              priceInThousand: r.price / 1000,
-              imageFiles: [],
-              additionalImages: (r.images || []).map((i) => i.url).join("\n"),
-              existingImages: r.images || [],
-            });
             setOpenEdit(true);
           }}
           onDelete={handleDelete}

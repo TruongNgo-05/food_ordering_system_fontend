@@ -41,7 +41,12 @@ const TableOrder = () => {
     AT_TABLE: 3,
   };
   useEffect(() => {
-    loadMenuTable();
+    if (tableFromQr) {
+      loadMenuTable();
+    } else {
+      setLoading(false);
+      toast.warning("Không tìm thấy thông tin bàn");
+    }
   }, [tableFromQr]);
 
   const loadMenuTable = async () => {
@@ -174,7 +179,7 @@ const TableOrder = () => {
         setOpenQrModal(true);
         return;
       }
-
+      await loadMenuTable();
       navigate(`/table-order?table=${tableNumber}`);
     } catch (error) {
       console.error(error);

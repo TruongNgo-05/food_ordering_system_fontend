@@ -3,7 +3,21 @@ import { Modal, Tag } from "antd";
 import FoodImage from "../../common/FoodImage";
 
 const formatPrice = (v) => `${Number(v || 0).toLocaleString("vi-VN")}đ`;
+const IMG_URL = import.meta.env.VITE_IMG_URL;
 
+const getImageUrl = (url) => {
+  if (!url) return "";
+
+  if (
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("data:image")
+  ) {
+    return url;
+  }
+
+  return `${IMG_URL}${url}`;
+};
 const FoodViewModal = ({ open, onCancel, record, categories = [] }) => {
   const [activeImage, setActiveImage] = useState("");
 
@@ -11,14 +25,16 @@ const FoodViewModal = ({ open, onCancel, record, categories = [] }) => {
     if (!record) return [];
 
     return [
-      ...(record.image ? [record.image] : []),
-      ...(record.images || []).map((img) => img.url), 
+      ...(record.image ? [getImageUrl(record.image)] : []),
+
+      ...(record.images || []).map((img) => getImageUrl(img.url)),
     ];
   }, [record]);
 
   useEffect(() => {
     if (!record) return;
-    setActiveImage(record.image || "");
+
+    setActiveImage(record.image ? getImageUrl(record.image) : "");
   }, [record?.id, open]);
 
   const displayImage = activeImage || galleryImages[0] || record?.image || "";

@@ -1,0 +1,57 @@
+.app-pagination {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 24px;
+}
+
+/* Item */
+.app-pagination .ant-pagination-item,
+.app-pagination .ant-pagination-prev,
+.app-pagination .ant-pagination-next {
+  background: var(--pagination-bg, #fff);
+  border: 1px solid var(--pagination-border, #d9d9d9);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+/* Text */
+.app-pagination .ant-pagination-item a,
+.app-pagination .ant-pagination-prev button,
+.app-pagination .ant-pagination-next button {
+  color: var(--pagination-text, #222);
+  font-weight: 600;
+}
+
+/* Hover */
+.app-pagination .ant-pagination-item:hover,
+.app-pagination .ant-pagination-prev:hover,
+.app-pagination .ant-pagination-next:hover {
+  border-color: var(--pagination-primary, #d39415);
+}
+
+.app-pagination .ant-pagination-item:hover a,
+.app-pagination .ant-pagination-prev:hover button,
+.app-pagination .ant-pagination-next:hover button {
+  color: var(--pagination-primary, #d39415);
+}
+
+/* Active */
+.app-pagination .ant-pagination-item-active {
+  background: var(--pagination-primary, #d39415);
+  border-color: var(--pagination-primary, #d39415);
+}
+
+.app-pagination .ant-pagination-item-active a {
+  color: #fff !important;
+}
+
+/* Disabled */
+.app-pagination .ant-pagination-disabled {
+  opacity: 0.45;
+}
+
+.app-pagination .ant-pagination-disabled button,
+.app-pagination .ant-pagination-disabled a {
+  color: #999 !important;
+}

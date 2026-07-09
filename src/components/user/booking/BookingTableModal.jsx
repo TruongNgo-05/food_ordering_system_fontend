@@ -1,7 +1,129 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { InputNumber } from "antd";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import "../../../assets/styles/user/BookingTable.css";
 import tableService from "../../../services/user/tableService";
+
+const WHEEL_ITEM_HEIGHT = 44;
+const WHEEL_VISIBLE_ITEMS = 5;
+const MAX_PEOPLE = 20;
+
+// ====== Vòng quay chọn số người ======
+const PeopleWheelPicker = ({ value, onChange, onClose }) => {
+  const listRef = useRef(null);
+  const options = [
+    null,
+    ...Array.from({ length: MAX_PEOPLE }, (_, i) => i + 1),
+  ]; // null = "Tất cả"
+  const [activeIndex, setActiveIndex] = useState(() => {
+    const idx = options.findIndex((o) => o === (value || null));
+    return idx === -1 ? 0 : idx;
+  });
+  const scrollTimeout = useRef(null);
+
+  // Cuộn tới vị trí ban đầu khi mở
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.scrollTop = activeIndex * WHEEL_ITEM_HEIGHT;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleScroll = () => {
+    if (!listRef.current) return;
+    clearTimeout(scrollTimeout.current);
+
+    scrollTimeout.current = setTimeout(() => {
+      const scrollTop = listRef.current.scrollTop;
+      const idx = Math.round(scrollTop / WHEEL_ITEM_HEIGHT);
+      const clamped = Math.max(0, Math.min(options.length - 1, idx));
+
+      setActiveIndex(clamped);
+      listRef.current.scrollTo({
+        top: clamped * WHEEL_ITEM_HEIGHT,
+        behavior: "smooth",
+      });
+    }, 90);
+  };
+
+  const handleItemClick = (idx) => {
+    setActiveIndex(idx);
+    listRef.current?.scrollTo({
+      top: idx * WHEEL_ITEM_HEIGHT,
+      behavior: "smooth",
+    });
+  };
+
+  const handleConfirm = () => {
+    onChange(options[activeIndex]);
+    onClose();
+  };
+
+  return (
+    <div className="bktm-wheel-backdrop" onClick={onClose}>
+      <div className="bktm-wheel-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="bktm-wheel-handle" />
+
+        <h3 className="bktm-wheel-title">Chọn Số Người</h3>
+
+        <div
+          className="bktm-wheel-viewport"
+          style={{ height: WHEEL_ITEM_HEIGHT * WHEEL_VISIBLE_ITEMS }}
+        >
+          <div
+            className="bktm-wheel-highlight"
+            style={{ height: WHEEL_ITEM_HEIGHT }}
+          />
+
+          <div
+            className="bktm-wheel-list"
+            ref={listRef}
+            onScroll={handleScroll}
+            style={{
+              paddingTop:
+                WHEEL_ITEM_HEIGHT * Math.floor(WHEEL_VISIBLE_ITEMS / 2),
+              paddingBottom:
+                WHEEL_ITEM_HEIGHT * Math.floor(WHEEL_VISIBLE_ITEMS / 2),
+            }}
+          >
+            {options.map((opt, idx) => {
+              const distance = Math.abs(idx - activeIndex);
+              return (
+                <div
+                  key={opt ?? "all"}
+                  className={[
+                    "bktm-wheel-item",
+                    idx === activeIndex ? "bktm-wheel-item-active" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  style={{
+                    height: WHEEL_ITEM_HEIGHT,
+                    opacity: Math.max(0.25, 1 - distance * 0.35),
+                    transform: `scale(${Math.max(0.75, 1 - distance * 0.12)})`,
+                  }}
+                  onClick={() => handleItemClick(idx)}
+                >
+                  {opt === null ? "Tất cả" : `${opt} người`}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="bktm-wheel-fade bktm-wheel-fade-top" />
+          <div className="bktm-wheel-fade bktm-wheel-fade-bottom" />
+        </div>
+
+        <div className="bktm-wheel-actions">
+          <button className="bktm-wheel-cancel" onClick={onClose}>
+            Hủy
+          </button>
+          <button className="bktm-wheel-confirm" onClick={handleConfirm}>
+            Xác Nhận
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const BookingTableModal = ({
   isOpen,
@@ -13,6 +135,7 @@ const BookingTableModal = ({
   const [tables, setTables] = useState([]);
   const [peopleFilter, setPeopleFilter] = useState(capacity || null);
   const [loading, setLoading] = useState(false);
+  const [wheelOpen, setWheelOpen] = useState(false);
 
   useEffect(() => {
     setPeopleFilter(capacity || null);
@@ -62,7 +185,13 @@ const BookingTableModal = ({
   // ESC để đóng
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        if (wheelOpen) {
+          setWheelOpen(false);
+        } else {
+          onClose();
+        }
+      }
     };
 
     if (isOpen) {
@@ -70,64 +199,59 @@ const BookingTableModal = ({
     }
 
     return () => window.removeEventListener("keydown", onKey);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, wheelOpen]);
 
   if (!isOpen) return null;
 
   return (
     <div
-      className="btm__overlay"
+      className="bktm-overlay"
       onClick={handleBackdrop}
       role="dialog"
       aria-modal="true"
       aria-label="Chọn bàn"
     >
-      <div className="btm__panel">
+      <div className="bktm-panel">
         {/* Header */}
-        <div className="btm__header">
-          <div className="btm__header-text">
-            <span className="btm__eyebrow">Đặt Chỗ</span>
-            <h2 className="btm__title">Chọn Bàn Của Bạn</h2>
+        <div className="bktm-header">
+          <div className="bktm-header-text">
+            <span className="bktm-eyebrow">Đặt Chỗ</span>
+            <h2 className="bktm-title">Chọn Bàn Của Bạn</h2>
           </div>
 
-          <button className="btm__close" onClick={onClose} aria-label="Đóng">
+          <button className="bktm-close" onClick={onClose} aria-label="Đóng">
             ✕
           </button>
         </div>
 
         {/* Bộ lọc */}
-        <div className="btm__filter">
-          <label className="btm__filter-label">Số lượng người</label>
-
-          <InputNumber
-            min={1}
-            max={20}
-            value={peopleFilter}
-            onChange={(value) => setPeopleFilter(value)}
-            placeholder="Nhập số người"
-            style={{ width: "100%" }}
-          />
+        <div className="bktm-filter">
+          <label className="bktm-filter-label">Số lượng người</label>
 
           <button
             type="button"
-            className="btm__reset-filter"
-            onClick={() => setPeopleFilter(null)}
+            className="bktm-people-btn"
+            onClick={() => setWheelOpen(true)}
           >
-            Hiện tất cả bàn
+            <span className="bktm-people-btn-icon">👥</span>
+            <span className="bktm-people-btn-text">
+              {peopleFilter ? `${peopleFilter} người` : "Tất cả bàn"}
+            </span>
+            <span className="bktm-people-btn-chevron">⌄</span>
           </button>
         </div>
 
         {/* Grid */}
-        <div className="btm__grid-wrap">
+        <div className="bktm-grid-wrap">
           {loading ? (
-            <div className="btm__loading">
-              <div className="btm__spinner"></div>
+            <div className="bktm-loading">
+              <div className="bktm-spinner"></div>
               <span>Đang tải danh sách bàn…</span>
             </div>
           ) : tables.length === 0 ? (
-            <div className="btm__empty">Không tìm thấy bàn phù hợp.</div>
+            <div className="bktm-empty">Không tìm thấy bàn phù hợp.</div>
           ) : (
-            <div className="btm__grid">
+            <div className="bktm-grid">
               {tables.map((table) => {
                 const isSelected = selectedTable?.tableId === table.tableId;
 
@@ -135,8 +259,8 @@ const BookingTableModal = ({
                   <button
                     key={table.tableId}
                     className={[
-                      "btm__table-card",
-                      isSelected ? "btm__table-card--selected" : "",
+                      "bktm-table-card",
+                      isSelected ? "bktm-table-card-selected" : "",
                     ]
                       .filter(Boolean)
                       .join(" ")}
@@ -147,14 +271,14 @@ const BookingTableModal = ({
                     aria-pressed={isSelected}
                     aria-label={`Bàn ${table.tableNumber}`}
                   >
-                    <div className="btm__card-accent"></div>
+                    <div className="bktm-card-accent"></div>
 
-                    <div className="btm__card-body">
-                      <div className="btm__icon-wrap">
+                    <div className="bktm-card-body">
+                      <div className="bktm-icon-wrap">
                         <svg
                           viewBox="0 0 36 24"
                           fill="none"
-                          className="btm__icon"
+                          className="bktm-icon"
                         >
                           <rect
                             x="2"
@@ -195,16 +319,16 @@ const BookingTableModal = ({
                         </svg>
                       </div>
 
-                      <span className="btm__table-number">
+                      <span className="bktm-table-number">
                         {table.tableNumber}
                       </span>
 
-                      <span className="btm__table-capacity">
+                      <span className="bktm-table-capacity">
                         👥 {table.capacity} người
                       </span>
                     </div>
 
-                    {isSelected && <span className="btm__check">✓</span>}
+                    {isSelected && <span className="bktm-check">✓</span>}
                   </button>
                 );
               })}
@@ -213,18 +337,27 @@ const BookingTableModal = ({
         </div>
 
         {/* Footer */}
-        <div className="btm__footer">
-          <span className="btm__footer-note">
+        <div className="bktm-footer">
+          <span className="bktm-footer-note">
             {selectedTable
               ? `Đang chọn: ${selectedTable.tableNumber}`
               : "Chạm vào bàn để chọn"}
           </span>
 
-          <button className="btm__close-btn" onClick={onClose}>
+          <button className="bktm-close-btn" onClick={onClose}>
             Đóng
           </button>
         </div>
       </div>
+
+      {/* Vòng quay chọn số người */}
+      {wheelOpen && (
+        <PeopleWheelPicker
+          value={peopleFilter}
+          onChange={setPeopleFilter}
+          onClose={() => setWheelOpen(false)}
+        />
+      )}
     </div>
   );
 };

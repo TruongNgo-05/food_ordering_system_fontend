@@ -17,6 +17,7 @@ import { confirmLoginWithModal } from "../../utils/authGuards";
 import { useAuth } from "../../hooks/useAuth";
 import "../../assets/styles/CustomerHome.css";
 import Footer from "../../layouts/Footer";
+import CustomerSearch from "../../components/common/CustomerSearch";
 
 const CART_UPDATED_EVENT = "cart-updated-event";
 
@@ -35,7 +36,7 @@ const Home = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(0);
-  const pageSize = 12;
+  const pageSize = 10;
 
   const [cart, setCart] = useState([]);
   const [favorites, setFavorites] = useState([]);
@@ -155,26 +156,41 @@ const Home = () => {
   }, [isLoggedIn]);
 
   const loadCart = useCallback(async () => {
-    const res = await cartService.getCart();
-    const data = res.data?.data;
+    // chưa đăng nhập thì không gọi API cart
+    if (!isLoggedIn) {
+      setCart([]);
+      return;
+    }
 
-    setCart(
-      (data?.items || []).map((i) => ({
-        item_id: i.itemId,
-        name: i.foodName,
-        price: i.price,
-        image: i.image,
-        qty: i.quantity,
-      })),
-    );
-  }, []);
+    try {
+      const res = await cartService.getCart();
+
+      const data = res.data?.data;
+
+      setCart(
+        (data?.items || []).map((i) => ({
+          item_id: i.itemId,
+          name: i.foodName,
+          price: i.price,
+          image: i.image,
+          qty: i.quantity,
+        })),
+      );
+    } catch (error) {
+      throw error;
+    }
+  }, [isLoggedIn]);
 
   // ─── Load cart ───────────────────────────────────────────
   useEffect(() => {
-    loadCart().catch((err) => {
-      console.error("Load cart error:", err);
-    });
-  }, [loadCart]);
+    if (isLoggedIn) {
+      loadCart().catch((err) => {
+        console.error("Load cart error:", err);
+      });
+    } else {
+      setCart([]);
+    }
+  }, [isLoggedIn, loadCart]);
 
   // ─── Sync greeting name ──────────────────────────────────────────
   useEffect(() => {
@@ -305,20 +321,6 @@ const Home = () => {
         <SectionHeader
           title="Thực đơn"
           description={`Xin chào ${greetingName} 👋`}
-          extra={
-            <div
-              className="customer-search-box"
-              style={{ background: T.card, border: `1px solid ${T.border}` }}
-            >
-              <input
-                className="customer-search-input"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Tìm món..."
-                style={{ color: T.text }}
-              />
-            </div>
-          }
         />
 
         {/* Categories */}
@@ -344,6 +346,11 @@ const Home = () => {
             </button>
           ))}
         </div>
+        <CustomerSearch
+          keyword={search}
+          onKeywordChange={setSearch}
+          placeholder="Tìm món ăn..."
+        />
       </div>
 
       {/* Menu list */}
@@ -381,7 +388,7 @@ const Home = () => {
         )}
       </div>
       <Footer />
-      <CustomerChatWidget />
+      <CustomerChatWidget enableChat={isLoggedIn} />
       <BackToTopButton />
     </div>
   );
