@@ -13,7 +13,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { confirmLoginWithModal } from "../../utils/authGuards";
 import "../../assets/styles/CustomerFavorites.css";
 import CustomerSearch from "../../components/common/CustomerSearch";
-
+import Footer from "../../layouts/Footer";
 const CART_UPDATED_EVENT = "cart-updated-event";
 
 const Favorites = () => {
@@ -300,6 +300,7 @@ const Favorites = () => {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 };

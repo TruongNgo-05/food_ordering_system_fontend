@@ -9,7 +9,13 @@ const chatService = {
   getConversation: () => api.get("/customer/chat/conversation"),
 
   // Lấy lịch sử tin nhắn của customer
-  getCustomerMessages: () => api.get("/customer/chat/messages"),
+  getCustomerMessages: (beforeId = null, size = 5) =>
+    api.get("/customer/chat/messages", {
+      params: {
+        beforeId,
+        size,
+      },
+    }),
 
   // Customer gửi tin nhắn
   sendCustomerMessage: (data) => api.post("/customer/chat/send", data),
@@ -25,8 +31,14 @@ const chatService = {
   getConversations: () => api.get("/staff/chat/conversations"),
 
   // Lấy tin nhắn theo conversation
-  getStaffMessages: (conversationId) =>
-    api.get(`/staff/chat/messages/${conversationId}`),
+getStaffMessages(conversationId, beforeId = null, size = 5) {
+  return api.get(`/staff/chat/messages/${conversationId}`, {
+    params: {
+      beforeId,
+      size,
+    },
+  });
+},
 
   // Staff gửi tin nhắn
   sendStaffMessage: (data) => api.post("/staff/chat/send", data),

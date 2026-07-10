@@ -25,25 +25,18 @@ const StaffChatButton = () => {
     try {
       const res = await chatService.getConversations();
 
-      console.log("conversation:", res.data);
-
-      const data = res.data.map((item) => ({
-        id: item.conversationId,
-
-        customer: item.customerName,
-
-        avatar: item.customerAvatar,
-
-        lastMessage: item.lastMessage || "",
-
-        time: formatTime(item.lastTime),
-
-        unread: item.unreadCount,
-
-        status: item.status,
-
-        messages: [],
-      }));
+      const data = res.data
+        .sort((a, b) => new Date(b.lastTime) - new Date(a.lastTime))
+        .map((item) => ({
+          id: item.conversationId,
+          customer: item.customerName,
+          avatar: item.customerAvatar,
+          lastMessage: item.lastMessage || "",
+          time: formatTime(item.lastTime),
+          unread: item.unreadCount,
+          status: item.status,
+        
+        }));
 
       setConversations(data);
     } catch (error) {
@@ -52,9 +45,17 @@ const StaffChatButton = () => {
   };
 
   useEffect(() => {
-    if (open) {
+    if (!open) return;
+
+    // load ngay khi mở
+    loadConversations();
+
+    // sau đó tự động cập nhật mỗi 2 giây
+    const interval = setInterval(() => {
       loadConversations();
-    }
+    }, 2000);
+
+    return () => clearInterval(interval);
   }, [open]);
 
   // format thời gian
@@ -72,22 +73,26 @@ const StaffChatButton = () => {
   // ===============================
   // CLICK VÀO 1 CUSTOMER
   // ===============================
-  const handleSelectChat = async (item) => {
-    try {
-      const res = await chatService.getStaffMessages(item.id);
+const handleSelectChat = async (item) => {
+  try {
+    setSelectedChat(item);
 
-      setSelectedChat({
-        ...item,
+    await chatService.staffMarkAsRead(item.id);
 
-        messages: res.data,
-      });
-
-      // đánh dấu đã đọc
-      await chatService.staffMarkAsRead(item.id);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === item.id
+          ? {
+              ...c,
+              unread: 0,
+            }
+          : c
+      )
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   return (
     <>

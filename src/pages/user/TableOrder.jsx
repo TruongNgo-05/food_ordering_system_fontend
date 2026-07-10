@@ -11,7 +11,7 @@ import { T, fmt } from "../../constants/customerTheme";
 import tableService from "../../services/user/tableService";
 
 import "../../assets/styles/CustomerTableOrder.css";
-
+import Footer from "../../layouts/Footer"
 const TABLE_ORDER_STORAGE_KEY = "table-orders";
 
 const TableOrder = () => {
@@ -406,6 +406,7 @@ const TableOrder = () => {
           </div>
         </Modal>
       </div>
+      <Footer/>
     </div>
   );
 };

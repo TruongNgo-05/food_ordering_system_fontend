@@ -292,6 +292,12 @@
 .chat-footer input::placeholder {
   color: #999;
 }
+.chat-loading-old {
+  text-align: center;
+  padding: 8px 0;
+  color: #888;
+  font-size: 12px;
+}
 /* ===========================
    Animation
 =========================== */
