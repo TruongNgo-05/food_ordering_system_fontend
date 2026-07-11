@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Modal } from "antd";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocationDot, faQrcode } from "@fortawesome/free-solid-svg-icons";
@@ -18,7 +17,8 @@ import voucherService from "../../services/customer/voucherService";
 import { useAuth } from "../../hooks/useAuth";
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 import orderService from "../../services/customer/orderService";
-
+import sepayService from "../../services/sepayService";
+import PaymentQrModal from "../../components/customer/PaymentQrModal";
 const Cart = () => {
   const navigate = useNavigate();
 
@@ -40,8 +40,10 @@ const Cart = () => {
   const [paymentUrl, setPaymentUrl] = useState("");
   const [note, setNote] = useState("");
 
+  const [orderCode, setOrderCode] = useState("");
+  const [countdown, setCountdown] = useState(60);
   const [payMethod, setPayMethod] = useState("COD");
-
+  const [totalPrice, setTotalPrice] = useState(0);
   const [summary, setSummary] = useState({
     totalBefore: 0,
     totalAfter: 0,
@@ -211,6 +213,10 @@ const Cart = () => {
 
       if (payMethod === "ONLINE") {
         setPaymentUrl(orderData.paymentUrl);
+        setOrderCode(orderData.orderCode);
+        setTotalPrice(orderData.totalPrice);
+
+        setCountdown(60);
         setOpenQrModal(true);
         return;
       }
@@ -222,6 +228,73 @@ const Cart = () => {
       toast.error(err.response?.data?.message || "Tạo đơn hàng thất bại");
     }
   };
+  useEffect(() => {
+    if (!openQrModal || !orderCode) return;
+
+    setCountdown(60);
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === 1) {
+          clearInterval(timer);
+
+          handleExpireQr();
+
+          return 0;
+        }
+
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [openQrModal, orderCode]);
+  const handleExpireQr = async () => {
+    try {
+      await sepayService.deletePendingOrder(orderCode);
+
+      toast.warning("Mã QR đã hết hạn");
+    } catch (err) {
+      console.log(err);
+    } finally {
+      // Luôn đóng QR
+      setOpenQrModal(false);
+
+      // Reset
+      setOrderCode("");
+      setPaymentUrl("");
+      setCountdown(60);
+    }
+  };
+
+  useEffect(() => {
+    if (!openQrModal || !orderCode) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await sepayService.getPaymentStatus(orderCode);
+
+        const data = res.data;
+
+        if (data.paymentStatus === "PAID") {
+          clearInterval(interval);
+
+          setOpenQrModal(false);
+          setCountdown(60);
+          setOrderCode("");
+          setPaymentUrl("");
+
+          toast.success("Thanh toán thành công");
+
+          navigate("/customer/orders");
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [openQrModal, orderCode]);
 
   const placeOrder = () => {
     if (!deliveryInfo.address) {
@@ -443,33 +516,25 @@ const Cart = () => {
         onSave={saveAddressFromModal}
       />
 
-      {/* QR Modal */}
-      <Modal
-        title="Thanh toán SePay"
+      <PaymentQrModal
         open={openQrModal}
-        footer={null}
-        onCancel={() => setOpenQrModal(false)}
-      >
-        <div style={{ textAlign: "center" }}>
-          <img
-            src={paymentUrl}
-            alt="QR Payment"
-            style={{
-              width: 280,
-              maxWidth: "100%",
-            }}
-          />
+        paymentUrl={paymentUrl}
+        orderCode={orderCode}
+        totalPrice={fmt(totalPrice)}
+        countdown={countdown}
+        showCountdown={true}
+        onCancel={async () => {
+          try {
+            await sepayService.deletePendingOrder(orderCode);
+          } catch (e) {}
 
-          <p style={{ marginTop: 16 }}>Quét mã QR để thanh toán</p>
-
-          <button
-            className="cart-qr-confirm-btn"
-            onClick={() => navigate("/customer/orders")}
-          >
-            Xem đơn hàng
-          </button>
-        </div>
-      </Modal>
+          setOpenQrModal(false);
+          setOrderCode("");
+          setPaymentUrl("");
+          setTotalPrice(0);
+          setCountdown(60);
+        }}
+      />
     </div>
   );
 };

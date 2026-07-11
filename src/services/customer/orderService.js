@@ -12,11 +12,7 @@ const orderService = {
 
   reorderOrder: (idOrder) => api.post(`/customer/order/${idOrder}/reorder`),
 
-
-
-
-  // order table 
-  
+  // order table
 };
 
 export default orderService;

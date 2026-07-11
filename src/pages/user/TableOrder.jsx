@@ -11,8 +11,10 @@ import { T, fmt } from "../../constants/customerTheme";
 import tableService from "../../services/user/tableService";
 
 import "../../assets/styles/CustomerTableOrder.css";
-import Footer from "../../layouts/Footer"
+import Footer from "../../layouts/Footer";
 const TABLE_ORDER_STORAGE_KEY = "table-orders";
+import PaymentQrModal from "../../components/customer/PaymentQrModal";
+import sepayService from "../../services/sepayService";
 
 const TableOrder = () => {
   const navigate = useNavigate();
@@ -32,9 +34,11 @@ const TableOrder = () => {
     note: "",
     paymentMethod: "AT_TABLE",
   });
+  const [countdown, setCountdown] = useState(60);
   const [openQrModal, setOpenQrModal] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState("");
   const [orderInfo, setOrderInfo] = useState(null);
+  const [orderCode, setOrderCode] = useState("");
   const PAYMENT_METHOD_MAP = {
     COD: 1,
     ONLINE: 2,
@@ -49,6 +53,72 @@ const TableOrder = () => {
     }
   }, [tableFromQr]);
 
+  useEffect(() => {
+    if (!openQrModal || !orderCode) return;
+
+    setCountdown(60);
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === 1) {
+          clearInterval(timer);
+
+          handleExpireQr();
+
+          return 0;
+        }
+
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [openQrModal, orderCode]);
+
+  const handleExpireQr = async () => {
+    try {
+      await sepayService.deletePendingOrder(orderCode);
+
+      toast.warning("Mã QR đã hết hạn");
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setOpenQrModal(false);
+      setPaymentUrl("");
+      setOrderCode("");
+      setCountdown(60);
+    }
+  };
+  useEffect(() => {
+    if (!openQrModal || !orderCode) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await sepayService.getPaymentStatus(orderCode);
+
+        const data = res.data?.data || res.data;
+
+        if (data.paymentStatus === "PAID") {
+          clearInterval(interval);
+
+          setOpenQrModal(false);
+          setPaymentUrl("");
+          setOrderCode("");
+          setCountdown(60);
+
+          toast.success("Thanh toán thành công");
+
+          await loadMenuTable();
+
+          navigate(`/table-order?table=${tableNumber}`);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [openQrModal, orderCode]);
   const loadMenuTable = async () => {
     try {
       setLoading(true);
@@ -176,7 +246,13 @@ const TableOrder = () => {
 
       if (paymentMethodId === 2 && orderData.paymentUrl) {
         setPaymentUrl(orderData.paymentUrl);
+
+        setOrderCode(orderData.orderCode);
+
         setOpenQrModal(true);
+
+        setCountdown(60);
+
         return;
       }
       await loadMenuTable();
@@ -361,52 +437,26 @@ const TableOrder = () => {
             />
           </div>
         </Modal>
-        <Modal
-          title="Thanh toán SePay"
+        <PaymentQrModal
           open={openQrModal}
-          footer={null}
-          onCancel={() => setOpenQrModal(false)}
-          centered
-        >
-          <div style={{ textAlign: "center" }}>
-            <img
-              src={paymentUrl}
-              alt="QR Payment"
-              style={{
-                width: 280,
-                maxWidth: "100%",
-              }}
-            />
+          paymentUrl={paymentUrl}
+          orderCode={orderCode}
+          totalPrice={fmt(orderInfo?.totalPrice || 0)}
+          countdown={countdown}
+          showCountdown={true}
+          onCancel={async () => {
+            try {
+              await sepayService.deletePendingOrder(orderCode);
+            } catch (e) {}
 
-            <p style={{ marginTop: 16 }}>Quét mã QR để thanh toán</p>
-
-            {orderInfo && (
-              <>
-                <p>
-                  Mã đơn:
-                  <strong>{orderInfo.orderCode}</strong>
-                </p>
-
-                <p>
-                  Tổng tiền:
-                  <strong>{fmt(orderInfo.totalPrice)}</strong>
-                </p>
-              </>
-            )}
-
-            <button
-              className="cart-qr-confirm-btn"
-              onClick={() => {
-                setOpenQrModal(false);
-                navigate(`/table-order?table=${tableNumber}`);
-              }}
-            >
-              Quay lại menu
-            </button>
-          </div>
-        </Modal>
+            setOpenQrModal(false);
+            setPaymentUrl("");
+            setOrderCode("");
+            setCountdown(60);
+          }}
+        />
       </div>
-      <Footer/>
+      <Footer />
     </div>
   );
 };
