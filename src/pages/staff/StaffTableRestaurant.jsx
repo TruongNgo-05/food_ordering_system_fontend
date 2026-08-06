@@ -20,54 +20,77 @@ const StaffTableRestaurantPage = ({ onOpenOrder, onCheckIn, onCheckout }) => {
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("ALL");
+  const loadTables = async () => {
+    try {
+      setLoading(true);
 
-  // ===== LOAD TABLES =====
+      const res = await tablesStaffService.getAllTableStaff();
+
+      const list = res.data.data;
+
+      setTables(
+        list.map((t) => ({
+          tableId: t.id,
+          tableNumber: t.tableNumber,
+          capacity: t.capacity,
+          status: t.status,
+          statusText: t.statusText,
+          hasOrder: t.hasOrder,
+          orderId: t.orderId,
+          totalPrice: t.totalPrice,
+        })),
+      );
+    } catch (e) {
+      message.error("Không tải được danh sách bàn");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadTables = async () => {
-      try {
-        setLoading(true);
-
-        const res = await tablesStaffService.getAllTableStaff();
-        const list = res?.data?.data;
-
-        setTables(
-          list.map((t) => ({
-            tableId: t.id,
-            tableNumber: t.tableNumber,
-            capacity: t.capacity,
-            status: t.status,
-            statusText: t.statusText,
-          })),
-        );
-      } catch (err) {
-        console.error(err);
-        message.error("Không tải được danh sách bàn");
-        setTables([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadTables();
   }, []);
+  const handleReceive = async (table) => {
+    try {
+      await tablesStaffService.receiveCustomer(table.tableId);
+
+      message.success("Đã nhận khách");
+
+      loadTables();
+    } catch (e) {
+      message.error(e.response?.data?.message || "Lỗi");
+    }
+  };
+  const handleCheckout = async (table) => {
+    try {
+      await tablesStaffService.checkoutTable(table.tableId);
+
+      message.success("Thanh toán thành công");
+
+      loadTables();
+    } catch (e) {
+      message.error(e.response?.data?.message || "Lỗi");
+    }
+  };
 
   // ===== STAFF ACTION LOGIC =====
   const handleTableClick = (table) => {
-    switch (table.status) {
-      case "AVAILABLE":
-        onCheckIn?.(table); // gán khách / tạo order mới
-        break;
+    if (table.status === "AVAILABLE") {
+      handleReceive(table);
+      return;
+    }
 
-      case "OCCUPIED":
-        onOpenOrder?.(table); // xem / sửa order / thêm món
-        break;
+    if (table.status === "RESERVED") {
+      onCheckIn?.(table);
+      return;
+    }
 
-      case "RESERVED":
-        onCheckIn?.(table); // confirm khách đến (check-in)
-        break;
-
-      default:
-        break;
+    if (table.status === "OCCUPIED") {
+      if (table.hasOrder) {
+        handleCheckout(table);
+      } else {
+        onOpenOrder?.(table);
+      }
     }
   };
 
@@ -143,15 +166,34 @@ const StaffTableRestaurantPage = ({ onOpenOrder, onCheckIn, onCheckout }) => {
                   </div>
 
                   {/* ACTION BUTTONS THEO ROLE STAFF */}
-                  {table.status === "OCCUPIED" && (
+                  {table.status === "OCCUPIED" && table.hasOrder && (
+                    <>
+                      <div className="tpm__table-total">
+                        Tổng tiền
+                        <br />
+                        {table.totalPrice?.toLocaleString("vi-VN")} đ
+                      </div>
+
+                      <button
+                        className="tpm__action-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCheckout(table);
+                        }}
+                      >
+                        Thanh toán
+                      </button>
+                    </>
+                  )}
+                  {table.status === "OCCUPIED" && !table.hasOrder && (
                     <button
                       className="tpm__action-btn"
                       onClick={(e) => {
                         e.stopPropagation();
-                        onCheckout?.(table);
+                        onOpenOrder?.(table);
                       }}
                     >
-                      Thanh toán
+                      Gọi món
                     </button>
                   )}
 
@@ -160,7 +202,7 @@ const StaffTableRestaurantPage = ({ onOpenOrder, onCheckIn, onCheckout }) => {
                       className="tpm__action-btn"
                       onClick={(e) => {
                         e.stopPropagation();
-                        onCheckIn?.(table);
+                        handleReceive(table);
                       }}
                     >
                       Nhận khách

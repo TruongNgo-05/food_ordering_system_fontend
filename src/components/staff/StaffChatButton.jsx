@@ -9,6 +9,16 @@ import "../../assets/styles/staff/StaffChatButton.css";
 import StaffChatDetail from "../modal/staff/StaffChatDetail";
 import chatService from "../../services/chatService";
 
+const IMG_BASE_URL = import.meta.env.VITE_IMG_URL || "";
+
+const getAvatarUrl = (avatar) => {
+  if (!avatar) return null;
+  if (avatar.startsWith("http://") || avatar.startsWith("https://")) {
+    return avatar;
+  }
+  return `${IMG_BASE_URL}${avatar}`;
+};
+
 const StaffChatButton = () => {
   const [open, setOpen] = useState(false);
 
@@ -30,12 +40,11 @@ const StaffChatButton = () => {
         .map((item) => ({
           id: item.conversationId,
           customer: item.customerName,
-          avatar: item.customerAvatar,
+          avatar: getAvatarUrl(item.customerAvatar),
           lastMessage: item.lastMessage || "",
           time: formatTime(item.lastTime),
           unread: item.unreadCount,
           status: item.status,
-        
         }));
 
       setConversations(data);
@@ -73,26 +82,26 @@ const StaffChatButton = () => {
   // ===============================
   // CLICK VÀO 1 CUSTOMER
   // ===============================
-const handleSelectChat = async (item) => {
-  try {
-    setSelectedChat(item);
+  const handleSelectChat = async (item) => {
+    try {
+      setSelectedChat(item);
 
-    await chatService.staffMarkAsRead(item.id);
+      await chatService.staffMarkAsRead(item.id);
 
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === item.id
-          ? {
-              ...c,
-              unread: 0,
-            }
-          : c
-      )
-    );
-  } catch (error) {
-    console.log(error);
-  }
-};
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === item.id
+            ? {
+                ...c,
+                unread: 0,
+              }
+            : c
+        )
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <>
@@ -142,10 +151,21 @@ const handleSelectChat = async (item) => {
                 >
                   <div className="staff-chat-avatar">
                     {item.avatar ? (
-                      <img src={item.avatar} />
-                    ) : (
-                      item.customer.charAt(0)
-                    )}
+                      <img
+                        src={item.avatar}
+                        alt={item.customer}
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                          e.target.nextSibling.style.display = "flex";
+                        }}
+                      />
+                    ) : null}
+                    <span
+                      className="staff-chat-avatar-fallback"
+                      style={{ display: item.avatar ? "none" : "flex" }}
+                    >
+                      {item.customer.charAt(0)}
+                    </span>
                   </div>
 
                   <div className="staff-chat-info">
