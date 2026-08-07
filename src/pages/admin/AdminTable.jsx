@@ -102,11 +102,88 @@ const AdminTable = () => {
       message.error("Xóa thất bại");
     }
   };
-  // xuat pdf
-  const handleExportQrPdf = () => {
-    console.log("Xuất QR PDF");
-    // gọi API hoặc xử lý tạo PDF ở đây
+  const buildQrImageUrl = (tableNumber) => {
+    const tableUrl = `${window.location.origin}/table-order?table=${encodeURIComponent(
+      tableNumber,
+    )}`;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(
+      tableUrl,
+    )}`;
   };
+
+  const openPrintWindow = (tables) => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      message.error(
+        "Không thể mở cửa sổ in. Vui lòng cho phép cửa sổ bật lên.",
+      );
+      return;
+    }
+
+    const rows = tables
+      .map(
+        (table) => `
+          <div class="print-qr-card">
+            <div class="print-qr-title">Bàn ${table.tableNumber}</div>
+            <img src="${buildQrImageUrl(table.tableNumber)}" alt="QR ${table.tableNumber}" />
+            <div class="print-qr-link">${window.location.origin}/table-order?table=${table.tableNumber}</div>
+          </div>
+        `,
+      )
+      .join("");
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>In mã QR bàn</title>
+          <style>
+            body { margin: 0; padding: 16px; font-family: Arial, sans-serif; background: #fff; }
+            .print-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+            .print-qr-card { padding: 16px; border: 1px solid #ddd; border-radius: 12px; text-align: center; }
+            .print-qr-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+            .print-qr-card img { width: 220px; height: 220px; object-fit: contain; margin-bottom: 12px; }
+            .print-qr-link { font-size: 12px; word-break: break-all; color: #333; }
+            @media print { .print-qr-card { page-break-inside: avoid; } }
+          </style>
+        </head>
+        <body>
+          <h1>In mã QR bàn</h1>
+          <div class="print-grid">${rows}</div>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 500);
+  };
+
+  const handlePrintQrCodes = async () => {
+    try {
+      setLoading(true);
+      const res = await adminTableService.getAllTable({
+        page: 0,
+        size: 9999,
+        tableNumber: search || undefined,
+      });
+      const allTables = res?.data?.data?.content || [];
+
+      if (!allTables.length) {
+        message.warning("Không có bàn nào để in QR");
+        return;
+      }
+
+      openPrintWindow(allTables);
+    } catch (err) {
+      console.error("Lỗi in QR:", err);
+      message.error("Xảy ra lỗi khi in QR");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // ================= EFFECT =================
   useEffect(() => {
     const delay = setTimeout(() => {
@@ -125,8 +202,8 @@ const AdminTable = () => {
         buttonText="Thêm bàn"
         handleAdd={() => setOpenAdd(true)}
         extra={
-          <Button icon={<QrcodeOutlined />} onClick={handleExportQrPdf}>
-            Xuất QR PDF
+          <Button icon={<QrcodeOutlined />} onClick={handlePrintQrCodes}>
+            In QR bàn
           </Button>
         }
       />
