@@ -9,6 +9,8 @@ import adminVoucherService from "../../services/admin/adminVoucher";
 import VoucherCreateModal from "../../components/modal/admin/VoucherCreateModal";
 import VoucherEditModal from "../../components/modal/admin/VoucherUpdateModal";
 import VoucherDetailDrawer from "../../components/modal/admin/VoucherDetailModal";
+import "../../assets/styles/AdminPages.css";
+
 const pageSize = 5;
 
 const AdminVouchers = () => {
@@ -160,6 +162,7 @@ const AdminVouchers = () => {
       </div>
 
       {/* TABLE */}
+      <div className="admin-table-wrapper">
       <VoucherTable
         data={items}
         onView={async (record) => {
@@ -186,7 +189,7 @@ const AdminVouchers = () => {
         }}
         onDelete={handleDelete}
       />
-
+</div>
       {/* PAGINATION */}
       <AppPagination
         page={page}
@@ -200,7 +203,7 @@ const AdminVouchers = () => {
         open={openDetail}
         onClose={() => {
           setOpenDetail(false);
-          setDetailRecord(null); 
+          setDetailRecord(null);
         }}
         data={detailRecord}
       />

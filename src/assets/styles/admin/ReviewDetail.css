@@ -1,0 +1,224 @@
+.review-detail-shell {
+  font-family: inherit;
+}
+
+.review-detail-back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 16px;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted, #555);
+}
+
+.review-detail-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.review-detail-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #ddd);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.review-detail-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.review-detail-image-fallback {
+  width: 100%;
+  height: 160px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  background: var(--surface-2, #f5f5f5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 50px;
+}
+
+.review-detail-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: var(--text, #222);
+}
+
+.review-detail-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.review-detail-rating-value {
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--text, #222);
+}
+
+.review-detail-review-count {
+  font-size: 13px;
+  color: var(--muted, #777);
+  margin-bottom: 14px;
+}
+
+.review-detail-filters-title {
+  font-size: 12px;
+  color: var(--muted-2, #888);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.review-detail-filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.review-detail-filter-button {
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #ddd);
+  background: var(--surface-2, #f9f9f9);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--muted, #555);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 400;
+}
+
+.review-detail-filter-button.active {
+  border-color: var(--gold, #f59e0b);
+  background: var(--gold-light, #fff7e6);
+  color: var(--gold-dark, #b45309);
+  font-weight: 500;
+}
+
+.review-detail-filter-count {
+  font-size: 11px;
+  background: #eee;
+  color: #888;
+  border-radius: 99px;
+  padding: 1px 8px;
+}
+
+.review-detail-filter-count.active {
+  background: var(--gold, #f59e0b);
+  color: #fff;
+}
+
+.review-detail-list {
+  flex: 1;
+  min-width: 0;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.review-detail-empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted, #888);
+}
+
+.review-detail-card {
+  border: 1px solid var(--border, #ddd);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 10px;
+  background: var(--surface, #fff);
+}
+
+.review-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.review-detail-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.review-detail-username {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text, #222);
+}
+
+.review-detail-date {
+  font-size: 12px;
+  color: var(--muted, #888);
+}
+
+.review-detail-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.review-detail-badge {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-weight: 500;
+}
+
+.review-detail-badge.low {
+  background: #fcebeb;
+  color: #a32d2d;
+}
+
+.review-detail-badge.mid {
+  background: #faeeda;
+  color: #854f0b;
+}
+
+.review-detail-badge.high {
+  background: #eaf3de;
+  color: #3b6d11;
+}
+
+.review-detail-delete-btn {
+  background: none;
+  border: 1px solid var(--border, #ddd);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--muted, #666);
+}
+
+.review-detail-delete-btn:hover {
+  border-color: var(--gold, #f59e0b);
+  color: var(--gold-dark, #b45309);
+}
+
+.review-detail-stars {
+  margin-bottom: 8px;
+}
+
+.review-detail-comment {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted, #444);
+  line-height: 1.6;
+}

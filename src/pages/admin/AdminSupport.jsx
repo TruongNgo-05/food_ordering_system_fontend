@@ -217,29 +217,6 @@ const AdminSupport = () => {
     });
   };
 
-  const handleDeleteTicket = (ticket) => {
-    Modal.confirm({
-      title: "Xóa yêu cầu hỗ trợ",
-      content: `Bạn có chắc muốn xóa yêu cầu của "${ticket.name}"?`,
-      okText: "Xóa",
-      okType: "danger",
-      cancelText: "Hủy",
-      onOk: async () => {
-        try {
-          await adminSupportService.deleteTicket(ticket.id);
-
-          setTickets((prev) => prev.filter((t) => t.id !== ticket.id));
-
-          if (selectedTicket?.id === ticket.id) closeTicket();
-
-          message.success("Đã xóa yêu cầu hỗ trợ");
-        } catch (error) {
-          message.error("Xóa thất bại");
-        }
-      },
-    });
-  };
-
   // ---------- FAQ HANDLERS ----------
   const openAddFaq = () => {
     setFaqForm({
@@ -314,155 +291,167 @@ const AdminSupport = () => {
     }
   };
 
+  const handleDeleteFaq = (item) => {
+    Modal.confirm({
+      title: "Xóa FAQ",
+      content: `Bạn có chắc muốn xóa câu hỏi "${item.question}"?`,
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
+      centered: true,
+      onOk: async () => {
+        try {
+          await adminFAQService.deleteFAQ(item.id);
+
+          setFaqList((prev) => prev.filter((faq) => faq.id !== item.id));
+          setFaqTotal((prev) => Math.max(prev - 1, 0));
+          setFaqPage(0);
+
+          message.success("Đã xóa FAQ");
+        } catch (error) {
+          console.error(error);
+          message.error("Xóa FAQ thất bại");
+        }
+      },
+    });
+  };
+
   return (
     <div className="admin-support-page">
-      <div className="admin-support-container">
-        <UserHeader
-          title="Quản lý Hỗ trợ và thắc mắc"
-          description="Quản lý câu hỏi thường gặp và yêu cầu hỗ trợ từ người dùng"
-        />
+      <UserHeader
+        title="Quản lý Hỗ trợ và thắc mắc"
+        description="Quản lý câu hỏi thường gặp và yêu cầu hỗ trợ từ người dùng"
+      />
 
-        {/* TABS */}
-        <div className="admin-support-tabs">
-          <button
-            className={`admin-tab-btn ${activeTab === "tickets" ? "active" : ""}`}
-            onClick={() => setActiveTab("tickets")}
-          >
-            Yêu cầu hỗ trợ
-            <span className="admin-tab-count">{ticketTotal}</span>
-          </button>
-          <button
-            className={`admin-tab-btn ${activeTab === "faq" ? "active" : ""}`}
-            onClick={() => setActiveTab("faq")}
-          >
-            Câu hỏi thường gặp
-            <span className="admin-tab-count">{faqTotal}</span>
-          </button>
-        </div>
-
-        {/* ===== TICKETS TAB ===== */}
-        {activeTab === "tickets" && (
-          <div className="admin-support-section">
-            <div className="admin-section-toolbar">
-              <h3 className="admin-section-title">Danh sách yêu cầu hỗ trợ</h3>
-              <div className="admin-filter-group">
-                {["all", "pending", "replied", "resolved"].map((s) => (
-                  <button
-                    key={s}
-                    className={`admin-filter-btn ${statusFilter === s ? "active" : ""}`}
-                    onClick={() => setStatusFilter(s)}
-                  >
-                    {s === "all" ? "Tất cả" : STATUS_LABEL[s]}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="admin-ticket-list">
-              {loadingTickets && (
-                <div className="admin-empty-state">Đang tải dữ liệu...</div>
-              )}
-              {filteredTickets.length === 0 && (
-                <div className="admin-empty-state">Không có yêu cầu nào</div>
-              )}
-
-              {filteredTickets.map((ticket) => (
-                <div key={ticket.id} className="admin-ticket-item">
-                  <div
-                    className="admin-ticket-main"
-                    onClick={() => openTicket(ticket)}
-                  >
-                    <div className="admin-ticket-header">
-                      <span className="admin-ticket-subject">
-                        {ticket.subject}
-                      </span>
-                      <span
-                        className="admin-ticket-status"
-                        style={{ color: STATUS_COLOR[ticket.status] }}
-                      >
-                        ● {STATUS_LABEL[ticket.status]}
-                      </span>
-                    </div>
-                    <div className="admin-ticket-meta">
-                      <span>{ticket.name}</span>
-                      <span>{ticket.email}</span>
-                      <span>{ticket.createdAt}</span>
-                    </div>
-                    <div className="admin-ticket-preview">{ticket.message}</div>
-                  </div>
-
-                  <div className="admin-ticket-actions">
-                    <button
-                      className="admin-action-btn delete"
-                      onClick={() => handleDeleteTicket(ticket)}
-                    >
-                      Xóa
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <AppPagination
-              page={ticketPage}
-              size={ticketSize}
-              total={ticketTotal}
-              onChange={(page) => {
-                setTicketPage(page);
-              }}
-            />
-          </div>
-        )}
-
-        {/* ===== FAQ TAB ===== */}
-        {activeTab === "faq" && (
-          <div className="admin-support-section">
-            <div className="admin-section-toolbar">
-              <h3 className="admin-section-title">
-                Quản lý câu hỏi thường gặp
-              </h3>
-              <button className="admin-add-btn" onClick={openAddFaq}>
-                + Thêm câu hỏi
-              </button>
-            </div>
-
-            <div className="admin-faq-list">
-              {loadingFAQ && (
-                <div className="admin-empty-state">Đang tải dữ liệu...</div>
-              )}
-              {faqList.map((item) => (
-                <div key={item.id} className="admin-faq-item">
-                  <div className="admin-faq-content">
-                    <div className="admin-faq-question">{item.question}</div>
-                    <div className="admin-faq-answer">{item.answer}</div>
-                  </div>
-                  <div className="admin-faq-actions">
-                    <button
-                      className="admin-action-btn edit"
-                      onClick={() => openEditFaq(item)}
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      className="admin-action-btn delete"
-                      onClick={() => handleDeleteFaq(item)}
-                    >
-                      Xóa
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <AppPagination
-              page={faqPage}
-              size={faqSize}
-              total={faqTotal}
-              onChange={(page) => {
-                setFaqPage(page);
-              }}
-            />
-          </div>
-        )}
+      {/* TABS */}
+      <div className="admin-support-tabs">
+        <button
+          className={`admin-tab-btn ${activeTab === "tickets" ? "active" : ""}`}
+          onClick={() => setActiveTab("tickets")}
+        >
+          Yêu cầu hỗ trợ
+          <span className="admin-tab-count">{ticketTotal}</span>
+        </button>
+        <button
+          className={`admin-tab-btn ${activeTab === "faq" ? "active" : ""}`}
+          onClick={() => setActiveTab("faq")}
+        >
+          Câu hỏi thường gặp
+          <span className="admin-tab-count">{faqTotal}</span>
+        </button>
       </div>
+
+      {/* ===== TICKETS TAB ===== */}
+      {activeTab === "tickets" && (
+        <div className="admin-support-section">
+          <div className="admin-section-toolbar">
+            <h3 className="admin-section-title">Danh sách yêu cầu hỗ trợ</h3>
+            <div className="admin-filter-group">
+              {["all", "pending", "replied", "resolved"].map((s) => (
+                <button
+                  key={s}
+                  className={`admin-filter-btn ${statusFilter === s ? "active" : ""}`}
+                  onClick={() => setStatusFilter(s)}
+                >
+                  {s === "all" ? "Tất cả" : STATUS_LABEL[s]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="admin-ticket-list">
+            {loadingTickets && (
+              <div className="admin-empty-state">Đang tải dữ liệu...</div>
+            )}
+            {filteredTickets.length === 0 && (
+              <div className="admin-empty-state">Không có yêu cầu nào</div>
+            )}
+
+            {filteredTickets.map((ticket) => (
+              <div key={ticket.id} className="admin-ticket-item">
+                <div
+                  className="admin-ticket-main"
+                  onClick={() => openTicket(ticket)}
+                >
+                  <div className="admin-ticket-header">
+                    <span className="admin-ticket-subject">
+                      {ticket.subject}
+                    </span>
+                    <span
+                      className="admin-ticket-status"
+                      style={{ color: STATUS_COLOR[ticket.status] }}
+                    >
+                      ● {STATUS_LABEL[ticket.status]}
+                    </span>
+                  </div>
+                  <div className="admin-ticket-meta">
+                    <span>{ticket.name}</span>
+                    <span>{ticket.email}</span>
+                    <span>{ticket.createdAt}</span>
+                  </div>
+                  <div className="admin-ticket-preview">{ticket.message}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <AppPagination
+            page={ticketPage}
+            size={ticketSize}
+            total={ticketTotal}
+            onChange={(page) => {
+              setTicketPage(page);
+            }}
+          />
+        </div>
+      )}
+
+      {/* ===== FAQ TAB ===== */}
+      {activeTab === "faq" && (
+        <div className="admin-support-section">
+          <div className="admin-section-toolbar">
+            <h3 className="admin-section-title">Quản lý câu hỏi thường gặp</h3>
+            <button className="admin-add-btn" onClick={openAddFaq}>
+              + Thêm câu hỏi
+            </button>
+          </div>
+
+          <div className="admin-faq-list">
+            {loadingFAQ && (
+              <div className="admin-empty-state">Đang tải dữ liệu...</div>
+            )}
+            {faqList.map((item) => (
+              <div key={item.id} className="admin-faq-item">
+                <div className="admin-faq-content">
+                  <div className="admin-faq-question">{item.question}</div>
+                  <div className="admin-faq-answer">{item.answer}</div>
+                </div>
+                <div className="admin-faq-actions">
+                  <button
+                    className="admin-action-btn edit"
+                    onClick={() => openEditFaq(item)}
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    className="admin-action-btn delete"
+                    onClick={() => handleDeleteFaq(item)}
+                  >
+                    Xóa
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <AppPagination
+            page={faqPage}
+            size={faqSize}
+            total={faqTotal}
+            onChange={(page) => {
+              setFaqPage(page);
+            }}
+          />
+        </div>
+      )}
 
       {/* ===== TICKET DETAIL MODAL ===== */}
       {selectedTicket && (
@@ -476,34 +465,11 @@ const AdminSupport = () => {
             </div>
 
             <div className="admin-modal-body">
-              <div className="admin-modal-meta">
-                <p>
-                  <strong>Người gửi:</strong> {selectedTicket.name}
-                </p>
-                <p>
-                  <strong>Email:</strong> {selectedTicket.email}
-                </p>
-                <p>
-                  <strong>Thời gian:</strong> {selectedTicket.createdAt}
-                </p>
-                <p>
-                  <strong>Trạng thái:</strong>{" "}
-                  <span style={{ color: STATUS_COLOR[selectedTicket.status] }}>
-                    {STATUS_LABEL[selectedTicket.status]}
-                  </span>
-                </p>
-              </div>
-
-              <div className="admin-modal-message">
-                <strong>Nội dung:</strong>
-                <p>{selectedTicket.message}</p>
-              </div>
-
               <div className="admin-modal-reply">
                 <label htmlFor="reply">Phản hồi</label>
                 <textarea
                   id="reply"
-                  rows={4}
+                  rows={6}
                   placeholder="Nhập nội dung phản hồi cho khách hàng..."
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}

@@ -1,16 +1,17 @@
-/* ═══════════════════════════════════════════════════════════════ */
-/* Shared gold tokens (blog palette)                                */
-/* ═══════════════════════════════════════════════════════════════ */
+/*  
 :root {
   --gold: #c9a84c;
   --gold-light: #e8c96e;
   --gold-dark: #b8923f;
   --primary-rgb: 201, 168, 76;
+} */
+
+:root {
+  --gold: #d4af37;
+  --gold-hover: #c79c18;
+  --gold-dark: #b8923f;
 }
 
-/* ═══════════════════════════════════════════════════════════════ */
-/* Admin & Staff — nền trắng, nút vàng như blog                     */
-/* ═══════════════════════════════════════════════════════════════ */
 .layout.layout--dashboard {
   --bg: #f6f7fb;
   --surface: #ffffff;
@@ -32,7 +33,6 @@
   background: var(--bg);
 }
 
-/* Ant Design buttons inside admin/staff */
 .layout.layout--dashboard .ant-btn-primary {
   background: linear-gradient(135deg, var(--gold), var(--gold-dark)) !important;
   border: none !important;
@@ -44,6 +44,31 @@
   filter: brightness(1.06);
 }
 
+.user-header-add-btn,
+.user-header-add-btn:hover,
+.user-header-add-btn:focus {
+  background: var(--gold) !important;
+  border-color: var(--gold) !important;
+  color: #fff !important;
+}
+
+.user-header-add-btn:hover,
+.user-header-add-btn:focus {
+  background: var(--gold-hover) !important;
+}
+
+.layout.layout--dashboard .ant-switch-checked {
+  background-color: var(--gold) !important;
+  border-color: var(--gold) !important;
+}
+
+.layout.layout--dashboard .ant-switch-checked .ant-switch-inner {
+  color: #0a0a0a !important;
+}
+
+.layout.layout--dashboard .ant-switch:hover {
+  border-color: var(--gold) !important;
+}
 .layout.layout--dashboard .ant-pagination-item-active {
   border-color: var(--gold) !important;
 }
@@ -52,9 +77,6 @@
   color: var(--gold) !important;
 }
 
-/* ═══════════════════════════════════════════════════════════════ */
-/* Customer — giao diện tối + vàng như blog                         */
-/* ═══════════════════════════════════════════════════════════════ */
 .layout.layout--customer,
 .layout--customer-page {
   --bg: #0a0a0a;
@@ -91,7 +113,6 @@
   color: var(--text);
 }
 
-/* Customer dark: inputs & forms */
 .layout.layout--customer input,
 .layout.layout--customer textarea,
 .layout.layout--customer select,
@@ -118,7 +139,6 @@
   box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
 }
 
-/* Ant Design inside customer dark */
 .layout.layout--customer .ant-modal-content,
 .layout--customer-page .ant-modal-content {
   background: var(--surface) !important;
@@ -144,7 +164,6 @@
   font-weight: 700 !important;
 }
 
-/* Customer section headers — blog typography */
 .layout.layout--customer .section-header-label {
   color: var(--gold);
   letter-spacing: 4px;
@@ -167,7 +186,6 @@
   opacity: 1;
 }
 
-/* Customer support page */
 .layout.layout--customer .support-section {
   background: var(--card);
   border-color: var(--border);
@@ -190,7 +208,6 @@
   transform: translateY(-1px);
 }
 
-/* Delivery address modal — dark customer theme */
 .layout.layout--customer .dam-address-card {
   background: var(--surface-2);
   border-color: var(--border);
@@ -216,7 +233,6 @@
   border: 1px solid var(--border);
 }
 
-/* Staff/Admin — profile update modal: simple yellow buttons */
 .profile-update-modal .ant-modal-content {
   border-radius: 16px;
 }
@@ -231,7 +247,8 @@
   font-weight: 600;
 }
 
-.profile-update-modal .ant-btn-primary {
+.profile-update-modal .ant-btn-primary,
+.profile-update-modal .profile-submit-btn {
   background: var(--gold) !important;
   border: none !important;
   color: #0a0a0a !important;
@@ -241,9 +258,29 @@
   box-shadow: none !important;
 }
 
-.profile-update-modal .ant-btn-primary:hover {
+.profile-update-modal .ant-btn-primary:hover,
+.profile-update-modal .profile-submit-btn:hover {
   filter: brightness(1.06) !important;
   transform: none !important;
+}
+
+.profile-update-modal
+  .profile-avatar-tabs
+  .ant-tabs-tab.ant-tabs-tab-active
+  .ant-tabs-tab-btn {
+  color: var(--gold) !important;
+  font-weight: 700 !important;
+}
+
+.profile-update-modal .profile-avatar-tabs .ant-tabs-ink-bar {
+  background: var(--gold) !important;
+}
+
+.profile-update-modal
+  .profile-avatar-tabs
+  .ant-tabs-tab:hover
+  .ant-tabs-tab-btn {
+  color: var(--gold-dark) !important;
 }
 
 .profile-update-modal .profile-upload-label {

@@ -202,7 +202,177 @@
 .customer-table-order-page .cart-qr-confirm-btn:hover {
   background: var(--gold-light);
 }
+/* =========================================================
+   TABLE ORDER MODAL
+========================================================= */
 
+.table-order-modal.ant-modal {
+  padding-bottom: 0 !important;
+}
+
+.table-order-modal.ant-modal .ant-modal-content {
+  background: #111111 !important;
+  color: #e8e0d0 !important;
+  border: 1px solid #222222 !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7) !important;
+}
+
+.table-order-modal.ant-modal .ant-modal-header {
+  background: #111111 !important;
+  margin: 0 !important;
+  padding: 20px 30px !important;
+  border-bottom: 1px solid #222222 !important;
+}
+
+.table-order-modal.ant-modal .ant-modal-title {
+  color: #ffffff !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+}
+
+.table-order-modal.ant-modal .ant-modal-close {
+  color: #e8e0d0 !important;
+  top: 18px !important;
+  right: 18px !important;
+}
+
+.table-order-modal.ant-modal .ant-modal-close:hover {
+  color: #c9a84c !important;
+  background: transparent !important;
+}
+
+.table-order-modal.ant-modal .ant-modal-body {
+  background: #111111 !important;
+  color: #e8e0d0 !important;
+  padding: 24px 30px !important;
+}
+
+.table-order-modal.ant-modal .ant-modal-footer {
+  background: #111111 !important;
+  margin: 0 !important;
+  padding: 16px 30px 20px !important;
+  border-top: 1px solid #222222 !important;
+}
+
+.table-order-modal.ant-modal .ant-modal-footer .ant-btn {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 8px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.table-order-modal.ant-modal .ant-modal-footer .ant-btn-default {
+  background: #1a1a1a !important;
+  color: #e8e0d0 !important;
+  border-color: rgba(201, 168, 76, 0.4) !important;
+}
+
+.table-order-modal.ant-modal .ant-modal-footer .ant-btn-default:hover {
+  background: #222222 !important;
+  color: #c9a84c !important;
+  border-color: #c9a84c !important;
+}
+
+.table-order-modal.ant-modal .ant-modal-footer .ant-btn-primary {
+  background: #c9a84c !important;
+  border-color: #c9a84c !important;
+  color: #0a0a0a !important;
+  font-weight: 700;
+}
+
+.table-order-modal.ant-modal .ant-modal-footer .ant-btn-primary:hover {
+  background: #e8c96e !important;
+  border-color: #e8c96e !important;
+  color: #0a0a0a !important;
+}
+
+.table-order-modal.ant-modal .ant-modal-content,
+.table-order-modal.ant-modal .ant-modal-header,
+.table-order-modal.ant-modal .ant-modal-footer {
+  border-color: #222222 !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  outline: none !important;
+  background-clip: padding-box !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7) !important;
+}
+
+.table-order-modal.ant-modal .ant-modal-container {
+  background-color: #111111 !important;
+  background: #111111 !important;
+  border: 1px solid rgba(201, 168, 76, 0.25) !important;
+  border-radius: 10px !important;
+  padding: 0 !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7) !important;
+}
+
+.table-order-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.table-order-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.table-order-form-group label {
+  color: #e8e0d0;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.table-order-form-group input,
+.table-order-form-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: #1a1a1a;
+  color: #ffffff;
+  border: 1px solid #222222;
+  border-radius: 7px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.table-order-form-group input {
+  height: 46px;
+  padding: 0 14px;
+}
+
+.table-order-form-group textarea {
+  min-height: 90px;
+  padding: 12px 14px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.table-order-form-group input::placeholder,
+.table-order-form-group textarea::placeholder {
+  color: #777;
+}
+
+.table-order-form-group input:focus,
+.table-order-form-group textarea:focus {
+  border-color: #c9a84c;
+  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.12);
+}
+
+.table-order-payment {
+  margin-top: 2px;
+}
 @media (max-width: 640px) {
   .customer-table-order-page .customer-table-order-container {
     padding: 40px 16px 80px;

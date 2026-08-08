@@ -152,16 +152,6 @@ const Orders = () => {
     }
   };
 
-  const handleCancelOrder = async (orderId) => {
-    try {
-      await orderService.cancelOrder(orderId);
-      fetchOrders();
-    } catch (error) {
-      console.error(error);
-      alert("Không thể hủy đơn");
-    }
-  };
-
   const filters = useMemo(() => {
     const steps = [
       "all",
@@ -330,18 +320,6 @@ const Orders = () => {
                     >
                       Đặt lại
                     </button>
-
-                    {order.status === "pending" && (
-                      <button
-                        className="ord-card-cancel-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCancelOrder(order.id);
-                        }}
-                      >
-                        Hủy đơn
-                      </button>
-                    )}
                   </div>
                 </div>
               );

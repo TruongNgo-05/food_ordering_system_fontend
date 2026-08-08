@@ -1,11 +1,16 @@
 /* ===== Support sections ===== */
+.support-page {
+  background: var(--bg);
+  color: var(--text);
+}
+
 .support-section {
   margin-top: 28px;
-  background: var(--surface);
+  background: var(--card, var(--surface));
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-sm, none);
 }
 
 .support-section-title {
@@ -13,6 +18,12 @@
   font-size: 18px;
   font-weight: 600;
   color: var(--text);
+}
+
+.support-header-action {
+  display: flex;
+  justify-content: flex-end;
+  margin: 20px 0 8px;
 }
 
 /* ===== FAQ ===== */
@@ -41,7 +52,7 @@
   gap: 12px;
   padding: 14px 16px;
   border: none;
-  background: var(--surface);
+  background: transparent;
   color: var(--text);
   font-size: 14px;
   font-weight: 500;
@@ -93,7 +104,7 @@
   border: 1px solid var(--border);
   border-radius: 10px;
   outline: none;
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--text);
   font-size: 14px;
   font-family: inherit;
@@ -113,11 +124,11 @@
 }
 
 .input-error {
-  border-color: #ef4444 !important;
+  border-color: var(--red, #ef4444) !important;
 }
 
 .error-text {
-  color: #ef4444;
+  color: var(--red, #ef4444);
   font-size: 12px;
 }
 
@@ -127,7 +138,7 @@
   border: none;
   border-radius: 10px;
   background: var(--primary);
-  color: #0a0a0a;
+  color: var(--bg);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -145,8 +156,8 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
-/* ================= CAPTCHA ================= */
 
+/* ================= CAPTCHA ================= */
 .support-captcha-row {
   display: flex;
   align-items: center;
@@ -156,20 +167,16 @@
 .support-captcha-box {
   min-width: 110px;
   height: 46px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: 10px;
-
   font-size: 22px;
   font-weight: 700;
   letter-spacing: 4px;
   color: var(--primary);
-
   user-select: none;
   font-family: "Courier New", monospace;
   font-style: italic;
@@ -184,13 +191,10 @@
 .support-refresh-btn {
   width: 46px;
   height: 46px;
-
   border: 1px solid var(--border);
   border-radius: 10px;
-
   background: var(--surface);
   color: var(--primary);
-
   cursor: pointer;
   font-size: 22px;
   transition: all 0.25s ease;
@@ -198,25 +202,20 @@
 
 .support-refresh-btn:hover {
   background: var(--primary);
-  color: #fff;
+  color: var(--bg);
   border-color: var(--primary);
 }
 
 .support-captcha-input {
   flex: 1;
   height: 46px;
-
   padding: 0 14px;
-
   border: 1px solid var(--border);
   border-radius: 10px;
-
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--text);
-
   font-size: 14px;
   outline: none;
-
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
@@ -226,22 +225,20 @@
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12);
 }
+
 .my-support-btn {
   padding: 10px 18px;
   border: 1px solid var(--primary);
   border-radius: 10px;
-
   background: var(--surface);
   color: var(--primary);
-
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-
   transition: all 0.25s ease;
 }
 
 .my-support-btn:hover {
   background: var(--primary);
-  color: #111;
+  color: var(--bg);
 }

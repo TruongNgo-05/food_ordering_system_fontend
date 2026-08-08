@@ -2,7 +2,13 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLocationDot, faQrcode } from "@fortawesome/free-solid-svg-icons";
+
+import {
+  faLocationDot,
+  faQrcode,
+  faNoteSticky,
+} from "@fortawesome/free-solid-svg-icons";
+
 import { T, fmt } from "../../constants/customerTheme";
 import { EmptyState } from "../../components/customer/SharedUI";
 import UserHeader from "../../components/user/UserHeader";
@@ -19,6 +25,7 @@ const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 import orderService from "../../services/customer/orderService";
 import sepayService from "../../services/sepayService";
 import PaymentQrModal from "../../components/customer/PaymentQrModal";
+import ConfirmOrderModal from "../../components/user/ConfirmOrderModal";
 const Cart = () => {
   const navigate = useNavigate();
 
@@ -39,6 +46,8 @@ const Cart = () => {
   const [openQrModal, setOpenQrModal] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState("");
   const [note, setNote] = useState("");
+  const [openConfirmOrderModal, setOpenConfirmOrderModal] = useState(false);
+  const [ordering, setOrdering] = useState(false);
 
   const [orderCode, setOrderCode] = useState("");
   const [countdown, setCountdown] = useState(60);
@@ -200,6 +209,8 @@ const Cart = () => {
   }, []);
   const finalizeOrder = async () => {
     try {
+      setOrdering(true);
+
       const payload = {
         addressId: deliveryInfo.id,
         paymentMethodId: payMethod === "COD" ? 1 : 2,
@@ -211,21 +222,35 @@ const Cart = () => {
 
       const orderData = res.data?.data;
 
+      // ONLINE
       if (payMethod === "ONLINE") {
         setPaymentUrl(orderData.paymentUrl);
         setOrderCode(orderData.orderCode);
         setTotalPrice(orderData.totalPrice);
 
         setCountdown(60);
+
+        // Đóng modal xác nhận
+        setOpenConfirmOrderModal(false);
+
+        // Mở QR
         setOpenQrModal(true);
+
         return;
       }
+
+      // COD
+      setOpenConfirmOrderModal(false);
 
       toast.success("Đặt hàng thành công");
 
       navigate("/customer/orders");
     } catch (err) {
+      console.error("Create order error:", err);
+
       toast.error(err.response?.data?.message || "Tạo đơn hàng thất bại");
+    } finally {
+      setOrdering(false);
     }
   };
   useEffect(() => {
@@ -302,7 +327,7 @@ const Cart = () => {
       return;
     }
 
-    finalizeOrder();
+    setOpenConfirmOrderModal(true);
   };
 
   const saveAddressFromModal = (data) => {
@@ -430,7 +455,6 @@ const Cart = () => {
                 </div>
               ))}
             </div>
-
             {/* Address */}
             <div
               className="cart-address-box"
@@ -465,6 +489,28 @@ const Cart = () => {
                   "Chọn địa chỉ giao hàng"
                 )}
               </button>
+            </div>
+
+            {/* Note */}
+            <div className="cart-note-box">
+              <p className="cart-note-label">
+                <FontAwesomeIcon
+                  icon={faNoteSticky}
+                  style={{ marginRight: 8 }}
+                />
+                Ghi chú đơn hàng
+              </p>
+
+              <textarea
+                className="cart-note-input"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Ví dụ: Ít cay, không lấy hành, giao giúp mình..."
+                maxLength={500}
+                rows={4}
+              />
+
+              <div className="cart-note-count">{note.length}/100</div>
             </div>
 
             <VoucherSection
@@ -515,7 +561,16 @@ const Cart = () => {
         onCancel={() => setOpenAddressModal(false)}
         onSave={saveAddressFromModal}
       />
-
+      <ConfirmOrderModal
+        open={openConfirmOrderModal}
+        loading={ordering}
+        onCancel={() => {
+          if (!ordering) {
+            setOpenConfirmOrderModal(false);
+          }
+        }}
+        onConfirm={finalizeOrder}
+      />
       <PaymentQrModal
         open={openQrModal}
         paymentUrl={paymentUrl}

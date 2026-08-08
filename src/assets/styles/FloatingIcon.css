@@ -27,17 +27,14 @@
   animation-play-state: paused;
 }
 
-/* ─── VARIANTS (chỉ khai báo biến, không lặp thuộc tính) ─── */
 .floating-icon-zalo {
   --icon-bg: #fff;
   --ping-color: rgba(0, 255, 255, 0.35);
-  --shake-delay: 0s; /* rung trước */
 }
 
 .floating-icon-chat {
-  --icon-bg: linear-gradient(135deg, #ff8a24, #ff5e2e);
+  --icon-bg: linear-gradient(135deg, #fa8620cb, #f1e3df);
   --ping-color: rgba(255, 94, 46, 0.3);
-  --shake-delay: 1s; /* lệch nhịp với zalo để không rung y hệt nhau */
 }
 
 /* ─── CONTENT ─── */

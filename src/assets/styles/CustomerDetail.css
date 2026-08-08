@@ -259,7 +259,9 @@
   color: #0a0a0a;
   background: var(--gold);
   cursor: pointer;
-  transition: filter 0.2s, transform 0.2s;
+  transition:
+    filter 0.2s,
+    transform 0.2s;
 }
 
 .fd-add-btn:hover {
@@ -277,7 +279,9 @@
   font-size: 13px;
   cursor: pointer;
   margin-top: 36px;
-  transition: border-color 0.2s, color 0.2s;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
 }
 
 .fd-toggle-reviews-btn:hover {
@@ -318,33 +322,6 @@
 .fd-own-review-notice span {
   font-size: 12px;
   color: var(--text);
-}
-
-.fd-own-review-actions {
-  display: flex;
-  gap: 6px;
-}
-
-.fd-own-review-edit-btn {
-  border: 1px solid var(--gold);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--gold);
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 8px;
-  cursor: pointer;
-}
-
-.fd-own-review-delete-btn {
-  border: none;
-  border-radius: 8px;
-  background: rgba(220, 38, 38, 0.12);
-  color: #dc2626;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 8px;
-  cursor: pointer;
 }
 
 .fd-star-row {

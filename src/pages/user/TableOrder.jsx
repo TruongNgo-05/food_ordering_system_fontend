@@ -1,20 +1,21 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Modal } from "antd";
 
 import UserHeader from "../../components/user/UserHeader";
 import FoodImage from "../../components/common/FoodImage";
-import PaymentMethodSection from "../../components/customer/cart/PaymentMethodSection";
+import Categories from "../../components/common/Categories";
+import TableOrderModal from "../../components/user/TableOrderModal";
 
 import { T, fmt } from "../../constants/customerTheme";
+import { getCategories } from "../../services/userService";
 import tableService from "../../services/user/tableService";
 
 import "../../assets/styles/CustomerTableOrder.css";
 import Footer from "../../layouts/Footer";
-const TABLE_ORDER_STORAGE_KEY = "table-orders";
 import PaymentQrModal from "../../components/customer/PaymentQrModal";
 import sepayService from "../../services/sepayService";
+import ConfirmOrderModal from "../../components/user/ConfirmOrderModal";
 
 const TableOrder = () => {
   const navigate = useNavigate();
@@ -24,10 +25,14 @@ const TableOrder = () => {
 
   const [tableNumber, setTableNumber] = useState(tableFromQr);
   const [foods, setFoods] = useState([]);
-  const [tableInfo, setTableInfo] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [activeCategory, setActiveCategory] = useState(0);
   const [qtyMap, setQtyMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [showOrderModal, setShowOrderModal] = useState(false);
+  const [showConfirmOrderModal, setShowConfirmOrderModal] = useState(false);
+
+  const [ordering, setOrdering] = useState(false);
   const [orderFormData, setOrderFormData] = useState({
     name: "",
     phone: "",
@@ -44,9 +49,24 @@ const TableOrder = () => {
     ONLINE: 2,
     AT_TABLE: 3,
   };
+  const fetchCategories = async () => {
+    try {
+      const res = await getCategories();
+      const list = res.data?.data?.content || [];
+
+      setCategories([
+        { id: 0, name: "Tất cả" },
+        ...list.map((cat) => ({ id: cat.id, name: cat.name })),
+      ]);
+    } catch (err) {
+      console.error("Lỗi load categories:", err);
+    }
+  };
+
   useEffect(() => {
     if (tableFromQr) {
       loadMenuTable();
+      fetchCategories();
     } else {
       setLoading(false);
       toast.warning("Không tìm thấy thông tin bàn");
@@ -127,8 +147,8 @@ const TableOrder = () => {
         table: tableFromQr,
       });
 
-      setFoods(res.data.foods || []);
-      setTableInfo(res.data.table || null);
+      const fetchedFoods = res.data.foods || [];
+      setFoods(fetchedFoods);
 
       if (res.data.table?.tableNumber) {
         setTableNumber(res.data.table.tableNumber);
@@ -140,6 +160,18 @@ const TableOrder = () => {
       setLoading(false);
     }
   };
+
+  const filteredFoods = useMemo(() => {
+    if (activeCategory === 0) {
+      return foods;
+    }
+
+    return foods.filter(
+      (food) =>
+        food.categoryId === activeCategory ||
+        food.category_id === activeCategory,
+    );
+  }, [foods, activeCategory]);
 
   const selectedItems = useMemo(() => {
     return foods
@@ -191,8 +223,9 @@ const TableOrder = () => {
       [field]: value,
     }));
   };
-
   const confirmOrderSubmit = async () => {
+    if (ordering) return;
+
     if (!orderFormData.name.trim()) {
       toast.warning("Vui lòng nhập họ tên");
       return;
@@ -211,6 +244,8 @@ const TableOrder = () => {
     }
 
     try {
+      setOrdering(true);
+
       const paymentMethodId = PAYMENT_METHOD_MAP[orderFormData.paymentMethod];
 
       const payload = {
@@ -229,8 +264,6 @@ const TableOrder = () => {
 
       const orderData = response.data.data;
 
-      toast.success("Đặt món thành công");
-
       setQtyMap({});
 
       setOrderFormData({
@@ -240,27 +273,37 @@ const TableOrder = () => {
         paymentMethod: "AT_TABLE",
       });
 
+      setShowConfirmOrderModal(false);
       setShowOrderModal(false);
 
       setOrderInfo(orderData);
 
+      // ================================
+      // ONLINE
+      // ================================
       if (paymentMethodId === 2 && orderData.paymentUrl) {
         setPaymentUrl(orderData.paymentUrl);
-
         setOrderCode(orderData.orderCode);
-
-        setOpenQrModal(true);
-
         setCountdown(60);
+        setOpenQrModal(true);
 
         return;
       }
+
+      // ================================
+      // AT TABLE
+      // ================================
+      toast.success("Đặt món thành công");
+
       await loadMenuTable();
+
       navigate(`/table-order?table=${tableNumber}`);
     } catch (error) {
       console.error(error);
 
       toast.error(error?.response?.data?.message || "Không thể tạo đơn hàng");
+    } finally {
+      setOrdering(false);
     }
   };
 
@@ -289,8 +332,14 @@ const TableOrder = () => {
           }
         />
 
+        <Categories
+          categories={categories}
+          activeCategoryId={activeCategory}
+          onChange={(id) => setActiveCategory(id)}
+        />
+
         <div className="table-order-grid">
-          {foods.map((food) => {
+          {filteredFoods.map((food) => {
             const qty = qtyMap[food.id] || 0;
 
             return (
@@ -326,7 +375,6 @@ const TableOrder = () => {
             );
           })}
         </div>
-
         <div className="table-order-summary">
           <p>
             Món đã chọn: <strong>{selectedItems.length}</strong>
@@ -339,104 +387,27 @@ const TableOrder = () => {
           <button onClick={submitTableOrder}>Gửi gọi món</button>
         </div>
 
-        <Modal
-          title="Thông tin gọi món"
+        <TableOrderModal
           open={showOrderModal}
           onCancel={() => setShowOrderModal(false)}
-          onOk={confirmOrderSubmit}
-          okText="Xác nhận"
-          cancelText="Hủy"
-          centered
-          width={500}
-        >
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-          >
-            <div>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "6px",
-                  fontWeight: 500,
-                }}
-              >
-                Họ tên
-              </label>
-              <input
-                type="text"
-                placeholder="Nhập họ tên"
-                value={orderFormData.name}
-                onChange={(e) => handleFormInputChange("name", e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  border: "1px solid #d9d9d9",
-                  borderRadius: "4px",
-                  fontSize: "14px",
-                }}
-              />
-            </div>
-
-            <div>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "6px",
-                  fontWeight: 500,
-                }}
-              >
-                Số điện thoại
-              </label>
-              <input
-                type="tel"
-                placeholder="Nhập số điện thoại (10 chữ số)"
-                value={orderFormData.phone}
-                onChange={(e) => handleFormInputChange("phone", e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  border: "1px solid #d9d9d9",
-                  borderRadius: "4px",
-                  fontSize: "14px",
-                }}
-              />
-            </div>
-
-            <div>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "6px",
-                  fontWeight: 500,
-                }}
-              >
-                Ghi chú
-              </label>
-              <textarea
-                placeholder="Nhập ghi chú (tùy chọn)"
-                value={orderFormData.note}
-                onChange={(e) => handleFormInputChange("note", e.target.value)}
-                rows={3}
-                style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  border: "1px solid #d9d9d9",
-                  borderRadius: "4px",
-                  fontSize: "14px",
-                  fontFamily: "inherit",
-                }}
-              />
-            </div>
-
-            <PaymentMethodSection
-              payMethod={orderFormData.paymentMethod}
-              onChangePayMethod={(method) =>
-                handleFormInputChange("paymentMethod", method)
-              }
-              allowedMethods={["ONLINE", "AT_TABLE"]}
-            />
-          </div>
-        </Modal>
+          onConfirm={() => {
+            setShowOrderModal(false);
+            setShowConfirmOrderModal(true);
+          }}
+          orderFormData={orderFormData}
+          onChange={handleFormInputChange}
+        />
+        <ConfirmOrderModal
+          open={showConfirmOrderModal}
+          loading={ordering}
+          onCancel={() => {
+            if (!ordering) {
+              setShowConfirmOrderModal(false);
+              setShowOrderModal(true);
+            }
+          }}
+          onConfirm={confirmOrderSubmit}
+        />
         <PaymentQrModal
           open={openQrModal}
           paymentUrl={paymentUrl}

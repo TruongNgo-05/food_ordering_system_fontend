@@ -5,13 +5,8 @@
   font-weight: 300;
   overflow-x: hidden;
   --gold: #c9a84c;
-  --gold-light: #e8c96e;
-  --dark: #0a0a0a;
-  --dark2: #111111;
-  --dark3: #1a1a1a;
   --text: #e8e0d0;
   --text-muted: #9a9080;
-  --white: #ffffff;
 }
 
 .blog-page *,
@@ -19,8 +14,6 @@
 .blog-page *::after {
   box-sizing: border-box;
 }
-
-
 
 /* ─── ABOUT ─── */
 .blog-page #blog_about-us {
@@ -47,7 +40,7 @@
   font-weight: 300;
   line-height: 1.15;
   margin-bottom: 28px;
-  color: var(--white);
+  color: var(--text);
 }
 
 .blog-page .blog_about-text {
@@ -202,7 +195,7 @@
 }
 
 .blog-page .blog_food-overlay span {
-  color: var(--white);
+  color: var(--text);
   font-size: 13px;
   letter-spacing: 1px;
   font-weight: 500;
@@ -250,7 +243,7 @@
   font-size: 12px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--white);
+  color: var(--text);
   margin-bottom: 6px;
 }
 

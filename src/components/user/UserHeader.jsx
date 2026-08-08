@@ -25,6 +25,7 @@ const UserHeader = ({ title, description, buttonText, handleAdd, extra }) => {
         {handleAdd && (
           <Button
             type="primary"
+            className="user-header-add-btn"
             icon={<FontAwesomeIcon icon={faPlus} />}
             onClick={handleAdd}
           >

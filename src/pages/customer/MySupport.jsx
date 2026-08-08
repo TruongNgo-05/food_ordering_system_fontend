@@ -71,115 +71,109 @@ const MySupport = () => {
   };
 
   return (
-    <div className="my-support-page">
-      <div className="my-support-container">
-        <UserHeader
-          title="Yêu cầu hỗ trợ của tôi"
-          description="Theo dõi trạng thái các yêu cầu đã gửi"
-        />
+    <div>
+      <UserHeader
+        title="Yêu cầu hỗ trợ của tôi"
+        description="Theo dõi trạng thái các yêu cầu đã gửi"
+      />
 
-        <div className="my-support-back">
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate("/customer/support")}
-          >
-            Quay lại
-          </Button>
-        </div>
-
-        <Card className="my-support-card">
-          {loading ? (
-            <div className="my-support-loading">
-              <Spin size="large" />
-            </div>
-          ) : supports.length === 0 ? (
-            <Empty description="Bạn chưa gửi yêu cầu hỗ trợ nào." />
-          ) : (
-            <>
-              <SupportTable
-                data={supports}
-                loading={loading}
-                onView={(record) => {
-                  setSelectedSupport(record);
-                  setOpenDetail(true);
-                }}
-              />
-
-              <AppPagination
-                page={page}
-                size={size}
-                total={total}
-                onChange={(newPage, newSize) => {
-                  setPage(newPage);
-                  setSize(newSize);
-                }}
-              />
-            </>
-          )}
-        </Card>
-
-        <Modal
-          className="support-detail-modal"
-          open={openDetail}
-          width={750}
-          footer={null}
-          title="Chi tiết yêu cầu hỗ trợ"
-          onCancel={() => {
-            setOpenDetail(false);
-            setSelectedSupport(null);
-          }}
+      <div className="my-support-back">
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate("/customer/support")}
         >
-          {selectedSupport && (
-            <>
-              <div className="support-info">
-                <div className="support-label">Mã hỗ trợ</div>
-                <div className="support-value">
-                  {selectedSupport.supportCode}
-                </div>
-
-                <div className="support-label">Chủ đề</div>
-                <div className="support-value">{selectedSupport.subject}</div>
-
-                <div className="support-label">Trạng thái</div>
-                <div className="support-value">
-                  {getStatusTag(selectedSupport.status)}
-                </div>
-
-                <div className="support-label">Ngày gửi</div>
-                <div className="support-value">
-                  {new Date(selectedSupport.createdAt).toLocaleString("vi-VN")}
-                </div>
-              </div>
-
-              <div className="support-box">
-                <div className="support-box-title">Nội dung yêu cầu</div>
-
-                <Paragraph style={{ marginBottom: 0 }}>
-                  {selectedSupport.message}
-                </Paragraph>
-              </div>
-
-              <div className="support-box">
-                <div className="support-box-title">
-                  Phản hồi từ quản trị viên
-                </div>
-
-                {selectedSupport.reply ? (
-                  <Card className="reply-card" bordered={false}>
-                    <Paragraph style={{ marginBottom: 0 }}>
-                      {selectedSupport.reply}
-                    </Paragraph>
-                  </Card>
-                ) : (
-                  <div className="reply-empty">
-                    Chưa có phản hồi từ quản trị viên.
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </Modal>
+          Quay lại
+        </Button>
       </div>
+
+      <Card className="my-support-card">
+        {loading ? (
+          <div className="my-support-loading">
+            <Spin size="large" />
+          </div>
+        ) : supports.length === 0 ? (
+          <Empty description="Bạn chưa gửi yêu cầu hỗ trợ nào." />
+        ) : (
+          <>
+            <SupportTable
+              data={supports}
+              loading={loading}
+              onView={(record) => {
+                setSelectedSupport(record);
+                setOpenDetail(true);
+              }}
+            />
+
+            <AppPagination
+              page={page}
+              size={size}
+              total={total}
+              onChange={(newPage, newSize) => {
+                setPage(newPage);
+                setSize(newSize);
+              }}
+            />
+          </>
+        )}
+      </Card>
+
+      <Modal
+        className="support-detail-modal"
+        open={openDetail}
+        width={750}
+        footer={null}
+        title="Chi tiết yêu cầu hỗ trợ"
+        onCancel={() => {
+          setOpenDetail(false);
+          setSelectedSupport(null);
+        }}
+      >
+        {selectedSupport && (
+          <>
+            <div className="support-info">
+              <div className="support-label">Mã hỗ trợ</div>
+              <div className="support-value">{selectedSupport.supportCode}</div>
+
+              <div className="support-label">Chủ đề</div>
+              <div className="support-value">{selectedSupport.subject}</div>
+
+              <div className="support-label">Trạng thái</div>
+              <div className="support-value">
+                {getStatusTag(selectedSupport.status)}
+              </div>
+
+              <div className="support-label">Ngày gửi</div>
+              <div className="support-value">
+                {new Date(selectedSupport.createdAt).toLocaleString("vi-VN")}
+              </div>
+            </div>
+
+            <div className="support-box">
+              <div className="support-box-title">Nội dung yêu cầu</div>
+
+              <Paragraph className="support-message">
+                {selectedSupport.message}
+              </Paragraph>
+            </div>
+
+            <div className="support-box">
+              <div className="support-box-title">Phản hồi từ quản trị viên</div>
+
+              {selectedSupport.reply ? (
+                <Card className="reply-card" bordered={false}>
+                  <Paragraph className="support-message">
+                    {selectedSupport.reply}
+                  </Paragraph>
+                </Card>
+              ) : (
+                <div className="reply-empty">
+                  Chưa có phản hồi từ quản trị viên.
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </Modal>
     </div>
   );
 };

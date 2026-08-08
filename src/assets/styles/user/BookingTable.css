@@ -13,12 +13,12 @@
   width: 100%;
   max-width: 720px;
   max-height: 90vh;
-  background: #fff;
+  background: var(--surface);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid #e0d5c0;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
 }
 
 .bktm-header,
@@ -38,7 +38,7 @@
   font-size: 10px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #c9a84c;
+  color: var(--gold);
   font-family: "Montserrat", sans-serif;
   margin-bottom: 8px;
 }
@@ -49,30 +49,30 @@
   font-size: 30px;
   font-weight: 300;
   letter-spacing: 3px;
-  color: #111;
+  color: var(--text);
 }
 
 .bktm-close {
   width: 38px;
   height: 38px;
-  border: 1px solid #c9a84c;
+  border: 1px solid var(--gold);
   background: transparent;
-  color: #c9a84c;
+  color: var(--gold);
   cursor: pointer;
   font-size: 15px;
   transition: 0.25s;
 }
 
 .bktm-close:hover {
-  background: #c9a84c;
-  color: #111;
+  background: var(--gold);
+  color: var(--bg);
 }
 
 /* Filter */
 
 .bktm-filter {
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .bktm-filter-label {
@@ -93,16 +93,16 @@
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  background: #fafafa;
-  border: 1px solid #e0d5c0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   cursor: pointer;
   transition: 0.2s;
   font-family: "Montserrat", sans-serif;
 }
 
 .bktm-people-btn:hover {
-  border-color: #c9a84c;
-  background: #fcf8ed;
+  border-color: var(--gold);
+  background: var(--primary-light);
 }
 
 .bktm-people-btn-icon {
@@ -138,27 +138,27 @@
 
 .bktm-table-card {
   position: relative;
-  background: #fff;
-  border: 1px solid #e0d5c0;
+  background: var(--surface);
+  border: 1px solid var(--border);
   padding: 18px;
   cursor: pointer;
   transition: 0.25s;
 }
 
 .bktm-table-card:hover {
-  border-color: #c9a84c;
-  background: #fcf8ed;
+  border-color: var(--gold);
+  background: var(--primary-light);
 }
 
 .bktm-table-card-selected {
-  border: 2px solid #c9a84c;
-  background: #f9f3e2;
+  border: 2px solid var(--gold);
+  background: rgba(201, 168, 76, 0.12);
 }
 
 .bktm-card-accent {
   height: 2px;
   margin: -18px -18px 18px;
-  background: #c9a84c;
+  background: var(--gold);
 }
 
 .bktm-card-body {
@@ -180,12 +180,12 @@
 .bktm-table-number {
   font-family: "Cormorant Garamond", serif;
   font-size: 24px;
-  color: #111;
+  color: var(--text);
 }
 
 .bktm-table-capacity {
   font-size: 12px;
-  color: #666;
+  color: var(--muted);
   font-family: "Montserrat", sans-serif;
 }
 
@@ -195,8 +195,8 @@
   right: 8px;
   width: 20px;
   height: 20px;
-  background: #c9a84c;
-  color: #111;
+  background: var(--gold);
+  color: var(--bg);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -209,7 +209,7 @@
 .bktm-empty {
   text-align: center;
   padding: 60px 0;
-  color: #777;
+  color: var(--muted);
   font-family: "Montserrat", sans-serif;
 }
 
@@ -217,8 +217,8 @@
   width: 28px;
   height: 28px;
   margin: 0 auto 16px;
-  border: 3px solid #eee;
-  border-top-color: #c9a84c;
+  border: 3px solid var(--border);
+  border-top-color: var(--gold);
   border-radius: 50%;
   animation: bktm-spin 0.8s linear infinite;
 }
@@ -240,14 +240,14 @@
 
 .bktm-footer-note {
   font-size: 11px;
-  color: #666;
+  color: var(--muted);
   font-family: "Montserrat", sans-serif;
 }
 
 .bktm-close-btn {
-  border: 1px solid #c9a84c;
+  border: 1px solid var(--gold);
   background: transparent;
-  color: #c9a84c;
+  color: var(--gold);
   padding: 10px 24px;
   cursor: pointer;
   text-transform: uppercase;
@@ -258,8 +258,8 @@
 }
 
 .bktm-close-btn:hover {
-  background: #c9a84c;
-  color: #111;
+  background: var(--gold);
+  color: var(--bg);
 }
 
 /* ===== Vòng quay chọn số người (Wheel Picker) ===== */
@@ -294,7 +294,7 @@
 .bktm-wheel-sheet {
   width: 100%;
   max-width: 360px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 20px 20px 0 0;
   padding: 12px 24px 24px;
   box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.2);
@@ -322,7 +322,7 @@
 .bktm-wheel-handle {
   width: 40px;
   height: 4px;
-  background: #e0d5c0;
+  background: var(--border);
   border-radius: 2px;
   margin: 0 auto 16px;
 }
@@ -339,7 +339,7 @@
   font-weight: 300;
   font-size: 22px;
   letter-spacing: 1px;
-  color: #111;
+  color: var(--text);
   margin: 0 0 16px;
 }
 
@@ -354,16 +354,16 @@
   left: 0;
   right: 0;
   transform: translateY(-50%);
-  background: #f9f3e2;
-  border-top: 1px solid #c9a84c;
-  border-bottom: 1px solid #c9a84c;
+  background: var(--primary-light);
+  border-top: 1px solid var(--gold);
+  border-bottom: 1px solid var(--gold);
   pointer-events: none;
   z-index: 1;
 }
 
 .bktm-wheel-list {
-  position: relative;   /* thêm dòng này */
-  z-index: 2;            /* thêm dòng này, cao hơn highlight */
+  position: relative; /* thêm dòng này */
+  z-index: 2; /* thêm dòng này, cao hơn highlight */
   height: 100%;
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
@@ -381,7 +381,7 @@
   scroll-snap-align: center;
   font-family: "Montserrat", sans-serif;
   font-size: 15px;
-  color: #111;
+  color: var(--text);
   cursor: pointer;
   transition:
     color 0.15s,
@@ -405,12 +405,12 @@
 
 .bktm-wheel-fade-top {
   top: 0;
-  background: linear-gradient(#fff, rgba(255, 255, 255, 0));
+  background: linear-gradient(var(--surface), rgba(255, 255, 255, 0));
 }
 
 .bktm-wheel-fade-bottom {
   bottom: 0;
-  background: linear-gradient(rgba(255, 255, 255, 0), #fff);
+  background: linear-gradient(rgba(255, 255, 255, 0), var(--surface));
 }
 
 .bktm-wheel-actions {

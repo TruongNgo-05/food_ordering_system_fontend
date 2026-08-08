@@ -5,7 +5,7 @@ import chatService from "../../services/chatService";
 const PAGE_SIZE = 5;
 
 const ChatModal = ({
-  title = "Nhà hàng",
+  title = "Nhà hàng JLer",
   placeholder = "Nhập tin nhắn cho nhà hàng...",
   onClose,
 }) => {
@@ -34,34 +34,34 @@ const ChatModal = ({
   // ===============================
   // Scroll
   // ===============================
- useEffect(() => {
-  if (!chatBodyRef.current || messages.length === 0) return;
+  useEffect(() => {
+    if (!chatBodyRef.current || messages.length === 0) return;
 
-  if (firstLoad.current) {
-    firstLoad.current = false;
+    if (firstLoad.current) {
+      firstLoad.current = false;
 
-    setTimeout(() => {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({
+          behavior: "auto",
+          block: "end",
+        });
+      }, 0);
+
+      return;
+    }
+
+    const body = chatBodyRef.current;
+
+    const isBottom =
+      body.scrollHeight - body.scrollTop - body.clientHeight < 50;
+
+    if (isBottom) {
       messagesEndRef.current?.scrollIntoView({
-        behavior: "auto",
+        behavior: "smooth",
         block: "end",
       });
-    }, 0);
-
-    return;
-  }
-
-  const body = chatBodyRef.current;
-
-  const isBottom =
-    body.scrollHeight - body.scrollTop - body.clientHeight < 50;
-
-  if (isBottom) {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "end",
-    });
-  }
-}, [messages]);
+    }
+  }, [messages]);
 
   // ===============================
   // Load message
@@ -70,10 +70,7 @@ const ChatModal = ({
     try {
       if (beforeId) setLoadingOld(true);
 
-      const res = await chatService.getCustomerMessages(
-        beforeId,
-        PAGE_SIZE
-      );
+      const res = await chatService.getCustomerMessages(beforeId, PAGE_SIZE);
 
       const list = res.data.map((item) => ({
         id: item.id,
@@ -97,8 +94,6 @@ const ChatModal = ({
         });
 
         setHasMore(list.length === PAGE_SIZE);
-
-        
       } else {
         const oldHeight = chatBodyRef.current.scrollHeight;
 
@@ -126,10 +121,7 @@ const ChatModal = ({
   // ===============================
   const refreshLatest = async () => {
     try {
-      const res = await chatService.getCustomerMessages(
-        null,
-        PAGE_SIZE
-      );
+      const res = await chatService.getCustomerMessages(null, PAGE_SIZE);
 
       const latest = res.data.map((item) => ({
         id: item.id,
@@ -203,7 +195,6 @@ const ChatModal = ({
 
           <div>
             <div className="chat-title">{title}</div>
-            <div className="chat-status">Trực tuyến</div>
           </div>
         </div>
 
@@ -213,23 +204,8 @@ const ChatModal = ({
       </div>
 
       {/* BODY */}
-      <div
-        ref={chatBodyRef}
-        className="chat-body"
-        onScroll={handleScroll}
-      >
-        {loadingOld && (
-          <div
-            style={{
-              textAlign: "center",
-              padding: 8,
-              color: "#888",
-              fontSize: 12,
-            }}
-          >
-            Đang tải...
-          </div>
-        )}
+      <div ref={chatBodyRef} className="chat-body" onScroll={handleScroll}>
+        {loadingOld && <div className="chat-loading-old">Đang tải...</div>}
 
         {messages.map((m) => (
           <div key={m.id} className={`message-row ${m.role}`}>
@@ -258,10 +234,7 @@ const ChatModal = ({
           }}
         />
 
-        <button
-          disabled={!input.trim()}
-          onClick={handleSend}
-        >
+        <button disabled={!input.trim()} onClick={handleSend}>
           ➤
         </button>
       </div>

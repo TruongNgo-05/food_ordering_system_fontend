@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { message } from "antd";
 
 import { confirmLoginWithModal } from "../../utils/authGuards";
-import { T } from "../../constants/customerTheme";
 import UserHeader from "../../components/user/UserHeader";
 import { getFAQ } from "../../services/userService";
 import supportService from "../../services/customer/supportService";
@@ -140,7 +139,7 @@ const Support = () => {
     setCaptcha(code);
   };
   return (
-    <div className="support-page" style={{ background: T.bg }}>
+    <div className="support-page">
       <div className="support-container">
         <UserHeader
           title="Hỗ trợ & Thắc mắc"

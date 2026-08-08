@@ -74,10 +74,8 @@ const Blog = () => {
     loadFoods();
   }, []);
 
-
-
   if (slides.length === 0) {
-    return <div className="blog-loading-banner">Đang tải blog...</div>;
+    return <div>Đang tải blog...</div>;
   }
   return (
     <div className="blog-page">
@@ -90,7 +88,7 @@ const Blog = () => {
           <BrandLogo
             as="button"
             className="header-logo-text"
-            onClick={() => navigate("/#blog_hero")}
+            onClick={() => navigate("/nhahangnqt")}
             ariaLabel="Về trang Blog"
           />
         </div>
@@ -148,34 +146,30 @@ const Blog = () => {
         </button>
       </header>
 
-      {/* ══ HERO SLIDER ══ */}
-
-      <div id="blog_hero">
-        <Banner
-          data={slides}
-          className="blog_hero"
-          hoursText="Mở cửa hàng ngày từ 8:00 sáng – 22:00 đêm"
-          renderActions={() => (
-            <>
-              <button
-                type="button"
-                className="customer-banner-btn-primary"
-                onClick={() => setShowBookingModal(true)}
-              >
-                Đặt Bàn Ngay
-              </button>
-              <a
-                href="https://maps.app.goo.gl/ZRvU42F4GJAFyTDk8"
-                target="_blank"
-                rel="noreferrer"
-                className="customer-banner-btn-outline"
-              >
-                Đánh Giá &amp; Bản Đồ Google
-              </a>
-            </>
-          )}
-        />
-      </div>
+      <Banner
+        data={slides}
+        className="blog_hero"
+        hoursText="Mở cửa hàng ngày từ 8:00 sáng – 22:00 đêm"
+        renderActions={() => (
+          <>
+            <button
+              type="button"
+              className="customer-banner-btn-primary"
+              onClick={() => setShowBookingModal(true)}
+            >
+              Đặt Bàn Ngay
+            </button>
+            <a
+              href="https://maps.app.goo.gl/ZRvU42F4GJAFyTDk8"
+              target="_blank"
+              rel="noreferrer"
+              className="customer-banner-btn-outline"
+            >
+              Đánh Giá &amp; Bản Đồ Google
+            </a>
+          </>
+        )}
+      />
 
       {/* ══ ABOUT ══ */}
       <section id="blog_about-us">
@@ -227,7 +221,7 @@ const Blog = () => {
             alt=""
           />
           <div className="blog_about-stat">
-            <span className="blog_about-stat-num">TH28.06</span>
+            <span className="blog_about-stat-num">PM28.05</span>
             <span className="blog_about-stat-lbl">
               Đại học Kinh doanh &amp; Công nghệ
             </span>
@@ -340,26 +334,8 @@ const Blog = () => {
       <Footer />
 
       {/* ══ FLOAT BUTTONS ══ */}
-      <CustomerChatWidget
-        showChatButton={false}
-        showZaloButton={true}
-        zaloLabel="Zalo"
-        enableChat={false}
-      />
+      <CustomerChatWidget />
       <BackToTopButton />
-
-      {/* ══ LIGHTBOX ══ */}
-      {lightbox && (
-        <div className="blog_lightbox" onClick={() => setLightbox(null)}>
-          <button
-            className="blog_lightbox-close"
-            onClick={() => setLightbox(null)}
-          >
-            ✕
-          </button>
-          <img src={lightbox} alt="" onClick={(e) => e.stopPropagation()} />
-        </div>
-      )}
 
       {/* ══ MODALS ══ */}
       <BookingModal

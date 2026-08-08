@@ -417,6 +417,7 @@ const Capnhatthongtin = ({
                 onChange={setAvatarTab}
                 items={tabItems}
                 size="small"
+                className="profile-avatar-tabs"
               />
             </div>
           </div>
@@ -469,6 +470,7 @@ const Capnhatthongtin = ({
               htmlType="submit"
               loading={loading}
               size="large"
+              className="profile-submit-btn"
             >
               Cập nhật
             </Button>

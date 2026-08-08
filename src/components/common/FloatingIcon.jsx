@@ -2,11 +2,11 @@ import React from "react";
 import "../../assets/styles/FloatingIcon.css";
 
 /**
- * FloatingIcon Component
- * @param {string} type - 'zalo' | 'chat'
- * @param {string} [label] - Display label
- * @param {function} [onClick] - Click handler
- * @param {string} [className] - Additional CSS classes
+
+ * @param {string} type 
+ * @param {string} [label] 
+ * @param {function} [onClick] 
+ * @param {string} [className] 
  */
 const FloatingIcon = ({ type = "zalo", label, onClick, className = "" }) => {
   const baseClass = `floating-icon floating-icon-${type}`;

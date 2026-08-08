@@ -1,14 +1,17 @@
 /* ================= SUPPORT PAGE ================= */
 
+
+
 .my-support-back {
   margin: 20px 0;
 }
 
 .my-support-card {
-  background: var(--surface);
+  background: var(--card, var(--surface, #111));
+  border: 1px solid var(--border, #e5e7eb);
   border-radius: 16px;
   padding: 12px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-sm, none);
 }
 
 /* Loading */
@@ -17,6 +20,7 @@
   justify-content: center;
   align-items: center;
   min-height: 250px;
+  color: var(--muted, #6b7280);
 }
 
 /* ================= SUPPORT TABLE ================= */
@@ -27,34 +31,30 @@
 
 /* Header */
 .my-support-card .ant-table-thead > tr > th {
-  background: #1f1f1f !important;
-  color: #d6b36a !important;
-
+  background: var(--surface-2, #1f1f1f) !important;
+  color: var(--primary, #d6b36a) !important;
   font-size: 14px;
   font-weight: 600;
   text-align: center;
-
-  border-bottom: 1px solid rgba(214, 179, 106, 0.3);
+  border-bottom: 1px solid var(--border, rgba(214, 179, 106, 0.3));
 }
 
 /* Body */
 .my-support-card .ant-table-tbody > tr > td {
-  background: var(--surface);
-  color: var(--text);
-
+  background: var(--card, var(--surface, #111));
+  color: var(--text, #e8e0d0);
   font-size: 14px;
-
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border, #e5e7eb);
 }
 
 /* Hover */
 .my-support-card .ant-table-tbody > tr:hover > td {
-  background: rgba(214, 179, 106, 0.08) !important;
+  background: var(--primary-100, rgba(214, 179, 106, 0.08)) !important;
 }
 
 /* Mã hỗ trợ */
 .my-support-card .ant-table-tbody > tr > td:first-child {
-  color: var(--primary);
+  color: var(--primary, #d6b36a);
   font-weight: 600;
 }
 
@@ -63,25 +63,20 @@
 .btn-view {
   width: 38px;
   height: 38px;
-
   display: inline-flex;
   justify-content: center;
   align-items: center;
-
   border-radius: 10px !important;
-
-  border: 1px solid var(--border) !important;
-
-  background: var(--surface) !important;
-  color: var(--primary) !important;
-
+  border: 1px solid var(--border, #e5e7eb) !important;
+  background: var(--surface, #111) !important;
+  color: var(--primary, #d6b36a) !important;
   transition: all 0.25s ease;
 }
 
 .btn-view:hover {
-  background: var(--primary) !important;
-  color: #111 !important;
-  border-color: var(--primary) !important;
+  background: var(--primary, #d6b36a) !important;
+  color: var(--bg, #111) !important;
+  border-color: var(--primary, #d6b36a) !important;
 }
 
 /* ================= STATUS TAG ================= */
@@ -92,52 +87,50 @@
   padding: 5px 12px !important;
   border-radius: 20px !important;
   font-weight: 600;
+  border: 1px solid transparent;
 }
 
-/* Chờ xử lý */
 .status-pending {
-  color: #d97706 !important;
-  background: #fff7e6 !important;
-  border-color: #ffd591 !important;
+  color: var(--gold, #d97706) !important;
+  background: rgba(217, 119, 6, 0.12) !important;
+  border-color: rgba(217, 119, 6, 0.25) !important;
 }
 
-/* Đã phản hồi */
 .status-replied {
-  color: #1677ff !important;
-  background: #e6f4ff !important;
-  border-color: #91caff !important;
+  color: var(--primary, #1677ff) !important;
+  background: var(--primary-100, rgba(22, 119, 255, 0.12)) !important;
+  border-color: rgba(22, 119, 255, 0.2) !important;
 }
 
-/* Đã xử lý */
 .status-resolved {
-  color: #389e0d !important;
-  background: #f6ffed !important;
-  border-color: #b7eb8f !important;
+  color: var(--green, #389e0d) !important;
+  background: rgba(56, 158, 13, 0.12) !important;
+  border-color: rgba(56, 158, 13, 0.2) !important;
 }
 
 /* ================= MODAL ================= */
 
 .support-detail-modal .ant-modal-content {
   border-radius: 14px;
+  background: var(--surface, #111);
+  color: var(--text, #e8e0d0);
 }
 
 .support-info {
   display: grid;
   grid-template-columns: 150px 1fr;
-
   row-gap: 14px;
   column-gap: 20px;
-
   margin-bottom: 24px;
 }
 
 .support-label {
   font-weight: 600;
-  color: #666;
+  color: var(--muted, #6b7280);
 }
 
 .support-value {
-  color: #222;
+  color: var(--text, #e8e0d0);
 }
 
 .support-box {
@@ -146,22 +139,24 @@
 
 .support-box-title {
   margin-bottom: 10px;
-
   font-weight: 600;
-  color: #222;
+  color: var(--text, #e8e0d0);
+}
+
+.support-message,
+.reply-card {
+  margin-bottom: 0;
 }
 
 .reply-card {
-  background: #f6ffed;
+  background: var(--primary-100, #f6ffed);
   border-radius: 10px;
 }
 
 .reply-empty {
   padding: 16px;
-
-  border: 1px dashed #d9d9d9;
+  border: 1px dashed var(--border, #d9d9d9);
   border-radius: 10px;
-
   text-align: center;
-  color: #999;
+  color: var(--muted, #6b7280);
 }

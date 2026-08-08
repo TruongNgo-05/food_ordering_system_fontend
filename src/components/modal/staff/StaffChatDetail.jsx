@@ -18,124 +18,124 @@ const StaffChatDetail = ({ chat, onBack }) => {
   // Load lần đầu khi mở chat
   // ===============================
 
-useEffect(() => {
-  if (!chat?.id) return;
+  useEffect(() => {
+    if (!chat?.id) return;
 
-  firstLoad.current = true;
+    firstLoad.current = true;
 
-  loadMessages();
+    loadMessages();
 
-  const interval = setInterval(refreshLatest, 2000);
+    const interval = setInterval(refreshLatest, 2000);
 
-  return () => clearInterval(interval);
-}, [chat?.id]);
+    return () => clearInterval(interval);
+  }, [chat?.id]);
   // ===============================
   // Scroll xuống cuối khi mở chat
   // ===============================
-const firstLoad = useRef(true);
+  const firstLoad = useRef(true);
 
-useEffect(() => {
-  if (!bodyRef.current || messages.length === 0) return;
+  useEffect(() => {
+    if (!bodyRef.current || messages.length === 0) return;
 
-  if (firstLoad.current) {
-    firstLoad.current = false;
+    if (firstLoad.current) {
+      firstLoad.current = false;
 
-    requestAnimationFrame(() => {
-      endRef.current?.scrollIntoView({
-        behavior: "auto",
+      requestAnimationFrame(() => {
+        endRef.current?.scrollIntoView({
+          behavior: "auto",
+        });
       });
-    });
 
-    return;
-  }
+      return;
+    }
 
-  const body = bodyRef.current;
+    const body = bodyRef.current;
 
-  const isBottom =
-    body.scrollHeight - body.scrollTop - body.clientHeight < 50;
+    const isBottom =
+      body.scrollHeight - body.scrollTop - body.clientHeight < 50;
 
-  if (isBottom) {
-    endRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
-  }
-}, [messages]);
+    if (isBottom) {
+      endRef.current?.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
+  }, [messages]);
 
   // ===============================
   // Load message
   // ===============================
- const loadMessages = async (beforeId = null) => {
-  try {
-    if (beforeId) setLoadingMore(true);
+  const loadMessages = async (beforeId = null) => {
+    try {
+      if (beforeId) setLoadingMore(true);
 
-    const res = await chatService.getStaffMessages(
-      chat.id,
-      beforeId,
-      PAGE_SIZE
-    );
+      const res = await chatService.getStaffMessages(
+        chat.id,
+        beforeId,
+        PAGE_SIZE,
+      );
 
-    const list = res.data;
+      const list = res.data;
 
-   if (beforeId == null) {
-  setMessages((prev) => {
-    if (prev.length === 0) return list;
+      if (beforeId == null) {
+        setMessages((prev) => {
+          if (prev.length === 0) return list;
 
-    const ids = new Set(prev.map((m) => m.id));
-    const newMessages = list.filter((m) => !ids.has(m.id));
+          const ids = new Set(prev.map((m) => m.id));
+          const newMessages = list.filter((m) => !ids.has(m.id));
 
-    return [...prev, ...newMessages];
-  });
+          return [...prev, ...newMessages];
+        });
 
-  setHasMore(list.length === PAGE_SIZE);
+        setHasMore(list.length === PAGE_SIZE);
 
-  requestAnimationFrame(() => {
-    endRef.current?.scrollIntoView({
-      behavior: "auto",
-    });
-  });
-} else {
-      // Load tin nhắn cũ
-      const oldHeight = bodyRef.current.scrollHeight;
+        requestAnimationFrame(() => {
+          endRef.current?.scrollIntoView({
+            behavior: "auto",
+          });
+        });
+      } else {
+        // Load tin nhắn cũ
+        const oldHeight = bodyRef.current.scrollHeight;
 
-      setMessages((prev) => [...list, ...prev]);
+        setMessages((prev) => [...list, ...prev]);
 
-      setTimeout(() => {
-        const newHeight = bodyRef.current.scrollHeight;
+        setTimeout(() => {
+          const newHeight = bodyRef.current.scrollHeight;
 
-        bodyRef.current.scrollTop = newHeight - oldHeight;
-      }, 0);
+          bodyRef.current.scrollTop = newHeight - oldHeight;
+        }, 0);
 
-      if (list.length < PAGE_SIZE) {
-        setHasMore(false);
+        if (list.length < PAGE_SIZE) {
+          setHasMore(false);
+        }
       }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoadingMore(false);
     }
-  } catch (err) {
-    console.log(err);
-  } finally {
-    setLoadingMore(false);
-  }
-};
+  };
 
   // ===============================
   // Refresh tin nhắn mới
   // ===============================
   const refreshLatest = async () => {
-  try {
-    const res = await chatService.getStaffMessages(chat.id, null, PAGE_SIZE);
+    try {
+      const res = await chatService.getStaffMessages(chat.id, null, PAGE_SIZE);
 
-    const latest = res.data;
+      const latest = res.data;
 
-    setMessages((prev) => {
-      const ids = new Set(prev.map((m) => m.id));
+      setMessages((prev) => {
+        const ids = new Set(prev.map((m) => m.id));
 
-      const newMessages = latest.filter((m) => !ids.has(m.id));
+        const newMessages = latest.filter((m) => !ids.has(m.id));
 
-      return [...prev, ...newMessages];
-    });
-  } catch (err) {
-    console.log(err);
-  }
-};
+        return [...prev, ...newMessages];
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   // ===============================
   // Scroll lên đầu -> load cũ
@@ -157,28 +157,28 @@ useEffect(() => {
   // ===============================
   // Send
   // ===============================
-const handleSend = async () => {
-  if (!message.trim()) return;
+  const handleSend = async () => {
+    if (!message.trim()) return;
 
-  try {
-    await chatService.sendStaffMessage({
-      conversationId: chat.id,
-      content: message.trim(),
-    });
-
-    setMessage("");
-
-    await refreshLatest();
-
-    setTimeout(() => {
-      endRef.current?.scrollIntoView({
-        behavior: "smooth",
+    try {
+      await chatService.sendStaffMessage({
+        conversationId: chat.id,
+        content: message.trim(),
       });
-    }, 50);
-  } catch (err) {
-    console.log(err);
-  }
-};
+
+      setMessage("");
+
+      await refreshLatest();
+
+      setTimeout(() => {
+        endRef.current?.scrollIntoView({
+          behavior: "smooth",
+        });
+      }, 50);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const formatTime = (time) => {
     if (!time) return "";
@@ -197,9 +197,7 @@ const handleSend = async () => {
           <ArrowLeftOutlined />
         </button>
 
-        <div className="staff-chat-detail-user">
-          {chat.customer}
-        </div>
+        <div className="staff-chat-detail-user">{chat.customer}</div>
       </div>
 
       {/* BODY */}
@@ -225,16 +223,12 @@ const handleSend = async () => {
           <div
             key={msg.id}
             className={`staff-message-row ${
-              msg.senderType === "STAFF"
-                ? "staff"
-                : "customer"
+              msg.senderType === "STAFF" ? "staff" : "customer"
             }`}
           >
             <div
               className={`staff-message-bubble ${
-                msg.senderType === "STAFF"
-                  ? "staff"
-                  : "customer"
+                msg.senderType === "STAFF" ? "staff" : "customer"
               }`}
             >
               <div>{msg.content}</div>

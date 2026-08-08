@@ -1,305 +1,265 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+
 import { T, fmt } from "../../constants/customerTheme";
 import { EmptyState, SectionTitle } from "../../components/customer/SharedUI";
+
 import MenuItemCard from "../../components/customer/MenuItemCard";
 import FoodImage from "../../components/common/FoodImage";
+import FoodReviews from "../../components/customer/FoodReviews";
+
 import { confirmLoginWithModal } from "../../utils/authGuards";
 import { useAuth } from "../../hooks/useAuth";
-import "../../assets/styles/CustomerDetail.css";
+
 import {
   getFoodByIdDetail,
   getFoods,
   getCategories,
 } from "../../services/userService";
-import favoriteService from "../../services/customer/favoriteService";
-import cartService from "../../services/customer/cartService";
-import reviewService from "../../services/customer/reviewService";
-import { toast } from "react-toastify";
 
-const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
-const CART_UPDATED_EVENT = "cart-updated-event";
-const FAVORITE_UPDATED_EVENT = "favorite-updated-event";
+import { useCustomerData } from "../../context/CustomerDataContext";
+
+import "../../assets/styles/CustomerDetail.css";
 
 const FoodDetail = () => {
   const navigate = useNavigate();
-  const { isLoggedIn } = useAuth();
   const { id } = useParams();
+
+  const { isLoggedIn } = useAuth();
+
+  // ============================================================
+  // CUSTOMER DATA
+  // ============================================================
+  // Tất cả cart + favorite đều lấy từ CustomerDataContext.
+  // FoodDetail KHÔNG gọi cartService/favoriteService trực tiếp.
+  // ============================================================
+
+  const {
+    cart,
+    favorites,
+    cartMap,
+    addToCart: addCartContext,
+    updateCart,
+    removeItem,
+    toggleFavorite,
+  } = useCustomerData();
+
   const itemId = Number(id);
+
+  // ============================================================
+  // FOOD DETAIL
+  // ============================================================
+
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const [foods, setFoods] = useState([]);
   const [categories, setCategories] = useState([]);
+
+  // ============================================================
+  // LOAD CATEGORIES
+  // ============================================================
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await getCategories();
+
         const list = res?.data?.data?.content || [];
+
         setCategories(list);
       } catch (err) {
         console.error("Lỗi load categories:", err);
       }
     };
+
     fetchCategories();
   }, []);
+
+  // ============================================================
+  // LOAD FOOD DETAIL
+  // ============================================================
 
   useEffect(() => {
     const fetchFoodDetail = async () => {
       try {
         setLoading(true);
+
         const res = await getFoodByIdDetail(id);
-        setItem(res?.data?.data);
+
+        setItem(res?.data?.data || null);
       } catch (err) {
         console.error("Lỗi load chi tiết món:", err);
+
+        setItem(null);
       } finally {
         setLoading(false);
       }
     };
-    if (id) fetchFoodDetail();
+
+    if (id) {
+      fetchFoodDetail();
+    }
   }, [id]);
 
+  // ============================================================
+  // RESET ACTIVE IMAGE WHEN FOOD CHANGES
+  // ============================================================
+
+  const [activeImage, setActiveImage] = useState("");
+
+  useEffect(() => {
+    setActiveImage("");
+  }, [item?.id]);
+
+  // ============================================================
+  // GALLERY
+  // ============================================================
+
   const galleryImages = useMemo(() => {
-    if (!item) return [];
+    if (!item) {
+      return [];
+    }
 
     const images = Array.isArray(item.images) ? item.images : [];
+
     const main = item.image;
 
     return [...new Set([main, ...images].filter(Boolean))];
   }, [item]);
 
-  const [cart, setCart] = useState([]);
-  const [loadingCart, setLoadingCart] = useState(false);
+  const displayImage = activeImage || item?.image;
 
-  const [favorites, setFavorites] = useState([]);
-  const [loadingFavorites, setLoadingFavorites] = useState(false);
+  // ============================================================
+  // CART
+  // ============================================================
 
-  // Load cart from API on mount
-  useEffect(() => {
-    const loadCartFromAPI = async () => {
-      try {
-        setLoadingCart(true);
-        const res = await cartService.getCart();
-        const data = res.data?.data;
-        const mapped = (data?.items || []).map((i) => ({
-          item_id: i.itemId,
-          name: i.foodName,
-          price: i.price,
-          image: i.image,
-          qty: i.quantity,
-        }));
-        setCart(mapped);
-      } catch (err) {
-        console.error("Load cart error:", err);
-        setCart([]);
-      } finally {
-        setLoadingCart(false);
-      }
-    };
+  const inCart = item ? cartMap[item.id] || 0 : 0;
 
-    loadCartFromAPI();
-
-    // Listen for cart updates from Home.jsx
-    window.addEventListener(CART_UPDATED_EVENT, loadCartFromAPI);
-    return () => {
-      window.removeEventListener(CART_UPDATED_EVENT, loadCartFromAPI);
-    };
-  }, []);
-
-  // Load favorites from API on mount
-  useEffect(() => {
-    const loadFavorites = async () => {
-      try {
-        setLoadingFavorites(true);
-        const res = await favoriteService.getMyFavorite();
-        const data = res.data?.data;
-        const favIds = Array.isArray(data)
-          ? data.map((item) => item.foodId || item.id)
-          : [];
-        setFavorites(favIds);
-      } catch (err) {
-        console.error("Load favorites error:", err);
-        setFavorites([]);
-      } finally {
-        setLoadingFavorites(false);
-      }
-    };
-
-    if (isLoggedIn) {
-      loadFavorites();
-      setFavorites([]);
-    }
-  }, [isLoggedIn]);
-
-  const fetchFoods = async () => {
-    try {
-      const res = await getFoods();
-      const list = res?.data?.data?.content || [];
-      setFoods(list);
-    } catch (err) {
-      console.error("Lỗi load foods:", err);
-    }
-  };
+  // ============================================================
+  // QUANTITY
+  // ============================================================
 
   const [qty, setQty] = useState(1);
-  const [activeImage, setActiveImage] = useState("");
+
+  // ============================================================
+  // LOGIN GUARD
+  // ============================================================
+
   const requireLoginAction = () => {
     confirmLoginWithModal(navigate);
   };
-  const BASE_URL = "http://localhost:8080/uploads/";
-  const displayImage = activeImage || item?.image;
 
-  const [newRating, setNewRating] = useState(5);
-  const [newComment, setNewComment] = useState("");
-  const [showReviews, setShowReviews] = useState(false);
-  const [reviewSort, setReviewSort] = useState("newest");
-  const [editingReviewId, setEditingReviewId] = useState(null);
-  const isFav = item ? favorites.includes(item.id) : false;
-  const [reviews, setReviews] = useState([]);
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const res = await reviewService.getReviewByFood(itemId);
-        setReviews(res.data.data.content || []);
-      } catch (err) {
-        console.error("Lỗi load review:", err);
-      }
-    };
+  // ============================================================
+  // ADD TO CART
+  // ============================================================
 
-    if (itemId) fetchReviews();
-  }, [itemId]);
-  const currentUserName = useMemo(() => {
-    try {
-      const saved = localStorage.getItem("userInfo");
-      const parsed = saved ? JSON.parse(saved) : null;
-      return parsed?.fullName || parsed?.name || parsed?.username || "Bạn";
-    } catch {
-      return "Bạn";
-    }
-  }, []);
-
-  const [related, setRelated] = useState([]);
-
-  useEffect(() => {
-    const fetchRelated = async () => {
-      try {
-        const res = await getFoods();
-
-        const list = res?.data?.data?.content || [];
-
-        if (!Array.isArray(list)) {
-          console.warn("Expected array but got:", list);
-          return;
-        }
-
-        const filtered = list
-          .filter((f) => f.categoryId === item.categoryId && f.id !== item.id)
-          .slice(0, 4);
-
-        setRelated(filtered);
-      } catch (err) {
-        console.error("Lỗi load related:", err);
-      }
-    };
-
-    if (item) fetchRelated();
-  }, [item]);
-  const ownReview = useMemo(() => {
-    return reviews.find((r) => r.username === currentUserName);
-  }, [reviews, currentUserName]);
-
-  const sortedReviews = useMemo(() => {
-    const list = [...reviews];
-    if (reviewSort === "highest")
-      return list.sort((a, b) => b.rating - a.rating);
-    if (reviewSort === "lowest")
-      return list.sort((a, b) => a.rating - b.rating);
-    return list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [reviews, reviewSort]);
-
-  const handleEditOwnReview = () => {
-    if (!ownReview) return;
-
-    setEditingReviewId(ownReview.id);
-    setNewRating(ownReview.rating);
-    setNewComment(ownReview.comment);
-  };
-  const avgReview = useMemo(() => {
-    if (!reviews.length) return item?.rating || 0;
-    const total = reviews.reduce((s, r) => s + r.rating, 0);
-    return Number((total / reviews.length).toFixed(1));
-  }, [reviews, item]);
-
-  const cartMap = useMemo(() => {
-    return Object.fromEntries(cart.map((c) => [c.item_id, c.qty]));
-  }, [cart]);
-
-  const inCart = item ? cart.find((c) => c.item_id === item.id)?.qty || 0 : 0;
-
-  const addToCart = async () => {
+  const handleAddToCart = async (food = item, quantity = qty) => {
     if (!isLoggedIn) {
-      confirmLoginWithModal(navigate);
-      return;
+      requireLoginAction();
+      return false;
     }
-    if (!item) return;
+
+    if (!food) {
+      return false;
+    }
+
     try {
-      await cartService.addToCart({
-        foodId: item.id,
-        quantity: qty,
+      const success = await addCartContext({
+        ...food,
+        id: food.id,
       });
 
-      // Reload cart from API
-      const res = await cartService.getCart();
-      const data = res.data?.data;
-      const mapped = (data?.items || []).map((i) => ({
-        item_id: i.itemId,
-        name: i.foodName,
-        price: i.price,
-        image: i.image,
-        qty: i.quantity,
-      }));
-      setCart(mapped);
-      setQty(1);
-      toast.success("Đã thêm vào giỏ hàng");
-      // Dispatch event to notify Header.jsx of cart update
-      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
+      /*
+       * addToCart trong CustomerDataContext hiện tại
+       * mặc định quantity = 1.
+       *
+       * Nếu quantity > 1:
+       * gọi thêm quantity - 1 lần.
+       */
+      if (success && quantity > 1) {
+        for (let i = 1; i < quantity; i++) {
+          const nextSuccess = await addCartContext({
+            ...food,
+            id: food.id,
+          });
+
+          if (!nextSuccess) {
+            break;
+          }
+        }
+      }
+
+      if (success) {
+        toast.success("Đã thêm vào giỏ hàng");
+      } else {
+        toast.error("Thêm vào giỏ hàng thất bại");
+      }
+
+      return success;
     } catch (err) {
       console.error("Add to cart error:", err);
+
+      toast.error("Thêm vào giỏ hàng thất bại");
+
+      return false;
+    }
+  };
+
+  // ============================================================
+  // ADD RELATED FOOD
+  // ============================================================
+
+  const handleAddRelated = async (food) => {
+    if (!isLoggedIn) {
+      requireLoginAction();
+      return;
+    }
+
+    const success = await addCartContext(food);
+
+    if (success) {
+      toast.success("Đã thêm vào giỏ hàng");
+    } else {
       toast.error("Thêm vào giỏ hàng thất bại");
     }
   };
 
-  const decCart = async (item_id) => {
+  // ============================================================
+  // DECREASE CART
+  // ============================================================
+
+  const decCart = async (foodId) => {
+    if (!isLoggedIn) {
+      requireLoginAction();
+      return;
+    }
+
+    const currentQty = cartMap[foodId] || 0;
+
+    if (currentQty <= 0) {
+      return;
+    }
+
     try {
-      const item = cart.find((c) => c.item_id === item_id);
-      if (!item) return;
+      const success = await updateCart(foodId, -1);
 
-      if (item.qty <= 1) {
-        await cartService.deleteCart(item_id);
-      } else {
-        await cartService.updateCart(item_id, {
-          quantity: item.qty - 1,
-        });
+      if (!success) {
+        toast.error("Cập nhật giỏ hàng thất bại");
       }
-
-      // Reload cart from API
-      const res = await cartService.getCart();
-      const data = res.data?.data;
-      const mapped = (data?.items || []).map((i) => ({
-        item_id: i.itemId,
-        name: i.foodName,
-        price: i.price,
-        image: i.image,
-        qty: i.quantity,
-      }));
-      setCart(mapped);
-      // Dispatch event to notify Header.jsx of cart update
-      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
     } catch (err) {
       console.error("Dec cart error:", err);
+
       toast.error("Cập nhật giỏ hàng thất bại");
     }
   };
+
+  // ============================================================
+  // FAVORITE
+  // ============================================================
+
+  const isFav = item ? favorites.includes(item.id) : false;
 
   const toggleFav = async (foodId) => {
     if (!isLoggedIn) {
@@ -307,107 +267,117 @@ const FoodDetail = () => {
       return;
     }
 
-    const isFavorite = favorites.includes(foodId);
+    const currentFavorite = favorites.includes(foodId);
 
     try {
-      // Optimistic update - update UI immediately
-      if (isFavorite) {
-        setFavorites((prev) => prev.filter((f) => f !== foodId));
-        toast.info("Đã xóa khỏi yêu thích");
-      } else {
-        setFavorites((prev) => [...prev, foodId]);
-        toast.success("Đã thêm vào yêu thích");
+      const success = await toggleFavorite(foodId);
+
+      if (!success) {
+        toast.error("Không thể cập nhật yêu thích");
+
+        return;
       }
 
-      // Call API to sync with backend
-      const res = await favoriteService.toggleFavorite(foodId);
-
-      // If API fails, revert the change
-      if (!res.data) {
-        if (isFavorite) {
-          setFavorites((prev) => [...prev, foodId]);
-        } else {
-          setFavorites((prev) => prev.filter((f) => f !== foodId));
-        }
-        toast.error("Không thể cập nhật yêu thích");
+      if (currentFavorite) {
+        toast.info("Đã xóa khỏi yêu thích");
       } else {
-        // Dispatch event to notify Header of favorite update
-        window.dispatchEvent(new Event(FAVORITE_UPDATED_EVENT));
+        toast.success("Đã thêm vào yêu thích");
       }
     } catch (err) {
       console.error("Toggle favorite error:", err);
 
-      // Revert on error
-      if (isFavorite) {
-        setFavorites((prev) => [...prev, foodId]);
-      } else {
-        setFavorites((prev) => prev.filter((f) => f !== foodId));
-      }
       toast.error("Không thể cập nhật yêu thích");
     }
   };
 
-  const handleSubmitComment = async () => {
-    if (!newComment.trim()) return;
+  // ============================================================
+  // REVIEW STATS (nhận từ FoodReviews để hiển thị ở stats-row)
+  // ============================================================
 
-    try {
-      const payload = {
-        foodId: itemId,
-        rating: newRating,
-        comment: newComment,
-      };
+  const [reviewStats, setReviewStats] = useState({
+    avgReview: 0,
+    count: 0,
+  });
 
-      await reviewService.createReview(payload);
+  // ============================================================
+  // RELATED FOODS
+  // ============================================================
 
-      toast.success("Đánh giá thành công!");
+  const [related, setRelated] = useState([]);
 
-      setNewComment("");
-      setNewRating(5);
-      const res = await reviewService.getReviewByFood(itemId);
-      setReviews(res.data.data.content || []);
-    } catch (err) {
-      const msg = err?.response?.data?.message || "Gửi đánh giá thất bại!";
+  useEffect(() => {
+    const fetchRelated = async () => {
+      if (!item) {
+        return;
+      }
 
-      toast.error(msg);
-    }
-  };
+      try {
+        const res = await getFoods();
 
-  const handleUpdateReview = async () => {
-    try {
-      await reviewService.updateReview(editingReviewId, {
-        rating: newRating,
-        comment: newComment,
-      });
+        const list = res?.data?.data?.content || [];
 
-      toast.success("Cập nhật thành công!");
+        if (!Array.isArray(list)) {
+          setRelated([]);
+          return;
+        }
 
-      setEditingReviewId(null);
-      setNewComment("");
-      setNewRating(5);
+        const filtered = list
+          .filter(
+            (food) =>
+              food.categoryId === item.categoryId && food.id !== item.id,
+          )
+          .slice(0, 4);
 
-      const res = await reviewService.getReviewByFood(itemId);
-      setReviews(res.data.data.content || []);
-    } catch (err) {
-      toast.error("Cập nhật thất bại!");
-    }
-  };
+        setRelated(filtered);
+      } catch (err) {
+        console.error("Lỗi load related:", err);
 
-  const handleDeleteOwnReview = async () => {
-    try {
-      await reviewService.deleteReview(ownReview.id);
+        setRelated([]);
+      }
+    };
 
-      toast.success("Xóa thành công!");
+    fetchRelated();
+  }, [item]);
 
-      const res = await reviewService.getReviewByFood(itemId);
-      setReviews(res.data.data.content || []);
-    } catch (err) {
-      toast.error("Xóa thất bại!");
-    }
-  };
+  // ============================================================
+  // LOADING
+  // ============================================================
+
+  if (loading) {
+    return (
+      <div
+        className="customer-detail-page"
+        style={{
+          background: T.bg,
+        }}
+      >
+        <div className="customer-detail-container">
+          <div
+            style={{
+              textAlign: "center",
+              padding: "60px",
+              color: T.sub,
+            }}
+          >
+            Đang tải món ăn...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================
+  // NOT FOUND
+  // ============================================================
 
   if (!item) {
     return (
-      <div className="customer-detail-page" style={{ background: T.bg }}>
+      <div
+        className="customer-detail-page"
+        style={{
+          background: T.bg,
+        }}
+      >
         <div className="customer-detail-container">
           <EmptyState
             icon="🍽️"
@@ -421,27 +391,52 @@ const FoodDetail = () => {
     );
   }
 
+  // ============================================================
+  // RENDER
+  // ============================================================
+
   return (
-    <div className="customer-detail-page" style={{ background: T.bg }}>
+    <div
+      className="customer-detail-page"
+      style={{
+        background: T.bg,
+      }}
+    >
       <div className="customer-detail-container">
-        {/* Back */}
+        {/* ======================================================
+            BACK
+        ====================================================== */}
+
         <button
           onClick={() => navigate(-1)}
           className="fd-back-btn"
-          style={{ color: T.sub }}
+          style={{
+            color: T.sub,
+          }}
         >
           ← Quay lại thực đơn
         </button>
 
-        {/* Main card */}
+        {/* ======================================================
+            MAIN CARD
+        ====================================================== */}
+
         <div
           className="fd-main-card"
-          style={{ background: T.card, borderColor: T.border }}
+          style={{
+            background: T.card,
+            borderColor: T.border,
+          }}
         >
-          {/* Image panel */}
+          {/* ====================================================
+              IMAGE
+          ==================================================== */}
+
           <div
             className="fd-image-panel"
-            style={{ background: T.primaryLight }}
+            style={{
+              background: T.primaryLight,
+            }}
           >
             <div className="fd-image-main">
               <FoodImage
@@ -474,327 +469,255 @@ const FoodDetail = () => {
             )}
           </div>
 
-          {/* Info panel */}
+          {/* ====================================================
+              INFO
+          ==================================================== */}
+
           <div className="fd-info-panel">
             <div className="fd-info-header">
               <span
                 className="fd-category-badge"
-                style={{ background: T.bg, color: T.sub }}
+                style={{
+                  background: T.bg,
+                  color: T.sub,
+                }}
               >
                 {item.categoryName}
               </span>
+
               <button
                 onClick={() => toggleFav(item.id)}
                 className="fd-fav-btn"
-                style={{ background: T.bg }}
+                style={{
+                  background: T.bg,
+                }}
+                aria-label="Yêu thích"
               >
                 {isFav ? "❤️" : "🤍"}
               </button>
             </div>
 
-            <h1 className="fd-item-title" style={{ color: T.text }}>
+            <h1
+              className="fd-item-title"
+              style={{
+                color: T.text,
+              }}
+            >
               {item.name}
             </h1>
 
+            {/* ==================================================
+                STATS
+            ================================================== */}
+
             <div className="fd-stats-row">
-              <span style={{ color: T.sub }}>
-                ⭐ <strong style={{ color: T.text }}>{avgReview}</strong>
+              <span
+                style={{
+                  color: T.sub,
+                }}
+              >
+                ⭐{" "}
+                <strong
+                  style={{
+                    color: T.text,
+                  }}
+                >
+                  {reviewStats.avgReview}
+                </strong>
               </span>
-              <span style={{ color: T.sub }}>
-                🔥 <strong style={{ color: T.text }}>{item.soldCount}</strong>{" "}
+
+              <span
+                style={{
+                  color: T.sub,
+                }}
+              >
+                🔥{" "}
+                <strong
+                  style={{
+                    color: T.text,
+                  }}
+                >
+                  {item.soldCount || 0}
+                </strong>{" "}
                 đã bán
               </span>
-              <span style={{ color: T.sub }}>
-                💬 <strong style={{ color: T.text }}>{reviews.length}</strong>{" "}
+
+              <span
+                style={{
+                  color: T.sub,
+                }}
+              >
+                💬{" "}
+                <strong
+                  style={{
+                    color: T.text,
+                  }}
+                >
+                  {reviewStats.count}
+                </strong>{" "}
                 đánh giá
               </span>
             </div>
 
-            <p className="fd-description" style={{ color: T.sub }}>
-              {item.description}
+            {/* ==================================================
+                DESCRIPTION
+            ================================================== */}
+
+            <p
+              className="fd-description"
+              style={{
+                color: T.sub,
+              }}
+            >
+              {item.description || "Món ăn thơm ngon được nhà hàng chuẩn bị."}
             </p>
 
-            {/* Quantity */}
-            <div className="fd-qty-box" style={{ background: T.bg }}>
-              <span className="fd-qty-label" style={{ color: T.text }}>
+            {/* ==================================================
+                QUANTITY
+            ================================================== */}
+
+            <div
+              className="fd-qty-box"
+              style={{
+                background: T.bg,
+              }}
+            >
+              <span
+                className="fd-qty-label"
+                style={{
+                  color: T.text,
+                }}
+              >
                 Số lượng
               </span>
+
               <div className="fd-qty-controls">
                 <button
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
                   className="fd-qty-dec"
-                  style={{ borderColor: T.border }}
+                  style={{
+                    borderColor: T.border,
+                  }}
                 >
                   −
                 </button>
+
                 <span className="fd-qty-value">{qty}</span>
+
                 <button
                   onClick={() => setQty((q) => q + 1)}
                   className="fd-qty-inc"
-                  style={{ background: T.primary }}
+                  style={{
+                    background: T.primary,
+                  }}
                 >
                   +
                 </button>
               </div>
             </div>
 
-            {/* Price + Add to cart */}
+            {/* ==================================================
+                PRICE
+            ================================================== */}
+
             <div className="fd-action-row">
               <div>
-                <p className="fd-price-label" style={{ color: T.sub }}>
+                <p
+                  className="fd-price-label"
+                  style={{
+                    color: T.sub,
+                  }}
+                >
                   Tổng cộng
                 </p>
-                <p className="fd-price-total" style={{ color: T.primary }}>
-                  {fmt(item.price * qty)}
+
+                <p
+                  className="fd-price-total"
+                  style={{
+                    color: T.primary,
+                  }}
+                >
+                  {fmt(Number(item.price || 0) * qty)}
                 </p>
               </div>
+
               <button
-                onClick={addToCart}
+                onClick={() => handleAddToCart(item, qty)}
                 className="fd-add-btn"
-                style={{ background: T.primary }}
+                style={{
+                  background: T.primary,
+                }}
               >
                 🛒 Thêm vào giỏ hàng
               </button>
             </div>
-          </div>
-        </div>
 
-        {/* Toggle reviews */}
-        <button
-          onClick={() => setShowReviews((prev) => !prev)}
-          className="fd-toggle-reviews-btn"
-          style={{ borderColor: T.border, color: T.text }}
-        >
-          {showReviews ? "Ẩn comment & đánh giá" : "Xem comment & đánh giá"}
-        </button>
+            {/* ==================================================
+                CURRENT CART
+            ================================================== */}
 
-        {showReviews && (
-          <div className="fd-reviews-section">
-            <SectionTitle count={reviews.length}>
-              Đánh giá & comment
-            </SectionTitle>
-
-            {/* Write review */}
-            <div
-              className="fd-write-review-box"
-              style={{ background: T.card, borderColor: T.border }}
-            >
-              <p className="fd-write-review-title" style={{ color: T.text }}>
-                Viết đánh giá của bạn
-              </p>
-
-              {ownReview && !editingReviewId && (
-                <div
-                  className="fd-own-review-notice"
-                  style={{
-                    background: T.primaryLight,
-                    borderColor: `${T.primary}33`,
-                  }}
-                >
-                  <span style={{ color: T.text }}>
-                    Bạn đã đánh giá món này. Bạn có thể sửa hoặc xóa.
-                  </span>
-                  <div className="fd-own-review-actions">
-                    <button
-                      onClick={handleEditOwnReview}
-                      className="fd-own-review-edit-btn"
-                      style={{ color: T.primary }}
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      onClick={handleDeleteOwnReview}
-                      className="fd-own-review-delete-btn"
-                      style={{ background: T.redBg, color: T.red }}
-                    >
-                      Xóa
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Stars */}
-              <div className="fd-star-row">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setNewRating(s)}
-                    className="fd-star-btn"
-                    style={{
-                      cursor: "pointer",
-                      color: s <= newRating ? "#F59E0B" : "#D1D5DB",
-                    }}
-                    title={`${s} sao`}
-                  >
-                    ★
-                  </button>
-                ))}
-              </div>
-
-              {/* Input */}
-              <div className="fd-comment-row">
-                <input
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      editingReviewId
-                        ? handleUpdateReview()
-                        : handleSubmitComment();
-                    }
-                  }}
-                  placeholder="Chia sẻ cảm nhận của bạn..."
-                  className="fd-comment-input"
-                  style={{ borderColor: T.border }}
-                />
-                <button
-                  onClick={
-                    editingReviewId ? handleUpdateReview : handleSubmitComment
-                  }
-                  className="fd-comment-submit-btn"
-                  style={{ background: T.primary, cursor: "pointer" }}
-                >
-                  {editingReviewId ? "Cập nhật" : "Gửi"}
-                </button>
-              </div>
-            </div>
-
-            {/* Review summary */}
-            <div
-              className="fd-review-summary-box"
-              style={{ background: T.card, borderColor: T.border }}
-            >
-              <div className="fd-avg-stars">
-                <p className="fd-avg-score" style={{ color: T.text }}>
-                  {avgReview}
-                </p>
-                <div>
-                  <p className="fd-star-display">
-                    {"★".repeat(Math.max(1, Math.round(avgReview)))}
-                    {"☆".repeat(Math.max(0, 5 - Math.round(avgReview)))}
-                  </p>
-                  <p className="fd-review-count" style={{ color: T.sub }}>
-                    Dựa trên {reviews.length} nhận xét
-                  </p>
-                </div>
-              </div>
-
-              <div className="fd-sort-row">
-                {[
-                  ["newest", "Mới nhất"],
-                  ["highest", "Điểm cao"],
-                  ["lowest", "Điểm thấp"],
-                ].map(([key, label]) => (
-                  <button
-                    key={key}
-                    onClick={() => setReviewSort(key)}
-                    className="fd-sort-btn"
-                    style={{
-                      borderColor: reviewSort === key ? T.primary : T.border,
-                      background:
-                        reviewSort === key ? T.primaryLight : "transparent",
-                      color: reviewSort === key ? T.primary : T.text,
-                    }}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Review list */}
-            {reviews.length === 0 ? (
+            {inCart > 0 && (
               <div
-                className="fd-no-reviews"
-                style={{ borderColor: T.border, color: T.sub }}
+                style={{
+                  marginTop: 12,
+                  color: T.sub,
+                  fontSize: 14,
+                }}
               >
-                Chưa có comment cho món này.
-              </div>
-            ) : (
-              <div className="fd-review-list">
-                {sortedReviews.map((r) => (
-                  <div
-                    key={r.id}
-                    className="fd-review-card"
-                    style={{ borderColor: T.border }}
-                  >
-                    <div className="fd-review-card-header">
-                      <p className="fd-review-user" style={{ color: T.text }}>
-                        {r.username}
-                      </p>
-                      <span className="fd-review-date" style={{ color: T.sub }}>
-                        {new Date(r.createdAt).toLocaleString()}
-                      </span>
-                    </div>
-                    <p className="fd-review-stars">
-                      {"★".repeat(r.rating)}
-                      {"☆".repeat(5 - r.rating)}
-                    </p>
-                    <p className="fd-review-comment" style={{ color: T.sub }}>
-                      {r.comment}
-                    </p>
-                    {r.username === currentUserName && (
-                      <div className="fd-review-own-actions">
-                        <button
-                          onClick={handleEditOwnReview}
-                          className="fd-review-edit-btn"
-                          style={{
-                            background: T.primaryLight,
-                            color: T.primary,
-                          }}
-                        >
-                          Sửa
-                        </button>
-                        <button
-                          onClick={handleDeleteOwnReview}
-                          className="fd-review-delete-btn"
-                          style={{ background: T.redBg, color: T.red }}
-                        >
-                          Xóa
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                Trong giỏ hàng:{" "}
+                <strong
+                  style={{
+                    color: T.text,
+                  }}
+                >
+                  {inCart}
+                </strong>{" "}
+                phần
               </div>
             )}
           </div>
-        )}
+        </div>
 
-        {/* Related */}
+        {/* ======================================================
+            REVIEWS (toggle + list + form, tất cả nằm trong FoodReviews)
+        ====================================================== */}
+
+        <FoodReviews
+          itemId={itemId}
+          fallbackRating={item?.rating}
+          isLoggedIn={isLoggedIn}
+          requireLoginAction={requireLoginAction}
+          onStatsChange={setReviewStats}
+        />
+
+        {/* ======================================================
+            RELATED FOODS
+        ====================================================== */}
+
         {related.length > 0 && (
           <div className="fd-related-section">
             <SectionTitle>Món cùng danh mục</SectionTitle>
+
             <div className="fd-related-grid">
-              {related.map((r) => (
+              {related.map((food) => (
                 <MenuItemCard
-                  key={r.id}
-                  item={r}
-                  isFav={favorites.includes(r.id)}
-                  inCart={cartMap[r.id] || 0}
-                  onToggleFav={toggleFav}
-                  onAdd={(it) => {
-                    setQty(1);
-                    setCart((prev) => {
-                      const ex = prev.find((c) => c.item_id === it.id);
-                      if (ex)
-                        return prev.map((c) =>
-                          c.item_id === it.id ? { ...c, qty: c.qty + 1 } : c,
-                        );
-                      return [
-                        ...prev,
-                        {
-                          item_id: it.id,
-                          name: it.name,
-                          price: it.price,
-                          image: it.image,
-                          qty: 1,
-                        },
-                      ];
-                    });
+                  key={food.id}
+                  item={{
+                    id: food.id,
+                    name: food.name,
+                    price: food.price,
+                    image: food.image || null,
+                    category_id: food.categoryId,
+                    description: food.description || "",
+                    rating: food.rating,
+                    soldCount: food.soldCount,
                   }}
-                  onDec={(foodId) => decCart(foodId)}
-                  onClick={() => navigate(`/customer/foods/${r.id}`)}
+                  isFav={favorites.includes(food.id)}
+                  inCart={cartMap[food.id] || 0}
+                  onToggleFav={toggleFav}
+                  onAdd={handleAddRelated}
+                  onDec={decCart}
+                  onClick={() => navigate(`/customer/foods/${food.id}`)}
                 />
               ))}
             </div>

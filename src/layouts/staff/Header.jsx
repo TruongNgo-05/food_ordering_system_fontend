@@ -136,23 +136,15 @@ const Header = ({ onMenuToggle }) => {
                   alt="avatar"
                   className="user-avatar-img"
                   onError={(e) => {
-                    e.currentTarget.src =
-                      "https://ui-avatars.com/api/?name=" +
-                      encodeURIComponent(displayName) +
-                      "&background=4f46e5&color=fff&size=128";
+                    e.currentTarget.style.display = "none";
+                    e.currentTarget.parentElement?.setAttribute(
+                      "data-fallback",
+                      "true",
+                    );
                   }}
                 />
-              ) : (
-                <img
-                  src={
-                    "https://ui-avatars.com/api/?name=" +
-                    encodeURIComponent(displayName) +
-                    "&background=4f46e5&color=fff&size=128"
-                  }
-                  alt="avatar"
-                  className="user-avatar-img"
-                />
-              )}
+              ) : null}
+              {!avatarSrc && <FontAwesomeIcon icon={faUser} />}
             </div>
             <span className="user-name">{displayName}</span>
             <FontAwesomeIcon icon={faCog} className="dropdown-icon" />

@@ -30,7 +30,7 @@
 
   font-size: 18px;
 
-  transition: .2s;
+  transition: 0.2s;
 }
 
 .staff-chat-detail-header button:hover {
@@ -45,7 +45,6 @@
 
   color: #333;
 }
-
 
 /* ==========================
    Body
@@ -72,7 +71,6 @@
   background: #d8d8d8;
   border-radius: 50px;
 }
-
 
 /* ==========================
    Message
@@ -103,7 +101,7 @@
 
   word-break: break-word;
 
-  animation: messageFade .2s ease;
+  animation: messageFade 0.2s ease;
 }
 
 .staff-message-bubble.customer {
@@ -129,9 +127,8 @@
 
   font-size: 11px;
 
-  opacity: .7;
+  opacity: 0.7;
 }
-
 
 /* ==========================
    Input
@@ -168,13 +165,13 @@
 
   font-size: 14px;
 
-  transition: .2s;
+  transition: 0.2s;
 }
 
 .staff-chat-detail-input input:focus {
   border-color: #f4c542;
 
-  box-shadow: 0 0 0 3px rgba(244, 197, 66, .15);
+  box-shadow: 0 0 0 3px rgba(244, 197, 66, 0.15);
 }
 
 .staff-chat-detail-input button {
@@ -196,7 +193,7 @@
 
   font-size: 18px;
 
-  transition: .2s;
+  transition: 0.2s;
 }
 
 .staff-chat-detail-input button:hover {
@@ -205,9 +202,8 @@
 }
 
 .staff-chat-detail-input button:active {
-  transform: scale(.95);
+  transform: scale(0.95);
 }
-
 
 /* ==========================
    Animation
@@ -225,13 +221,11 @@
   }
 }
 
-
 /* ==========================
    Mobile
 ========================== */
 
 @media (max-width: 768px) {
-
   .staff-chat-detail-header {
     height: 56px;
   }
@@ -247,5 +241,4 @@
   .staff-chat-detail-input {
     height: 64px;
   }
-
 }

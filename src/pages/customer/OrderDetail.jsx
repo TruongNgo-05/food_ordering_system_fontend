@@ -128,20 +128,6 @@ const OrderDetail = () => {
     }
   };
 
-  const handleCancelOrder = async () => {
-    try {
-      await orderService.cancelOrder(detail.id);
-
-      setDetail((prev) => ({
-        ...prev,
-        status: "cancelled",
-      }));
-    } catch (error) {
-      console.error(error);
-      alert("Không thể hủy đơn");
-    }
-  };
-
   if (loading) {
     return (
       <div
@@ -411,19 +397,6 @@ const OrderDetail = () => {
                 {detail.note || "Không có ghi chú"}
               </p>
             </div>
-
-            {detail.status === "pending" && (
-              <button
-                onClick={handleCancelOrder}
-                className="ord-cancel-btn"
-                style={{
-                  background: T.redBg,
-                  color: T.red,
-                }}
-              >
-                Hủy đơn
-              </button>
-            )}
 
             <button
               onClick={handleReorder}

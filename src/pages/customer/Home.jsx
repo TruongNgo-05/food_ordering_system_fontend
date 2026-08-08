@@ -1,29 +1,37 @@
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
+
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+
 import { T } from "../../constants/customerTheme";
 import { EmptyState } from "../../components/customer/SharedUI";
 import MenuItemCard from "../../components/customer/MenuItemCard";
 import Banner from "../../components/customer/Banner";
 import CustomerChatWidget from "../../components/customer/CustomerChatWidget";
 import SectionHeader from "../../components/common/SectionHeader";
+import Categories from "../../components/common/Categories";
 import Header from "../../layouts/customer/Header";
 import AppPagination from "../../components/common/AppPagination";
 import BackToTopButton from "../../components/common/BackToTopButton";
+
 import { getBanner, getCategories, getFoods } from "../../services/userService";
-import cartService from "../../services/customer/cartService";
-import favoriteService from "../../services/customer/favoriteService";
+
+import { useCustomerData } from "../../context/CustomerDataContext";
 import { confirmLoginWithModal } from "../../utils/authGuards";
 import { useAuth } from "../../hooks/useAuth";
+
 import "../../assets/styles/CustomerHome.css";
+
 import Footer from "../../layouts/Footer";
 import CustomerSearch from "../../components/common/CustomerSearch";
 
-const CART_UPDATED_EVENT = "cart-updated-event";
-
 const Home = () => {
   const navigate = useNavigate();
+
   const { isLoggedIn } = useAuth();
+
+  const { favorites, cartMap, addToCart, updateCart, toggleFavorite } =
+    useCustomerData();
 
   const [banners, setBanners] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -35,77 +43,94 @@ const Home = () => {
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [page, setPage] = useState(0);
-  const pageSize = 10;
 
-  const [cart, setCart] = useState([]);
-  const [favorites, setFavorites] = useState([]);
+  const [page, setPage] = useState(0);
+
+  const pageSize = 10;
 
   const [greetingName, setGreetingName] = useState(
     () => localStorage.getItem("userFullName") || "Khách",
   );
+  const requireLoginAction = useCallback(() => {
+    confirmLoginWithModal(navigate);
+  }, [navigate]);
 
-  // ─── Fetch banners ───────────────────────────────────────────────
   useEffect(() => {
     const fetchBanners = async () => {
       try {
         const res = await getBanner();
+
         const mapped = (res.data.data || []).map((b) => ({
           id: b.id,
           title: b.title,
           desc: b.description,
           image: b.imageUrl,
         }));
+
         setBanners(mapped);
       } catch (err) {
         console.error("Lỗi load banner:", err);
       }
     };
+
     fetchBanners();
   }, []);
 
-  // ─── Fetch categories ────────────────────────────────────────────
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await getCategories();
+
         const list = res.data?.data?.content || [];
+
         setCategories([
           { id: 0, name: "Tất cả" },
-          ...list.map((c) => ({ id: c.id, name: c.name })),
+          ...list.map((c) => ({
+            id: c.id,
+            name: c.name,
+          })),
         ]);
       } catch (err) {
         console.error("Lỗi load categories:", err);
       }
     };
+
     fetchCategories();
   }, []);
 
-  // ─── Debounce search ─────────────────────────────────────────────
   useEffect(() => {
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       setDebouncedSearch(search);
       setPage(0);
     }, 300);
-    return () => clearTimeout(t);
+
+    return () => clearTimeout(timer);
   }, [search]);
 
-  // ─── Fetch foods ─────────────────────────────────────────────────
   useEffect(() => {
     const fetchFoods = async () => {
       setLoadingFoods(true);
+
       try {
         const params = {
           page,
           size: pageSize,
-          ...(activeCat !== 0 && { categoryId: activeCat }),
-          ...(debouncedSearch && { name: debouncedSearch }),
+
+          ...(activeCat !== 0 && {
+            categoryId: activeCat,
+          }),
+
+          ...(debouncedSearch && {
+            name: debouncedSearch,
+          }),
         };
 
         const res = await getFoods(params);
+
         const data = res.data?.data;
 
         const list = data?.content || [];
+
         const total = data?.totalElements ?? 0;
 
         const mapped = list.map((f) => ({
@@ -123,6 +148,7 @@ const Home = () => {
         setTotalFoods(total);
       } catch (err) {
         console.error("Lỗi load foods:", err);
+
         setFoods([]);
         setTotalFoods(0);
       } finally {
@@ -133,184 +159,86 @@ const Home = () => {
     fetchFoods();
   }, [page, activeCat, debouncedSearch]);
 
-  // Load favorites
-  useEffect(() => {
-    const loadFavorites = async () => {
-      try {
-        const res = await favoriteService.getMyFavorite();
-
-        const favIds = res.data?.data?.favoriteIds || [];
-
-        setFavorites(favIds);
-      } catch (err) {
-        console.error("Load favorites error:", err);
-        setFavorites([]);
+  const handleAddToCart = useCallback(
+    async (item) => {
+      if (!isLoggedIn) {
+        requireLoginAction();
+        return;
       }
+
+      const success = await addToCart(item, 1);
+
+      if (success) {
+        toast.success("Thêm vào giỏ hàng thành công");
+      } else {
+        toast.error("Thêm vào giỏ hàng thất bại");
+      }
+    },
+    [isLoggedIn, requireLoginAction, addToCart],
+  );
+
+  const decCart = useCallback(
+    async (item) => {
+      const success = await updateCart(item.item_id, -1);
+
+      if (!success) {
+        toast.error("Cập nhật giỏ hàng thất bại");
+      }
+    },
+    [updateCart],
+  );
+
+  const handleToggleFav = useCallback(
+    async (id) => {
+      if (!isLoggedIn) {
+        requireLoginAction();
+        return;
+      }
+
+      const wasFavorite = favorites.includes(id);
+
+      const success = await toggleFavorite(id);
+
+      if (success) {
+        if (wasFavorite) {
+          toast.info("Đã xóa khỏi yêu thích");
+        } else {
+          toast.success("Đã thêm vào yêu thích");
+        }
+      } else {
+        toast.error("Không thể cập nhật yêu thích");
+      }
+    },
+    [isLoggedIn, requireLoginAction, toggleFavorite, favorites],
+  );
+
+  useEffect(() => {
+    const sync = () => {
+      setGreetingName(localStorage.getItem("userFullName") || "Khách");
     };
 
-    if (isLoggedIn) {
-      loadFavorites();
-    } else {
-      setFavorites([]);
-    }
-  }, [isLoggedIn]);
-
-  const loadCart = useCallback(async () => {
-    // chưa đăng nhập thì không gọi API cart
-    if (!isLoggedIn) {
-      setCart([]);
-      return;
-    }
-
-    try {
-      const res = await cartService.getCart();
-
-      const data = res.data?.data;
-
-      setCart(
-        (data?.items || []).map((i) => ({
-          item_id: i.itemId,
-          name: i.foodName,
-          price: i.price,
-          image: i.image,
-          qty: i.quantity,
-        })),
-      );
-    } catch (error) {
-      throw error;
-    }
-  }, [isLoggedIn]);
-
-  // ─── Load cart ───────────────────────────────────────────
-  useEffect(() => {
-    if (isLoggedIn) {
-      loadCart().catch((err) => {
-        console.error("Load cart error:", err);
-      });
-    } else {
-      setCart([]);
-    }
-  }, [isLoggedIn, loadCart]);
-
-  // ─── Sync greeting name ──────────────────────────────────────────
-  useEffect(() => {
-    const sync = () =>
-      setGreetingName(localStorage.getItem("userFullName") || "Khách");
     sync();
+
     window.addEventListener("focus", sync);
     window.addEventListener("storage", sync);
+
     return () => {
       window.removeEventListener("focus", sync);
       window.removeEventListener("storage", sync);
     };
   }, []);
 
-  // ─── Cart map ────────────────────────────────────────────────────
-  const cartMap = useMemo(
-    () => Object.fromEntries(cart.map((c) => [c.item_id, c.qty])),
-    [cart],
-  );
-
-  const requireLoginAction = useCallback(() => {
-    confirmLoginWithModal(navigate);
-  }, [navigate]);
-
-  // ─── Add to cart ─────────────────────────────────────────────────
-  const addToCart = useCallback(
-    async (item) => {
-      if (!isLoggedIn) {
-        requireLoginAction();
-        return;
-      }
-      try {
-        // API addToCart only sends quantity
-        await cartService.addToCart({
-          foodId: item.id,
-          quantity: 1,
-        });
-
-        // Reload cart from API
-        await loadCart();
-
-        window.dispatchEvent(new Event(CART_UPDATED_EVENT));
-        toast.success("Thêm vào giỏ hàng thành công");
-      } catch (err) {
-        console.error("Add to cart error:", err);
-        toast.error("Thêm vào giỏ hàng thất bại");
-      }
-    },
-    [isLoggedIn, requireLoginAction, loadCart],
-  );
-
-  // ─── Dec cart ────────────────────────────────────────────────────
-  const decCart = useCallback(
-    async (item) => {
-      try {
-        if (item.qty <= 1) {
-          await cartService.deleteCart(item.item_id);
-        } else {
-          await cartService.updateCart(item.item_id, {
-            quantity: item.qty - 1,
-          });
-        }
-
-        // Reload cart from API
-        await loadCart();
-        // Dispatch event to notify Header.jsx of cart update
-        window.dispatchEvent(new Event(CART_UPDATED_EVENT));
-      } catch (err) {
-        console.error("Dec cart error:", err);
-        toast.error("Cập nhật giỏ hàng thất bại");
-      }
-    },
-    [loadCart],
-  );
-
-  const toggleFav = useCallback(
-    async (id) => {
-      if (!isLoggedIn) {
-        requireLoginAction();
-        return;
-      }
-      const isFavorite = favorites.includes(id);
-
-      try {
-        if (isFavorite) {
-          setFavorites((prev) => prev.filter((f) => f !== id));
-          toast.info("Đã xóa khỏi yêu thích");
-        } else {
-          setFavorites((prev) => [...prev, id]);
-          toast.success("Đã thêm vào yêu thích");
-        }
-        const res = await favoriteService.toggleFavorite(id);
-        if (!res.data) {
-          if (isFavorite) {
-            setFavorites((prev) => [...prev, id]);
-          } else {
-            setFavorites((prev) => prev.filter((f) => f !== id));
-          }
-          toast.error("Không thể cập nhật yêu thích");
-        }
-      } catch (err) {
-        console.error("Toggle favorite error:", err);
-
-        // Revert on error
-        if (isFavorite) {
-          setFavorites((prev) => [...prev, id]);
-        } else {
-          setFavorites((prev) => prev.filter((f) => f !== id));
-        }
-        toast.error("Không thể cập nhật yêu thích");
-      }
-    },
-    [isLoggedIn, requireLoginAction, favorites],
-  );
-
   const scrollToMenu = () => {
     const bannerEl = document.querySelector(".customer-hero");
+
     if (!bannerEl) return;
+
     const bottom = bannerEl.getBoundingClientRect().bottom + window.scrollY;
-    window.scrollTo({ top: Math.max(0, bottom - 35), behavior: "smooth" });
+
+    window.scrollTo({
+      top: Math.max(0, bottom - 35),
+      behavior: "smooth",
+    });
   };
 
   return (
@@ -323,29 +251,15 @@ const Home = () => {
           description={`Xin chào ${greetingName} 👋`}
         />
 
-        {/* Categories */}
-        <div className="customer-category-list">
-          {categories.map((cat) => (
-            <button
-              key={`cat-${cat.id}`}
-              className="customer-category-btn"
-              onClick={() => {
-                setActiveCat(cat.id);
-                setPage(0);
-              }}
-              style={{
-                border:
-                  activeCat === cat.id
-                    ? `1px solid ${T.primary}`
-                    : `1px solid ${T.border}`,
-                background: activeCat === cat.id ? T.primary : T.card,
-                color: activeCat === cat.id ? "#0a0a0a" : T.text,
-              }}
-            >
-              {cat.icon} {cat.name}
-            </button>
-          ))}
-        </div>
+        <Categories
+          categories={categories}
+          activeCategoryId={activeCat}
+          onChange={(id) => {
+            setActiveCat(id);
+            setPage(0);
+          }}
+        />
+
         <CustomerSearch
           keyword={search}
           onKeywordChange={setSearch}
@@ -353,7 +267,6 @@ const Home = () => {
         />
       </div>
 
-      {/* Menu list */}
       <div id="customer-menu-section" className="customer-home-content-wrap">
         {loadingFoods ? (
           <div className="customer-loading" style={{ color: T.textSub }}>
@@ -369,8 +282,8 @@ const Home = () => {
                 item={item}
                 isFav={favorites.includes(item.id)}
                 inCart={cartMap[item.id] || 0}
-                onToggleFav={toggleFav}
-                onAdd={addToCart}
+                onToggleFav={handleToggleFav}
+                onAdd={handleAddToCart}
                 onDec={decCart}
                 onClick={() => navigate(`/customer/foods/${item.id}`)}
               />
@@ -387,8 +300,11 @@ const Home = () => {
           />
         )}
       </div>
+
       <Footer />
+
       <CustomerChatWidget enableChat={isLoggedIn} />
+
       <BackToTopButton />
     </div>
   );
