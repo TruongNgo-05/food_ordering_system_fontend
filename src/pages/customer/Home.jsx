@@ -285,7 +285,7 @@ const Home = () => {
                 onToggleFav={handleToggleFav}
                 onAdd={handleAddToCart}
                 onDec={decCart}
-                onClick={() => navigate(`/customer/foods/${item.id}`)}
+                onClick={() => navigate(`/foods/${item.id}`)}
               />
             ))}
           </div>

@@ -1,99 +1,173 @@
 import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: API_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// ======================
-// Request
-// ======================
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
+// ======================================================
+// REQUEST INTERCEPTOR
+// Tự động gắn Access Token vào mỗi request
+// ======================================================
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+api.interceptors.request.use(
+  (config) => {
+    const accessToken = localStorage.getItem("accessToken");
 
-  return config;
-});
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
 
-// ======================
-// Refresh
-// ======================
+    return config;
+  },
+  (error) => Promise.reject(error),
+);
+
+// ======================================================
+// REFRESH TOKEN QUEUE
+// ======================================================
 
 let isRefreshing = false;
-
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
-  failedQueue.forEach((promise) => {
+  failedQueue.forEach(({ resolve, reject }) => {
     if (error) {
-      promise.reject(error);
+      reject(error);
     } else {
-      promise.resolve(token);
+      resolve(token);
     }
   });
 
   failedQueue = [];
 };
 
-api.interceptors.response.use(
-  (response) => response,
+// ======================================================
+// CLEAR AUTH
+// ======================================================
 
+const clearAuth = () => {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("role");
+  localStorage.removeItem("user");
+  localStorage.removeItem("userFullName");
+};
+
+// ======================================================
+// RESPONSE INTERCEPTOR
+// ======================================================
+
+api.interceptors.response.use(
+  // API thành công
+  (response) => {
+    return response;
+  },
+
+  // API lỗi
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then((token) => {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
+    // Không có request
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
 
-          return api(originalRequest);
+    if (error.response?.status !== 401) {
+      return Promise.reject(error);
+    }
+
+    // ==================================================
+    // KHÔNG REFRESH LẠI CHÍNH API REFRESH
+    // ==================================================
+
+    const requestUrl = originalRequest.url || "";
+
+    const isRefreshRequest = requestUrl.includes("/auth/refresh");
+
+    const isLoginRequest = requestUrl.includes("/auth/login");
+
+    const isLogoutRequest = requestUrl.includes("/auth/logout");
+
+    if (isRefreshRequest || isLoginRequest || isLogoutRequest) {
+      return Promise.reject(error);
+    }
+
+    if (originalRequest._retry) {
+      return Promise.reject(error);
+    }
+
+    originalRequest._retry = true;
+
+    // ==================================================
+    // ĐANG CÓ REQUEST KHÁC REFRESH
+    // ==================================================
+
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        failedQueue.push({
+          resolve,
+          reject,
         });
-      }
-
-      originalRequest._retry = true;
-
-      isRefreshing = true;
-
-      try {
-        const res = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh`,
-          {},
-          {
-            withCredentials: true,
-          },
-        );
-
-        const newAccessToken = res.data.data.accessToken;
-
-        localStorage.setItem("accessToken", newAccessToken);
-
-        processQueue(null, newAccessToken);
-
+      }).then((newAccessToken) => {
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
         return api(originalRequest);
-      } catch (err) {
-        processQueue(err);
-
-        localStorage.clear();
-
-        window.location.href = "/login";
-
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
-      }
+      });
     }
 
-    return Promise.reject(error);
+    // ==================================================
+    // BẮT ĐẦU REFRESH
+    // ==================================================
+
+    isRefreshing = true;
+
+    try {
+      console.log("Access Token hết hạn → Refresh Token");
+
+      const response = await axios.post(
+        `${API_URL}/auth/refresh`,
+        {},
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      const newAccessToken = response.data?.data?.accessToken;
+
+      if (!newAccessToken) {
+        throw new Error("Refresh thành công nhưng không có Access Token");
+      }
+
+      localStorage.setItem("accessToken", newAccessToken);
+
+      console.log("Refresh thành công");
+
+      processQueue(null, newAccessToken);
+
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+      return api(originalRequest);
+    } catch (refreshError) {
+      console.error("Refresh Token thất bại:", refreshError);
+
+      processQueue(refreshError);
+
+      clearAuth();
+
+      window.location.href = "/login";
+
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
   },
 );
 

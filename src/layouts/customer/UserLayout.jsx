@@ -5,7 +5,7 @@ import "../../assets/styles/Layouts.css";
 const CustomerLayout = () => {
   const location = useLocation();
   const isHomeRoute =
-    location.pathname === "/customer" || location.pathname === "/customer/";
+    location.pathname === "/home" || location.pathname === "/home/";
 
   return (
     <div className="layout layout--no-sider layout--customer">

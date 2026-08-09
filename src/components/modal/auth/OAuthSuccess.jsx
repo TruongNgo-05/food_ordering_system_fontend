@@ -18,7 +18,7 @@ const OAuthSuccess = () => {
 
       setTimeout(() => {
         toast.success(isNew ? "Đăng ký thành công!" : "Đăng nhập thành công!");
-        navigate("/customer", { replace: true });
+        navigate("/", { replace: true });
       }, 100);
     };
     handleLogin();

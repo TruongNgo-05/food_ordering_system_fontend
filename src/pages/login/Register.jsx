@@ -44,12 +44,8 @@ const Register = () => {
             <div className="back-customer-link">
               <a onClick={() => navigate("/login")}>← Quay lại trang Login</a>
             </div>
-            <div className="logo-container">
-              <BrandLogo
-                className="brand-logo-login"
-                ariaLabel="Jler Sky Restaurant"
-              />
-            </div>
+
+            <BrandLogo className="brand-logo-login" />
             <h1>Tạo tài khoản mới</h1>
             <p>Đăng ký để đặt bàn, đặt món và nhận ưu đãi thành viên</p>
           </div>

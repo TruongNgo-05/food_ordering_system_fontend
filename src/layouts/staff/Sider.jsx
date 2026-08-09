@@ -35,13 +35,13 @@ const staffMenuItems = [
   {
     id: 3,
     title: "Đơn hàng tại nhà hàng",
-    path: "/staff/orders/restaurant",
+    path: "/staff/orders-restaurant",
     icon: faStore,
   },
   {
     id: 4,
     title: "Đơn hàng online",
-    path: "/staff/orders/online",
+    path: "/staff/orders-online",
     icon: faTruck,
   },
 

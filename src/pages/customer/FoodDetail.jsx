@@ -171,13 +171,6 @@ const FoodDetail = () => {
         id: food.id,
       });
 
-      /*
-       * addToCart trong CustomerDataContext hiện tại
-       * mặc định quantity = 1.
-       *
-       * Nếu quantity > 1:
-       * gọi thêm quantity - 1 lần.
-       */
       if (success && quantity > 1) {
         for (let i = 1; i < quantity; i++) {
           const nextSuccess = await addCartContext({
@@ -717,7 +710,7 @@ const FoodDetail = () => {
                   onToggleFav={toggleFav}
                   onAdd={handleAddRelated}
                   onDec={decCart}
-                  onClick={() => navigate(`/customer/foods/${food.id}`)}
+                  onClick={() => navigate(`/foods/${food.id}`)}
                 />
               ))}
             </div>

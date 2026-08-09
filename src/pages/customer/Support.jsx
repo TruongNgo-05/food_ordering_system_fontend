@@ -150,7 +150,7 @@ const Support = () => {
           <div className="support-header-action">
             <button
               className="my-support-btn"
-              onClick={() => navigate("/customer/my-support")}
+              onClick={() => navigate("/my-support")}
             >
               Xem yêu cầu hỗ trợ của tôi
             </button>

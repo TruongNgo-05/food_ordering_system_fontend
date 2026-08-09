@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from "react";
+
 import { useNavigate } from "react-router-dom";
+
 import { AuthContext } from "./authContext";
 
 import { loginApi, logoutApi } from "../services/authService";
+
 import { getCurrentUserApi } from "../services/userService";
+
+// ======================================================
+// GET FULL NAME
+// ======================================================
 
 const getFullName = (u) => {
   if (!u) return "";
-  if (u.fullName) return u.fullName;
+
+  if (u.fullName) {
+    return u.fullName;
+  }
 
   const firstName = u.firstName || "";
   const lastName = u.lastName || "";
@@ -15,8 +25,16 @@ const getFullName = (u) => {
   return `${firstName} ${lastName}`.trim() || u.username || u.email || "";
 };
 
+// ======================================================
+// AUTH PROVIDER
+// ======================================================
+
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
+
+  // ====================================================
+  // STATE
+  // ====================================================
 
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => !!localStorage.getItem("accessToken"),
@@ -26,7 +44,12 @@ export const AuthProvider = ({ children }) => {
 
   const [user, setUser] = useState(() => {
     const stored = localStorage.getItem("user");
-    return stored ? JSON.parse(stored) : null;
+
+    try {
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
   });
 
   const [userFullName, setUserFullName] = useState(
@@ -35,48 +58,87 @@ export const AuthProvider = ({ children }) => {
 
   const [authLoading, setAuthLoading] = useState(true);
 
-  // ============================
-  // INIT WHEN RELOAD PAGE
-  // ============================
+  // ====================================================
+  // INIT AUTH
+  // ====================================================
+
   useEffect(() => {
     const init = async () => {
-      const token = localStorage.getItem("accessToken");
+      try {
+        const accessToken = localStorage.getItem("accessToken");
 
-      if (!token) {
+        // Không có Access Token
+        if (!accessToken) {
+          setIsLoggedIn(false);
+
+          return;
+        }
+
+        // ==================================================
+        // Gọi API lấy user
+        //
+        // Access Token còn hạn
+        //      → 200
+        //
+        // Access Token hết hạn
+        //      → 401
+        //      → Axios interceptor tự refresh
+        //      → retry request
+        // ==================================================
+
+        const apiUser = await refreshUser();
+
+        if (apiUser) {
+          setIsLoggedIn(true);
+        } else {
+          handleLocalLogout();
+        }
+      } catch (error) {
+        console.error("Auth init error:", error);
+
+        handleLocalLogout();
+      } finally {
         setAuthLoading(false);
-        return;
       }
-
-      await refreshUser();
-      setIsLoggedIn(true);
-
-      setAuthLoading(false);
     };
 
     init();
   }, []);
 
-  // ============================
-  // LOGIN NORMAL
-  // ============================
+  // ====================================================
+  // LOGIN
+  // ====================================================
+
   const login = async (credentials) => {
     const res = await loginApi(credentials);
+
     const loginUser = res.data.data;
 
+    // ==================================================
+    // LƯU ACCESS TOKEN
+    // ==================================================
+
     localStorage.setItem("accessToken", loginUser.accessToken);
+
     localStorage.setItem("role", loginUser.role);
 
     setIsLoggedIn(true);
+
     setRole(loginUser.role);
+
+    // ==================================================
+    // LẤY USER
+    // ==================================================
 
     await refreshUser();
 
     return loginUser;
   };
 
-  // ============================
-  // LOGIN GOOGLE / OAUTH
-  // ============================
+  // ====================================================
+  // LOGIN GOOGLE
+  // ====================================================
+
   const loginGoogle = async (accessToken) => {
     localStorage.setItem("accessToken", accessToken);
 
@@ -84,55 +146,98 @@ export const AuthProvider = ({ children }) => {
 
     const apiUser = await refreshUser();
 
-    setRole(apiUser?.role || null);
+    if (apiUser) {
+      setRole(apiUser.role);
+    }
 
     return apiUser;
   };
 
-  // ============================
+  // ====================================================
+  // LOCAL LOGOUT
+  // ====================================================
+
+  const handleLocalLogout = () => {
+    localStorage.removeItem("accessToken");
+
+    localStorage.removeItem("role");
+
+    localStorage.removeItem("user");
+
+    localStorage.removeItem("userFullName");
+
+    setIsLoggedIn(false);
+
+    setRole(null);
+
+    setUser(null);
+
+    setUserFullName("");
+  };
+
+  // ====================================================
   // LOGOUT
-  // ============================
+  // ====================================================
+
   const logout = async () => {
     try {
       await logoutApi();
-    } catch (e) {}
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
 
-    localStorage.clear();
-
-    setIsLoggedIn(false);
-    setRole(null);
-    setUser(null);
-    setUserFullName("");
+    handleLocalLogout();
 
     navigate("/login");
   };
 
-  // ============================
+  // ====================================================
   // REFRESH USER
-  // ============================
+  // ====================================================
+
   const refreshUser = async () => {
     try {
       const res = await getCurrentUserApi();
+
       const apiUser = res.data.data;
 
-      if (!apiUser) return null;
+      if (!apiUser) {
+        return null;
+      }
 
       const fullName = getFullName(apiUser);
 
+      // ==================================================
+      // STATE
+      // ==================================================
+
       setUser(apiUser);
+
       setRole(apiUser.role);
+
       setUserFullName(fullName);
 
+      // ==================================================
+      // LOCAL STORAGE
+      // ==================================================
+
       localStorage.setItem("user", JSON.stringify(apiUser));
+
       localStorage.setItem("role", apiUser.role);
+
       localStorage.setItem("userFullName", fullName);
 
       return apiUser;
-    } catch (err) {
-      console.error("refreshUser error:", err);
+    } catch (error) {
+      console.error("refreshUser error:", error);
+
       return null;
     }
   };
+
+  // ====================================================
+  // CONTEXT
+  // ====================================================
 
   return (
     <AuthContext.Provider
@@ -142,10 +247,13 @@ export const AuthProvider = ({ children }) => {
         user,
         userFullName,
         authLoading,
+
         login,
         loginGoogle,
         logout,
+
         refreshUser,
+
         setUser,
       }}
     >

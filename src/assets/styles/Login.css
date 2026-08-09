@@ -73,12 +73,6 @@
   color: var(--login-gold-dark);
 }
 
-.logo-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
 .brand-logo-login {
   align-items: center;
   gap: 4px;
@@ -89,18 +83,12 @@
   color: var(--login-gold);
 }
 
-.brand-logo-login .brand-logo__sub {
-  font-size: 0.58rem;
-  letter-spacing: 0.24em;
-  color: var(--login-muted);
-}
-
 .login-header h1 {
   font-family: "Cormorant Garamond", serif;
   font-size: 32px;
   font-weight: 400;
   color: var(--login-text);
-  margin: 0;
+  margin-top: 20px;
   letter-spacing: 1px;
 }
 
@@ -413,7 +401,10 @@
   margin-top: 12px;
   font-size: 14px;
 }
-
+.auth-switch a {
+  color: #4184dd;
+  margin-left: 1px;
+}
 .forgot-modal .ant-modal-content {
   border-radius: 14px;
   overflow: hidden;
