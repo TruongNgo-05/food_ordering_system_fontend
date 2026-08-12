@@ -17,27 +17,44 @@ import UserHeader from "../../components/user/UserHeader";
 import FoodImage from "../../components/common/FoodImage";
 import { StatusBadge } from "../../components/customer/SharedUI";
 
-import { T, fmt, STATUS_CFG } from "../../constants/customerTheme";
+import { T, fmt } from "../../constants/customerTheme";
 
 import orderService from "../../services/customer/orderService";
+import { useCustomerData } from "../../context/CustomerDataContext";
 
 const OrderDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const { loadCart } = useCustomerData();
+
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState(null);
 
+  // ======================================================
+  // BACKEND STATUS -> FRONTEND STATUS
+  // ======================================================
   const mapStatus = (status) => {
     switch (status) {
       case "PENDING":
         return "pending";
 
-      case "PROCESSING":
+      // Backend mới:
+      // PENDING -> CONFIRMED
+      //
+      // Frontend giữ key "processing"
+      // để tái sử dụng StatusBadge hiện tại.
+      case "CONFIRMED":
         return "processing";
+
+      case "PREPARING":
+        return "preparing";
 
       case "DELIVERING":
         return "delivering";
+
+      case "DELIVERY_FAILED":
+        return "delivery_failed";
 
       case "COMPLETED":
         return "completed";
@@ -51,11 +68,18 @@ const OrderDetail = () => {
     }
   };
 
+  // ======================================================
+  // FORMAT DATE
+  // ======================================================
   const formatDate = (date) => {
     if (!date) return "";
+
     return new Date(date).toLocaleString("vi-VN");
   };
 
+  // ======================================================
+  // LOAD DETAIL
+  // ======================================================
   const fetchDetail = async () => {
     try {
       setLoading(true);
@@ -63,6 +87,7 @@ const OrderDetail = () => {
       const res = await orderService.myOrderDetail(id);
 
       const data = res.data?.data;
+
       const order = data?.order;
 
       if (!order) {
@@ -72,17 +97,18 @@ const OrderDetail = () => {
 
       setDetail({
         id: order.orderId,
+
         orderCode: order.orderCode,
 
         status: mapStatus(order.status),
 
         total: order.totalPrice,
 
-        subtotal: data.priceBefore || order.totalPrice,
+        subtotal: data.priceBefore ?? order.totalPrice,
 
-        discount: data.voucherOrder?.discount || 0,
+        discount: data.voucherOrder?.discount ?? 0,
 
-        voucher: data.voucherOrder?.voucherCode || null,
+        voucher: data.voucherOrder?.voucherCode ?? null,
 
         address: data.address || "",
 
@@ -114,20 +140,33 @@ const OrderDetail = () => {
     }
   };
 
+  // ======================================================
+  // FETCH
+  // ======================================================
   useEffect(() => {
     fetchDetail();
   }, [id]);
 
+  // ======================================================
+  // REORDER
+  // ======================================================
   const handleReorder = async () => {
     try {
       await orderService.reorderOrder(detail.id);
-      navigate("/customer/carts");
+
+      await loadCart();
+
+      navigate("/carts");
     } catch (error) {
       console.error(error);
+
       alert("Không thể đặt lại đơn");
     }
   };
 
+  // ======================================================
+  // LOADING
+  // ======================================================
   if (loading) {
     return (
       <div
@@ -143,6 +182,9 @@ const OrderDetail = () => {
     );
   }
 
+  // ======================================================
+  // NOT FOUND
+  // ======================================================
   if (!detail) {
     return (
       <div
@@ -158,27 +200,33 @@ const OrderDetail = () => {
     );
   }
 
-  const steps = ["pending", "processing", "delivering", "completed"];
-
-  const stepIdx = steps.indexOf(detail.status);
-
   return (
-    <div className="customer-orders-page" style={{ background: T.bg }}>
+    <div
+      className="customer-orders-page"
+      style={{
+        background: T.bg,
+      }}
+    >
       <div className="customer-orders-container">
         <UserHeader
           title="Chi tiết đơn hàng"
           description={`Mã đơn ${detail.orderCode}`}
         />
 
+        {/* BACK */}
         <button
-          onClick={() => navigate("/customer/orders")}
+          onClick={() => navigate("/orders")}
           className="ord-back-btn"
-          style={{ color: T.sub }}
+          style={{
+            color: T.sub,
+          }}
         >
           ← Quay lại
         </button>
 
-        {/* HEADER */}
+        {/* ==================================================
+            HEADER
+        ================================================== */}
         <div
           className="ord-detail-card"
           style={{
@@ -188,16 +236,37 @@ const OrderDetail = () => {
         >
           <div className="ord-detail-card-top">
             <div>
-              <p className="ord-detail-id-label" style={{ color: T.sub }}>
+              <p
+                className="ord-detail-id-label"
+                style={{
+                  color: T.sub,
+                }}
+              >
                 Mã đơn
               </p>
 
-              <p className="ord-detail-id-value" style={{ color: T.text }}>
+              <p
+                className="ord-detail-id-value"
+                style={{
+                  color: T.text,
+                }}
+              >
                 #{detail.orderCode}
               </p>
 
-              <p className="ord-detail-created" style={{ color: T.sub }}>
-                <FontAwesomeIcon icon={faClock} style={{ marginRight: 6 }} />
+              <p
+                className="ord-detail-created"
+                style={{
+                  color: T.sub,
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={faClock}
+                  style={{
+                    marginRight: 6,
+                  }}
+                />
+
                 {detail.created_at}
               </p>
             </div>
@@ -205,14 +274,21 @@ const OrderDetail = () => {
             <div className="ord-detail-right">
               <StatusBadge status={detail.status} />
 
-              <p className="ord-detail-payment" style={{ color: T.sub }}>
+              <p
+                className="ord-detail-payment"
+                style={{
+                  color: T.sub,
+                }}
+              >
                 <FontAwesomeIcon
                   icon={
                     detail.payment_method === "ONLINE"
                       ? faBuildingColumns
                       : faMoneyBillWave
                   }
-                  style={{ marginRight: 6 }}
+                  style={{
+                    marginRight: 6,
+                  }}
                 />
 
                 {detail.payment_method === "ONLINE"
@@ -231,9 +307,13 @@ const OrderDetail = () => {
           </div>
         </div>
 
-        {/* CONTENT */}
+        {/* ==================================================
+            CONTENT
+        ================================================== */}
         <div className="ord-detail-grid">
-          {/* ITEMS */}
+          {/* ==================================================
+              ITEMS
+          ================================================== */}
           <div
             className="ord-items-card"
             style={{
@@ -247,19 +327,28 @@ const OrderDetail = () => {
                 borderBottomColor: T.border,
               }}
             >
-              <p style={{ color: T.text }}>
-                <FontAwesomeIcon icon={faReceipt} style={{ marginRight: 8 }} />
+              <p
+                style={{
+                  color: T.text,
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={faReceipt}
+                  style={{
+                    marginRight: 8,
+                  }}
+                />
                 Món trong đơn
               </p>
             </div>
 
-            {detail.items.map((it, i) => (
+            {detail.items.map((item, index) => (
               <div
-                key={i}
+                key={index}
                 className="ord-item-row"
                 style={{
                   borderBottomColor:
-                    i < detail.items.length - 1 ? T.border : "transparent",
+                    index < detail.items.length - 1 ? T.border : "transparent",
                 }}
               >
                 <div
@@ -269,7 +358,7 @@ const OrderDetail = () => {
                   }}
                 >
                   <FoodImage
-                    src={it.image}
+                    src={item.image}
                     size={34}
                     radius={10}
                     textSize={20}
@@ -277,24 +366,42 @@ const OrderDetail = () => {
                 </div>
 
                 <div className="ord-item-info">
-                  <p className="ord-item-name" style={{ color: T.text }}>
-                    {it.name}
+                  <p
+                    className="ord-item-name"
+                    style={{
+                      color: T.text,
+                    }}
+                  >
+                    {item.name}
                   </p>
 
-                  <p className="ord-item-sub" style={{ color: T.sub }}>
-                    {fmt(it.price)} · x{it.qty}
+                  <p
+                    className="ord-item-sub"
+                    style={{
+                      color: T.sub,
+                    }}
+                  >
+                    {fmt(item.price)} · x{item.qty}
                   </p>
                 </div>
 
-                <p className="ord-item-total" style={{ color: T.text }}>
-                  {fmt(it.price * it.qty)}
+                <p
+                  className="ord-item-total"
+                  style={{
+                    color: T.text,
+                  }}
+                >
+                  {fmt(item.price * item.qty)}
                 </p>
               </div>
             ))}
           </div>
 
-          {/* SIDEBAR */}
+          {/* ==================================================
+              SIDEBAR
+          ================================================== */}
           <div className="ord-sidebar">
+            {/* ADDRESS */}
             <div
               className="ord-sidebar-card"
               style={{
@@ -302,19 +409,32 @@ const OrderDetail = () => {
                 borderColor: T.border,
               }}
             >
-              <p className="ord-sidebar-card-title" style={{ color: T.text }}>
+              <p
+                className="ord-sidebar-card-title"
+                style={{
+                  color: T.text,
+                }}
+              >
                 <FontAwesomeIcon
                   icon={faLocationDot}
-                  style={{ marginRight: 8 }}
+                  style={{
+                    marginRight: 8,
+                  }}
                 />
                 Giao đến
               </p>
 
-              <p className="ord-address-text" style={{ color: T.sub }}>
+              <p
+                className="ord-address-text"
+                style={{
+                  color: T.sub,
+                }}
+              >
                 {detail.address || "—"}
               </p>
             </div>
 
+            {/* SUMMARY */}
             <div
               className="ord-sidebar-card"
               style={{
@@ -322,25 +442,48 @@ const OrderDetail = () => {
                 borderColor: T.border,
               }}
             >
-              <p className="ord-sidebar-card-title" style={{ color: T.text }}>
+              <p
+                className="ord-sidebar-card-title"
+                style={{
+                  color: T.text,
+                }}
+              >
                 <FontAwesomeIcon
                   icon={faFileLines}
-                  style={{ marginRight: 8 }}
+                  style={{
+                    marginRight: 8,
+                  }}
                 />
                 Tóm tắt
               </p>
 
               <div className="ord-summary-row">
-                <span style={{ color: T.sub }}>Tạm tính</span>
+                <span
+                  style={{
+                    color: T.sub,
+                  }}
+                >
+                  Tạm tính
+                </span>
 
-                <span style={{ color: T.text }}>
+                <span
+                  style={{
+                    color: T.text,
+                  }}
+                >
                   {fmt(detail.subtotal ?? 0)}
                 </span>
               </div>
 
               {detail.discount > 0 && (
                 <div className="ord-summary-row">
-                  <span style={{ color: T.sub }}>Giảm giá</span>
+                  <span
+                    style={{
+                      color: T.sub,
+                    }}
+                  >
+                    Giảm giá
+                  </span>
 
                   <span
                     style={{
@@ -361,12 +504,17 @@ const OrderDetail = () => {
               >
                 <span>Tổng</span>
 
-                <span style={{ color: T.primary }}>
+                <span
+                  style={{
+                    color: T.primary,
+                  }}
+                >
                   {fmt(detail.total ?? 0)}
                 </span>
               </div>
             </div>
 
+            {/* VOUCHER */}
             {detail.voucher && (
               <div
                 className="ord-voucher-badge"
@@ -375,13 +523,23 @@ const OrderDetail = () => {
                   borderColor: `${T.primary}66`,
                 }}
               >
-                <p style={{ color: T.primary }}>
-                  <FontAwesomeIcon icon={faTags} style={{ marginRight: 6 }} />
+                <p
+                  style={{
+                    color: T.primary,
+                  }}
+                >
+                  <FontAwesomeIcon
+                    icon={faTags}
+                    style={{
+                      marginRight: 6,
+                    }}
+                  />
                   Voucher: {detail.voucher}
                 </p>
               </div>
             )}
 
+            {/* NOTE */}
             <div
               className="ord-sidebar-card"
               style={{
@@ -389,15 +547,26 @@ const OrderDetail = () => {
                 borderColor: T.border,
               }}
             >
-              <p className="ord-sidebar-card-title" style={{ color: T.text }}>
+              <p
+                className="ord-sidebar-card-title"
+                style={{
+                  color: T.text,
+                }}
+              >
                 Ghi chú
               </p>
 
-              <p className="ord-address-text" style={{ color: T.sub }}>
+              <p
+                className="ord-address-text"
+                style={{
+                  color: T.sub,
+                }}
+              >
                 {detail.note || "Không có ghi chú"}
               </p>
             </div>
 
+            {/* REORDER */}
             <button
               onClick={handleReorder}
               className="ord-reorder-btn"
@@ -407,7 +576,9 @@ const OrderDetail = () => {
             >
               <FontAwesomeIcon
                 icon={faRotateRight}
-                style={{ marginRight: 6 }}
+                style={{
+                  marginRight: 6,
+                }}
               />
               Đặt lại đơn này
             </button>

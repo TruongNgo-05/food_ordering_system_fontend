@@ -80,7 +80,7 @@ const MySupport = () => {
       <div className="my-support-back">
         <Button
           icon={<ArrowLeftOutlined />}
-          onClick={() => navigate("/customer/support")}
+          onClick={() => navigate("/support")}
         >
           Quay lại
         </Button>

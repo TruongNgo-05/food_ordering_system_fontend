@@ -71,7 +71,7 @@ const StaffTableBookings = () => {
                 ? "Đã nhận bàn"
                 : item.status === "COMPLETED"
                   ? "Hoàn thành"
-                  : "Đã hủy",
+                  : "Thất bại",
         })),
       );
 

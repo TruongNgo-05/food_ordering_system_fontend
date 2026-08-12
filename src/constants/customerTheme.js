@@ -21,19 +21,62 @@ export const T = {
 };
 
 // Format số tiền VNĐ
-export const fmt = (n) =>
-  (Number(n) || 0).toLocaleString("vi-VN") + "đ";
+export const fmt = (n) => (Number(n) || 0).toLocaleString("vi-VN") + "đ";
 
-// Config trạng thái đơn hàng
 export const STATUS_CFG = {
-  pending: { label: "Chờ xác nhận", color: T.amber, bg: T.amberBg, icon: "⏳" },
-  processing: { label: "Đang làm", color: T.primary, bg: T.primaryLight, icon: "👨‍🍳" },
+  pending: {
+    label: "Chờ xác nhận",
+    color: T.amber,
+    bg: T.amberBg,
+    icon: "⏳",
+  },
+
+  processing: {
+    label: "Đã xác nhận",
+    color: T.primary,
+    bg: T.primaryLight,
+    icon: "✅",
+  },
+
+  preparing: {
+    label: "Đang chuẩn bị",
+    color: T.primary,
+    bg: T.primaryLight,
+    icon: "👨‍🍳",
+  },
+
   delivering: {
     label: "Đang giao",
     color: T.primary,
     bg: T.primaryLight,
     icon: "🛵",
   },
-  completed: { label: "Hoàn thành", color: T.green, bg: T.greenBg, icon: "✅" },
-  cancelled: { label: "Đã hủy", color: T.red, bg: T.redBg, icon: "❌" },
+
+  delivery_failed: {
+    label: "Giao hàng thất bại",
+    color: T.red,
+    bg: T.redBg,
+    icon: "⚠️",
+  },
+
+  completed: {
+    label: "Hoàn thành",
+    color: T.green,
+    bg: T.greenBg,
+    icon: "✅",
+  },
+
+  cancelled: {
+    label: "Nhà hàng đã hủy",
+    color: T.red,
+    bg: T.redBg,
+    icon: "❌",
+  },
+
+  canceled: {
+    label: "Nhà hàng đã hủy",
+    color: T.red,
+    bg: T.redBg,
+    icon: "❌",
+  },
 };

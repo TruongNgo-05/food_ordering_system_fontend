@@ -1,0 +1,79 @@
+.current-date-time {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+  padding: 12px 16px;
+
+  background: #f8f8f8;
+  border: 1px solid #ececec;
+  border-radius: 10px;
+
+  box-sizing: border-box;
+
+  margin-bottom: 25px;
+}
+
+.current-date-time-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #777;
+}
+
+.current-date-time-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+}
+
+.current-date-time-date {
+  text-transform: capitalize;
+}
+
+.current-date-time-separator {
+  color: #aaa;
+}
+
+.current-date-time-clock {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 576px) {
+  .current-date-time {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .current-date-time-content {
+    flex-wrap: wrap;
+  }
+}
+
+/* ================================
+   PRINT
+================================ */
+
+@media print {
+  .current-date-time {
+    background: #fff !important;
+    border: 1px solid #ccc !important;
+    color: #000 !important;
+  }
+
+  .current-date-time-label,
+  .current-date-time-content,
+  .current-date-time-date,
+  .current-date-time-clock {
+    color: #000 !important;
+  }
+}

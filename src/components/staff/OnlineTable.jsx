@@ -1,17 +1,20 @@
 import React from "react";
 import TableActions from "../common/TableActions";
 import BaseTable from "../common/BaseTable";
-const formatPrice = (v) => `${Number(v || 0).toLocaleString("vi-VN")}đ`;
+
+const formatPrice = (value) => `${Number(value || 0).toLocaleString("vi-VN")}đ`;
+
 const getStatusText = (status) => {
   const map = {
     PENDING: "Chờ xử lý",
     CONFIRMED: "Đã xác nhận",
     PREPARING: "Đang chuẩn bị",
     DELIVERING: "Đang giao",
+    DELIVERY_FAILED: "Giao hàng thất bại",
     COMPLETED: "Hoàn thành",
     CANCELED: "Đã hủy",
-    REJECTED: "Từ chối",
   };
+
   return map[status] || status;
 };
 
@@ -39,6 +42,7 @@ const OnlineTable = ({ data, loading, onEdit, onView }) => {
           ONLINE: "Online",
           AT_TABLE: "Tại bàn",
         };
+
         return map[value] || value;
       },
     },
@@ -50,7 +54,7 @@ const OnlineTable = ({ data, loading, onEdit, onView }) => {
     {
       title: "Tổng tiền",
       dataIndex: "totalPrice",
-      render: (v) => formatPrice(v),
+      render: (value) => formatPrice(value),
     },
     {
       title: "Thao tác",

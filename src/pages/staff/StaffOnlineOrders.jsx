@@ -12,11 +12,12 @@ import dayjs from "dayjs";
 
 const pageSize = 5;
 const statusOptions = [
-  { label: "Đã xác nhận", value: "CONFIRMED" },
+  { label: "Xác nhận", value: "CONFIRMED" },
   { label: "Đang chuẩn bị", value: "PREPARING" },
   { label: "Đang giao", value: "DELIVERING" },
+  { label: "Giao hàng thất bại", value: "DELIVERY_FAILED" },
   { label: "Hoàn thành", value: "COMPLETED" },
-  { label: "Từ chối", value: "REJECTED" },
+  { label: "Hủy đơn", value: "CANCELED" },
 ];
 const StaffOnlineOrders = () => {
   const [items, setItems] = useState([]);
@@ -197,7 +198,7 @@ const StaffOnlineOrders = () => {
           }}
           onEdit={(record) => {
             setEditingRecord(record);
-              setNewStatus(record.status);
+            setNewStatus(record.status);
             setEditMode(true);
             setModalOpen(true);
           }}

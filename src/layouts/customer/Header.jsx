@@ -149,6 +149,8 @@ const Header = () => {
                   className="header-nav-link"
                   onClick={() => setMenuOpen(false)}
                 >
+                  <FontAwesomeIcon icon={item.icon} />
+
                   {item.label}
                 </a>
               ) : (
@@ -163,6 +165,8 @@ const Header = () => {
                   }
                   onClick={(e) => handleNavClick(e, item.to)}
                 >
+                  <FontAwesomeIcon icon={item.icon} />
+
                   {item.label}
 
                   {item.to === "/favorites" && favoriteCount > 0 && (

@@ -129,12 +129,7 @@ const AdminCategories = () => {
       {/* STATS */}
       <StatsCards
         loading={loading}
-        items={[
-          { title: "Tổng danh mục", value: total },
-          { title: "Hiển thị", value: items.length },
-          { title: "Ẩn", value: 0 },
-          { title: "Khác", value: 0 },
-        ]}
+        items={[{ title: "Tổng danh mục", value: total }]}
       />
 
       {/* FILTER */}

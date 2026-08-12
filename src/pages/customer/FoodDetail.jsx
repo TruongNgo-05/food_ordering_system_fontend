@@ -28,13 +28,6 @@ const FoodDetail = () => {
 
   const { isLoggedIn } = useAuth();
 
-  // ============================================================
-  // CUSTOMER DATA
-  // ============================================================
-  // Tất cả cart + favorite đều lấy từ CustomerDataContext.
-  // FoodDetail KHÔNG gọi cartService/favoriteService trực tiếp.
-  // ============================================================
-
   const {
     cart,
     favorites,

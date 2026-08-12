@@ -22,19 +22,39 @@ import "../../assets/styles/CustomerOrders.css";
 import CustomerSearch from "../../components/common/CustomerSearch";
 import orderService from "../../services/customer/orderService";
 
+// ======================================================
+// BACKEND STATUS -> FRONTEND STATUS
+// ======================================================
+// Giữ "processing" để tái sử dụng STATUS_CFG / CSS hiện tại.
+// PROCESSING không còn tồn tại ở backend.
 const STATUS_MAP = {
   PENDING: "pending",
-  PROCESSING: "processing",
+
+  // Backend: CONFIRMED
+  // Frontend dùng key "processing" để giữ UI hiện tại
+  CONFIRMED: "processing",
+
+  PREPARING: "preparing",
+
   DELIVERING: "delivering",
+
+  DELIVERY_FAILED: "delivery_failed",
+
   COMPLETED: "completed",
+
   CANCELED: "cancelled",
   CANCELLED: "cancelled",
 };
 
+// ======================================================
+// FRONTEND FILTER -> BACKEND STATUS
+// ======================================================
 const BACKEND_STATUS = {
   pending: "PENDING",
-  processing: "PROCESSING",
+  processing: "CONFIRMED",
+  preparing: "PREPARING",
   delivering: "DELIVERING",
+  delivery_failed: "DELIVERY_FAILED",
   completed: "COMPLETED",
   cancelled: "CANCELED",
 };
@@ -50,17 +70,24 @@ const Orders = () => {
   const [filterStatus, setFilterStatus] = useState("all");
 
   const [page, setPage] = useState(0);
-  const [size, setSize] = useState(5);
+  const [size] = useState(5);
   const [total, setTotal] = useState(0);
+
   const [minDate, setMinDate] = useState("");
   const [maxDate, setMaxDate] = useState("");
 
+  // ======================================================
+  // LOGIN CHECK
+  // ======================================================
   useEffect(() => {
     if (!isLoggedIn) {
-      confirmLoginWithModal(navigate, () => navigate("/customer"));
+      confirmLoginWithModal(navigate, () => navigate("/home"));
     }
   }, [isLoggedIn, navigate]);
 
+  // ======================================================
+  // FETCH ORDERS
+  // ======================================================
   useEffect(() => {
     const timer = setTimeout(() => {
       if (minDate && maxDate && minDate > maxDate) {
@@ -73,8 +100,11 @@ const Orders = () => {
     return () => clearTimeout(timer);
   }, [page, searchCode, filterStatus, minDate, maxDate]);
 
-  const formatDate = (date) =>
-    date ? new Date(date).toLocaleString("vi-VN") : "";
+  const formatDate = (date) => {
+    if (!date) return "";
+
+    return new Date(date).toLocaleString("vi-VN");
+  };
 
   const fetchOrders = async () => {
     try {
@@ -85,16 +115,25 @@ const Orders = () => {
         size,
       };
 
+      // -----------------------------
+      // Search mã đơn
+      // -----------------------------
       const keyword = searchCode.trim();
 
       if (keyword) {
         params.orderCode = keyword;
       }
 
+      // -----------------------------
+      // Filter status
+      // -----------------------------
       if (filterStatus !== "all") {
         params.status = BACKEND_STATUS[filterStatus];
       }
 
+      // -----------------------------
+      // Filter date
+      // -----------------------------
       if (minDate) {
         params.minDate = minDate;
       }
@@ -107,11 +146,21 @@ const Orders = () => {
 
       const data = res.data?.data;
 
-      const mapped = (data?.content || []).map((order) => ({
+      if (!data) {
+        setOrders([]);
+        setTotal(0);
+        return;
+      }
+
+      const mapped = (data.content || []).map((order) => ({
         id: order.orderId,
+
         orderCode: order.orderCode,
+
         status: STATUS_MAP[order.status] || "pending",
+
         total: order.totalPrice,
+
         created_at: formatDate(order.createdAt),
 
         payment_method:
@@ -134,36 +183,42 @@ const Orders = () => {
       }));
 
       setOrders(mapped);
-      setPage(data.number);
-      setTotal(data.totalElements);
+      setPage(data.number ?? 0);
+      setTotal(data.totalElements ?? 0);
     } catch (err) {
-      console.error(err);
+      console.error("Load orders error:", err);
     } finally {
       setLoading(false);
     }
   };
-  const handleReorder = async (order) => {
-    try {
-      await orderService.reorderOrder(order.id);
-      navigate("/customer/carts");
-    } catch (error) {
-      console.error(error);
-      alert("Không thể đặt lại đơn");
-    }
+
+  // ======================================================
+  // VIEW DETAIL
+  // ======================================================
+  const handleViewDetail = (order) => {
+    navigate(`/orders/${order.id}`);
   };
 
+  // ======================================================
+  // FILTER
+  // ======================================================
   const filters = useMemo(() => {
     const steps = [
       "all",
       "pending",
       "processing",
+      "preparing",
       "delivering",
+      "delivery_failed",
       "completed",
       "cancelled",
     ];
 
-    return steps.map((k) => {
-      if (k === "all") {
+    return steps.map((key) => {
+      // -----------------------------
+      // Tất cả
+      // -----------------------------
+      if (key === "all") {
         return {
           key: "all",
           label: "Tất cả",
@@ -171,10 +226,24 @@ const Orders = () => {
         };
       }
 
+      // -----------------------------
+      // Preparing
+      // -----------------------------
+      if (key === "preparing") {
+        return {
+          key,
+          label: "Đang chuẩn bị",
+          icon: <FontAwesomeIcon icon={faClock} />,
+        };
+      }
+
+      // -----------------------------
+      // Các status còn lại
+      // -----------------------------
       return {
-        key: k,
-        label: STATUS_CFG[k].label,
-        icon: STATUS_CFG[k].icon,
+        key,
+        label: STATUS_CFG[key]?.label || key,
+        icon: STATUS_CFG[key]?.icon || <FontAwesomeIcon icon={faListCheck} />,
       };
     });
   }, []);
@@ -184,6 +253,7 @@ const Orders = () => {
       <div className="customer-orders-container">
         <UserHeader title="Đơn hàng của tôi" description={`${total} đơn`} />
 
+        {/* SEARCH */}
         <CustomerSearch
           placeholder="Tìm mã đơn..."
           keyword={searchCode}
@@ -204,31 +274,36 @@ const Orders = () => {
           }}
         />
 
+        {/* STATUS FILTER */}
         <div className="ord-filter-bar">
-          {filters.map((f) => {
-            const active = filterStatus === f.key;
+          {filters.map((filter) => {
+            const active = filterStatus === filter.key;
 
             return (
               <button
-                key={f.key}
+                key={filter.key}
                 onClick={() => {
                   setPage(0);
-                  setFilterStatus(f.key);
+                  setFilterStatus(filter.key);
                 }}
                 className="ord-filter-btn"
                 style={{
                   borderColor: active ? T.primary : T.border,
+
                   background: active ? T.primaryLight : "transparent",
+
                   color: active ? T.primary : T.text,
                 }}
               >
-                <span>{f.icon}</span>
-                <span>{f.label}</span>
+                <span>{filter.icon}</span>
+
+                <span>{filter.label}</span>
               </button>
             );
           })}
         </div>
 
+        {/* CONTENT */}
         {loading ? (
           <div
             style={{
@@ -245,7 +320,7 @@ const Orders = () => {
             title="Chưa có đơn hàng"
             desc="Hãy đặt món để xem lịch sử đơn hàng."
             btnLabel="Xem thực đơn"
-            onBtn={() => navigate("/customer")}
+            onBtn={() => navigate("/home")}
           />
         ) : (
           <div className="ord-list">
@@ -253,22 +328,26 @@ const Orders = () => {
               const first = order.items?.[0];
 
               const itemCount =
-                order.items?.reduce((s, it) => s + (it.qty || 0), 0) ?? 0;
+                order.items?.reduce((sum, item) => sum + (item.qty || 0), 0) ??
+                0;
 
               return (
                 <div
                   key={order.id}
                   className="ord-card"
-                  onClick={() => navigate(`/customer/orders/${order.id}`)}
+                  onClick={() => handleViewDetail(order)}
                   style={{
                     background: T.card,
                     borderColor: T.border,
                   }}
                 >
+                  {/* LEFT */}
                   <div className="ord-card-left">
                     <div
                       className="ord-card-thumb"
-                      style={{ background: T.primaryLight }}
+                      style={{
+                        background: T.primaryLight,
+                      }}
                     >
                       <FoodImage
                         src={first?.image || "🍽️"}
@@ -279,46 +358,69 @@ const Orders = () => {
                     </div>
 
                     <div className="ord-card-info">
-                      <p className="ord-card-title" style={{ color: T.text }}>
+                      <p
+                        className="ord-card-title"
+                        style={{
+                          color: T.text,
+                        }}
+                      >
                         #{order.orderCode} · {fmt(order.total ?? 0)}
                       </p>
 
-                      <p className="ord-card-meta" style={{ color: T.sub }}>
+                      <p
+                        className="ord-card-meta"
+                        style={{
+                          color: T.sub,
+                        }}
+                      >
                         <FontAwesomeIcon
                           icon={faClock}
-                          style={{ marginRight: 6 }}
+                          style={{
+                            marginRight: 6,
+                          }}
                         />
                         {order.created_at} · {itemCount} món
                       </p>
                     </div>
                   </div>
 
+                  {/* RIGHT */}
                   <div className="ord-card-right">
                     <StatusBadge status={order.status} />
 
-                    <p className="ord-card-payment" style={{ color: T.sub }}>
+                    <p
+                      className="ord-card-payment"
+                      style={{
+                        color: T.sub,
+                      }}
+                    >
                       <FontAwesomeIcon
                         icon={
                           order.payment_method === "ONLINE"
                             ? faBuildingColumns
                             : faMoneyBillWave
                         }
-                        style={{ marginRight: 6 }}
+                        style={{
+                          marginRight: 6,
+                        }}
                       />
 
                       {order.payment_method === "ONLINE"
                         ? "Thanh toán online"
-                        : "Thanh toán tiền mặt"}
+                        : order.payment_method === "AT_TABLE"
+                          ? "Thanh toán tại bàn"
+                          : "Thanh toán tiền mặt"}
                     </p>
 
                     <button
                       className="ord-card-reorder-btn"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleReorder(order);
+
+                        handleViewDetail(order);
                       }}
                     >
-                      Đặt lại
+                      Xem chi tiết
                     </button>
                   </div>
                 </div>
@@ -326,6 +428,7 @@ const Orders = () => {
             })}
           </div>
         )}
+
         <AppPagination
           page={page}
           size={size}

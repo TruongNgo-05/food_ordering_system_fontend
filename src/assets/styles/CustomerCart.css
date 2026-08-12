@@ -233,35 +233,6 @@
   color: var(--sub);
 }
 
-/* ===== Placed / Success Screen ===== */
-.cart-placed-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  gap: 18px;
-  padding: 24px;
-  text-align: center;
-}
-
-.cart-placed-emoji {
-  font-size: 90px;
-}
-
-.cart-placed-title {
-  margin: 0;
-  color: var(--green);
-  font-weight: 900;
-  font-size: 26px;
-}
-
-.cart-placed-sub {
-  margin: 0;
-  color: var(--sub);
-  font-size: 15px;
-}
-
 /* ===== Empty State wrapper ===== */
 .cart-empty-page {
   height: 100%;
@@ -335,14 +306,6 @@
 
   .cart-empty-page {
     padding: 16px;
-  }
-
-  .cart-placed-emoji {
-    font-size: 64px;
-  }
-
-  .cart-placed-title {
-    font-size: 22px;
   }
 }
 

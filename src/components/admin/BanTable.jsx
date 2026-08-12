@@ -2,7 +2,7 @@ import React from "react";
 import BaseTable from "../common/BaseTable";
 import TableActions from "../common/TableActions";
 
-const BanTable = ({ data, loading, onEdit, onDelete }) => {
+const BanTable = ({ data, loading, onView, onEdit, onDelete }) => {
   const columns = [
     {
       title: "Mã bàn",
@@ -17,7 +17,8 @@ const BanTable = ({ data, loading, onEdit, onDelete }) => {
       render: (_, record) => (
         <TableActions
           record={record}
-          showView={false}
+          showView={true}
+          onView={onView}
           onEdit={onEdit}
           onDelete={onDelete}
         />

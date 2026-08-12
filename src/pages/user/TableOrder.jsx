@@ -16,6 +16,7 @@ import Footer from "../../layouts/Footer";
 import PaymentQrModal from "../../components/customer/PaymentQrModal";
 import sepayService from "../../services/sepayService";
 import ConfirmOrderModal from "../../components/user/ConfirmOrderModal";
+import CustomerSearch from "../../components/common/CustomerSearch";
 
 const TableOrder = () => {
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ const TableOrder = () => {
   const [foods, setFoods] = useState([]);
   const [categories, setCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState(0);
+  const [search, setSearch] = useState("");
   const [qtyMap, setQtyMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [showOrderModal, setShowOrderModal] = useState(false);
@@ -161,17 +163,33 @@ const TableOrder = () => {
     }
   };
 
-  const filteredFoods = useMemo(() => {
-    if (activeCategory === 0) {
-      return foods;
-    }
+  const normalizeText = (text = "") => {
+    return text
+      .toString()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+  };
 
-    return foods.filter(
-      (food) =>
+  const filteredFoods = useMemo(() => {
+    const keyword = normalizeText(search);
+
+    return foods.filter((food) => {
+      const foodName = normalizeText(
+        food.name || food.foodName || food.food_name || "",
+      );
+
+      const matchCategory =
+        activeCategory === 0 ||
         food.categoryId === activeCategory ||
-        food.category_id === activeCategory,
-    );
-  }, [foods, activeCategory]);
+        food.category_id === activeCategory;
+
+      const matchSearch = !keyword || foodName.includes(keyword);
+
+      return matchCategory && matchSearch;
+    });
+  }, [foods, activeCategory, search]);
 
   const selectedItems = useMemo(() => {
     return foods
@@ -336,6 +354,12 @@ const TableOrder = () => {
           categories={categories}
           activeCategoryId={activeCategory}
           onChange={(id) => setActiveCategory(id)}
+        />
+
+        <CustomerSearch
+          keyword={search}
+          onKeywordChange={setSearch}
+          placeholder="Tìm món ăn..."
         />
 
         <div className="table-order-grid">

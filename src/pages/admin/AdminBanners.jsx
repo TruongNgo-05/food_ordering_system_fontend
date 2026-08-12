@@ -147,7 +147,7 @@ const AdminBanners = () => {
         loading={loading}
         items={[
           { title: "Tổng banner", value: total },
-          { title: "Hiển thị", value: items.length },
+
           {
             title: "Đang bật",
             value: items.filter((x) => x.active !== false).length,

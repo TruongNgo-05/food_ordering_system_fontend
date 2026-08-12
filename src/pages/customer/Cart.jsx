@@ -21,6 +21,7 @@ import cartService from "../../services/customer/cartService";
 import "../../assets/styles/CustomerCart.css";
 import voucherService from "../../services/customer/voucherService";
 import { useAuth } from "../../hooks/useAuth";
+import { useCustomerData } from "../../context/CustomerDataContext";
 const CUSTOMER_DATA_UPDATED_EVENT = "customer-data-updated";
 import orderService from "../../services/customer/orderService";
 import sepayService from "../../services/sepayService";
@@ -28,6 +29,8 @@ import PaymentQrModal from "../../components/customer/PaymentQrModal";
 import ConfirmOrderModal from "../../components/user/ConfirmOrderModal";
 const Cart = () => {
   const navigate = useNavigate();
+
+  const { loadCart } = useCustomerData();
 
   const [cart, setCart] = useState([]);
   const [loadingCart, setLoadingCart] = useState(false);
@@ -188,6 +191,7 @@ const Cart = () => {
     }));
 
     setCart(mapped);
+    await loadCart();
 
     await refreshSummary(appliedVoucher || "", mapped);
   };
@@ -233,6 +237,8 @@ const Cart = () => {
         // Đóng modal xác nhận
         setOpenConfirmOrderModal(false);
 
+        await loadCart();
+
         // Mở QR
         setOpenQrModal(true);
 
@@ -242,9 +248,10 @@ const Cart = () => {
       // COD
       setOpenConfirmOrderModal(false);
 
+      await loadCart();
       toast.success("Đặt hàng thành công");
 
-      navigate("/customer/orders");
+      navigate("/orders");
     } catch (err) {
       console.error("Create order error:", err);
 
@@ -309,9 +316,11 @@ const Cart = () => {
           setOrderCode("");
           setPaymentUrl("");
 
+          await loadCart();
+
           toast.success("Thanh toán thành công");
 
-          navigate("/customer/orders");
+          navigate("/orders");
         }
       } catch (err) {
         console.log(err);
@@ -368,7 +377,7 @@ const Cart = () => {
             title="Giỏ hàng trống"
             desc="Hãy khám phá thực đơn và thêm món bạn thích"
             btnLabel="Xem thực đơn"
-            onBtn={() => navigate("/customer")}
+            onBtn={() => navigate("/home")}
           />
         </div>
       </div>

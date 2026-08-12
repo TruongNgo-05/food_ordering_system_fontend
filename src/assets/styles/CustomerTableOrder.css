@@ -13,6 +13,9 @@
   --text: #e8e0d0;
   --text-muted: #9a9080;
   --white: #ffffff;
+  --border: rgba(201, 168, 76, 0.3);
+  --surface: #111111;
+  --primary: #c9a84c;
 }
 
 .customer-table-order-page *,

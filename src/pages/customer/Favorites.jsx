@@ -6,46 +6,32 @@ import { T } from "../../constants/customerTheme";
 import { EmptyState } from "../../components/customer/SharedUI";
 import MenuItemCard from "../../components/customer/MenuItemCard";
 import UserHeader from "../../components/user/UserHeader";
-import favoriteService from "../../services/customer/favoriteService";
-import cartService from "../../services/customer/cartService";
 import { getFoods } from "../../services/userService";
 import { useAuth } from "../../hooks/useAuth";
 import { confirmLoginWithModal } from "../../utils/authGuards";
+import { useCustomerData } from "../../context/CustomerDataContext";
 import "../../assets/styles/CustomerFavorites.css";
 import CustomerSearch from "../../components/common/CustomerSearch";
 import Footer from "../../layouts/Footer";
-const CART_UPDATED_EVENT = "cart-updated-event";
 
 const Favorites = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
+  const {
+    favorites,
+    cart,
+    toggleFavorite,
+    addToCart: addToCartContext,
+    updateCart,
+  } = useCustomerData();
 
-  const [favorites, setFavorites] = useState([]);
   const [foods, setFoods] = useState([]);
   const [search, setSearch] = useState("");
-  const [cart, setCart] = useState([]);
 
   // ─── Require login ─────────────────────
   const requireLoginAction = useCallback(() => {
     confirmLoginWithModal(navigate);
   }, [navigate]);
-
-  // ─── Load favorites (API) ──────────────
-  useEffect(() => {
-    const loadFavorites = async () => {
-      try {
-        const res = await favoriteService.getMyFavorite();
-        const favIds = res.data?.data?.favoriteIds || [];
-        setFavorites(favIds);
-      } catch (err) {
-        console.error(err);
-        setFavorites([]);
-      }
-    };
-
-    if (isLoggedIn) loadFavorites();
-    else setFavorites([]);
-  }, [isLoggedIn]);
 
   // ─── Load foods (API) ──────────────────
   useEffect(() => {
@@ -92,44 +78,26 @@ const Favorites = () => {
         return;
       }
 
-      // Check current favorite status
-      const isFavorite = favorites.includes(id);
+      const isFavorite = favorites.includes(Number(id));
 
       try {
-        // Optimistic update - update UI immediately
-        if (isFavorite) {
-          setFavorites((prev) => prev.filter((f) => f !== id));
-          toast.info("Đã xóa khỏi yêu thích");
-        } else {
-          setFavorites((prev) => [...prev, id]);
-          toast.success("Đã thêm vào yêu thích");
-        }
+        const success = await toggleFavorite(id);
 
-        // Call API to sync with backend
-        const res = await favoriteService.toggleFavorite(id);
-
-        // If API fails, revert the change
-        if (!res.data) {
+        if (success) {
           if (isFavorite) {
-            setFavorites((prev) => [...prev, id]);
+            toast.info("Đã xóa khỏi yêu thích");
           } else {
-            setFavorites((prev) => prev.filter((f) => f !== id));
+            toast.success("Đã thêm vào yêu thích");
           }
+        } else {
           toast.error("Không thể cập nhật yêu thích");
         }
       } catch (err) {
         console.error("Toggle favorite error:", err);
-
-        // Revert on error
-        if (isFavorite) {
-          setFavorites((prev) => [...prev, id]);
-        } else {
-          setFavorites((prev) => prev.filter((f) => f !== id));
-        }
         toast.error("Không thể cập nhật yêu thích");
       }
     },
-    [isLoggedIn, requireLoginAction, favorites],
+    [favorites, isLoggedIn, requireLoginAction, toggleFavorite],
   );
 
   // ─── Clear all favorites (API-safe) ────
@@ -147,11 +115,10 @@ const Favorites = () => {
       },
       async onOk() {
         try {
-          await Promise.all(
-            favorites.map((id) => favoriteService.toggleFavorite(id)),
-          );
+          const list = [...favorites];
 
-          setFavorites([]);
+          await Promise.all(list.map((id) => toggleFavorite(id)));
+
           toast.success("Đã xóa tất cả yêu thích");
         } catch (err) {
           console.error(err);
@@ -160,28 +127,6 @@ const Favorites = () => {
       },
     });
   };
-
-  // ─── Load cart from API on mount ─────────────────────────────
-  useEffect(() => {
-    const loadCartFromAPI = async () => {
-      try {
-        const res = await cartService.getCart();
-        const data = res.data?.data;
-        const mapped = (data?.items || []).map((i) => ({
-          item_id: i.itemId,
-          name: i.foodName,
-          price: i.price,
-          image: i.image,
-          qty: i.quantity,
-        }));
-        setCart(mapped);
-      } catch (err) {
-        console.error("Load cart error:", err);
-      }
-    };
-
-    loadCartFromAPI();
-  }, []);
 
   // ─── Cart map ────────────────────────────
   const cartMap = useMemo(
@@ -196,62 +141,41 @@ const Favorites = () => {
         requireLoginAction();
         return;
       }
-      try {
-        await cartService.addToCart({
-          foodId: item.id,
-          quantity: 1,
-        });
 
-        // Reload cart from API
-        const res = await cartService.getCart();
-        const data = res.data?.data;
-        const mapped = (data?.items || []).map((i) => ({
-          item_id: i.itemId,
-          name: i.foodName,
-          price: i.price,
-          image: i.image,
-          qty: i.quantity,
-        }));
-        setCart(mapped);
-        // Dispatch event to notify Header.jsx of cart update
-        window.dispatchEvent(new Event(CART_UPDATED_EVENT));
+      try {
+        const success = await addToCartContext(item, 1);
+
+        if (success) {
+          toast.success("Đã thêm vào giỏ hàng");
+        } else {
+          toast.error("Thêm vào giỏ hàng thất bại");
+        }
       } catch (err) {
         console.error("Add to cart error:", err);
         toast.error("Thêm vào giỏ hàng thất bại");
       }
     },
-    [isLoggedIn, requireLoginAction],
+    [addToCartContext, isLoggedIn, requireLoginAction],
   );
 
   // ─── Dec cart (API) ───────────────────────
-  const decCart = useCallback(async (item) => {
-    try {
-      if (item.qty <= 1) {
-        await cartService.deleteCart(item.item_id);
-      } else {
-        await cartService.updateCart(item.item_id, {
-          quantity: item.qty - 1,
-        });
-      }
+  const decCart = useCallback(
+    async (item) => {
+      try {
+        if (!item || !item.item_id) return;
 
-      // Reload cart from API
-      const res = await cartService.getCart();
-      const data = res.data?.data;
-      const mapped = (data?.items || []).map((i) => ({
-        item_id: i.itemId,
-        name: i.foodName,
-        price: i.price,
-        image: i.image,
-        qty: i.quantity,
-      }));
-      setCart(mapped);
-      // Dispatch event to notify Header.jsx of cart update
-      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
-    } catch (err) {
-      console.error("Dec cart error:", err);
-      toast.error("Cập nhật giỏ hàng thất bại");
-    }
-  }, []);
+        const success = await updateCart(item.item_id, -1);
+
+        if (!success) {
+          toast.error("Cập nhật giỏ hàng thất bại");
+        }
+      } catch (err) {
+        console.error("Dec cart error:", err);
+        toast.error("Cập nhật giỏ hàng thất bại");
+      }
+    },
+    [updateCart],
+  );
 
   // ─── UI ────────────────────────────────
   return (
@@ -281,7 +205,7 @@ const Favorites = () => {
             title="Chưa có món yêu thích"
             desc="Nhấn ♡ để lưu món"
             btnLabel="Khám phá"
-            onBtn={() => navigate("/customer")}
+            onBtn={() => navigate("/")}
           />
         ) : (
           <div className="customer-favorites-grid">
@@ -294,7 +218,7 @@ const Favorites = () => {
                 onToggleFav={toggleFav}
                 onAdd={addToCart}
                 onDec={decCart}
-                onClick={() => navigate(`/customer/foods/${item.id}`)}
+                onClick={() => navigate(`/foods/${item.id}`)}
               />
             ))}
           </div>

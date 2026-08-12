@@ -2,18 +2,36 @@ import React from "react";
 import { Modal, Button, Select } from "antd";
 
 const onlineStatusFlow = {
-  PENDING: ["CONFIRMED", "REJECTED"],
+  PENDING: ["CONFIRMED", "CANCELED"],
   CONFIRMED: ["PREPARING"],
   PREPARING: ["DELIVERING"],
-  DELIVERING: ["COMPLETED"],
+  DELIVERING: ["COMPLETED", "DELIVERY_FAILED"],
   COMPLETED: [],
-  REJECTED: [],
+  DELIVERY_FAILED: [],
   CANCELED: [],
 };
 
 const getAvailableStatuses = (currentStatus, options) => {
   return options.filter((opt) =>
     onlineStatusFlow[currentStatus]?.includes(opt.value),
+  );
+};
+
+const getStatusLabel = (status, options) => {
+  const statusMap = {
+    PENDING: "Chờ xác nhận",
+    CONFIRMED: "Đã xác nhận",
+    PREPARING: "Đang chuẩn bị",
+    DELIVERING: "Đang giao",
+    DELIVERY_FAILED: "Nhà hàng đã hủy",
+    COMPLETED: "Hoàn thành",
+    CANCELED: "Nhà hàng đã hủy",
+  };
+
+  return (
+    statusMap[status] ||
+    options.find((opt) => opt.value === status)?.label ||
+    status
   );
 };
 
@@ -30,11 +48,11 @@ const OnlineOrderEditModal = ({
     if (open && record) {
       setNewStatus(record.status);
     }
-  }, [open, record]);
+  }, [open, record, setNewStatus]);
 
   return (
     <Modal
-      title="Cập nhật trạng thái đơn hàng ONLINE"
+      title="Cập nhật trạng thái đơn hàng online"
       open={open}
       onCancel={onClose}
       footer={null}
@@ -49,7 +67,7 @@ const OnlineOrderEditModal = ({
 
           <div style={{ marginBottom: 12 }}>
             <strong>Trạng thái hiện tại:</strong>
-            <p>{record.status}</p>
+            <p>{getStatusLabel(record.status, statusOptions)}</p>
           </div>
 
           <div style={{ marginBottom: 20 }}>
@@ -59,6 +77,7 @@ const OnlineOrderEditModal = ({
               style={{ width: "100%", marginTop: 8 }}
               value={newStatus}
               onChange={setNewStatus}
+              placeholder="Chọn trạng thái"
             >
               {getAvailableStatuses(record.status, statusOptions).map((opt) => (
                 <Select.Option key={opt.value} value={opt.value}>
@@ -68,7 +87,13 @@ const OnlineOrderEditModal = ({
             </Select>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 8,
+            }}
+          >
             <Button onClick={onClose}>Đóng</Button>
 
             <Button

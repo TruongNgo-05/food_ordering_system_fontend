@@ -8,7 +8,7 @@ const orderService = {
 
   myOrderDetail: (id) => api.get(`/customer/order/${id}`),
 
-  cancelOrder: (idOrder) => api.put(`/customer/order/${idOrder}/cancel`),
+  // cancelOrder: (idOrder) => api.put(`/customer/order/${idOrder}/cancel`),
 
   reorderOrder: (idOrder) => api.post(`/customer/order/${idOrder}/reorder`),
 

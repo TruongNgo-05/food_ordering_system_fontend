@@ -3,6 +3,46 @@ import { Modal, Button } from "antd";
 import { fmt } from "../../../constants/customerTheme";
 import FoodItemTable from "../../staff/FoodItemTable";
 import dayjs from "dayjs";
+const getStatusLabel = (status) => {
+  const map = {
+    PENDING: "Chờ xác nhận",
+    CONFIRMED: "Đã xác nhận",
+    PREPARING: "Đang chuẩn bị",
+    DELIVERING: "Đang giao",
+    DELIVERY_FAILED: "Nhà hàng đã hủy",
+    COMPLETED: "Hoàn thành",
+    CANCELED: "Nhà hàng đã hủy",
+    CANCELLED: "Nhà hàng đã hủy",
+  };
+
+  return map[status] || status;
+};
+
+const getPaymentMethodLabel = (method) => {
+  const map = {
+    COD: "Tiền mặt (COD)",
+    ONLINE: "Online",
+    AT_TABLE: "Tại bàn",
+  };
+
+  return map[method] || method;
+};
+
+const getPaymentStatusLabel = (status) => {
+  return status === "PAID" ? "Đã thanh toán" : "Chưa thanh toán";
+};
+
+const getDisplayTime = (record) => {
+  const raw =
+    record?.reservationTime || record?.createdAt || record?.created_at;
+  if (!raw) return "-";
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return "-";
+
+  return dayjs(parsed).format("HH:mm DD/MM/YYYY");
+};
+
 const OrderDetailModal = ({ open, record, onClose, type = "online" }) => {
   const isOffline = type === "offline";
 
@@ -14,6 +54,9 @@ const OrderDetailModal = ({ open, record, onClose, type = "online" }) => {
       open={open}
       onCancel={onClose}
       footer={[
+        <Button key="print" type="primary" onClick={() => window.print()}>
+          In hóa đơn
+        </Button>,
         <Button key="close" onClick={onClose}>
           Đóng
         </Button>,
@@ -55,26 +98,22 @@ const OrderDetailModal = ({ open, record, onClose, type = "online" }) => {
 
             <div>
               <strong>Thời gian:</strong>
-              <p>
-                {record.reservationTime
-                  ? dayjs(record.reservationTime).format("HH:mm DD/MM/YYYY ")
-                  : "-"}
-              </p>
+              <p>{getDisplayTime(record)}</p>
             </div>
 
             <div>
               <strong>Thanh toán:</strong>
-              <p>{record.paymentMethod}</p>
+              <p>{getPaymentMethodLabel(record.paymentMethod)}</p>
             </div>
 
             <div>
               <strong>Trạng thái đơn:</strong>
-              <p>{record.status}</p>
+              <p>{getStatusLabel(record.status)}</p>
             </div>
 
             <div>
               <strong>Trạng thái thanh toán:</strong>
-              <p>{record.paymentStatus}</p>
+              <p>{getPaymentStatusLabel(record.paymentStatus)}</p>
             </div>
           </div>
 

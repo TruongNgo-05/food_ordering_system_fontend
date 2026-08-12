@@ -1,8 +1,7 @@
-import React, { useMemo, useState, useEffect, useCallback } from "react";
-import { Button, Modal, Input, Select, message, DatePicker } from "antd";
+import React, { useState, useEffect, useCallback } from "react";
+import { Input, Select, message, DatePicker } from "antd";
 import UserHeader from "../../components/user/UserHeader";
 import AppPagination from "../../components/common/AppPagination";
-import { T, fmt } from "../../constants/customerTheme";
 import OfflineTable from "../../components/staff/OfflineTable";
 import OrderDetailModal from "../../components/modal/staff/OrderDetailModal";
 import OfflineOrderEditModal from "../../components/modal/staff/OfflineOrderEditModal";
@@ -10,27 +9,34 @@ import orderStaffService from "../../services/staff/orderStaffService";
 import dayjs from "dayjs";
 
 const pageSize = 5;
+
 const statusOptions = [
-  { label: "Đã xác nhận", value: "CONFIRMED" },
+  { label: "Xác nhận", value: "CONFIRMED" },
   { label: "Đang chuẩn bị", value: "PREPARING" },
   { label: "Hoàn thành", value: "COMPLETED" },
-  { label: "Từ chối", value: "REJECTED" },
+  { label: "Hủy đơn", value: "CANCELED" },
 ];
+
 const StaffRestaurantOrders = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [detailLoading, setDetailLoading] = useState(false);
   const [total, setTotal] = useState(0);
+
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+
   const [editingRecord, setEditingRecord] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [newStatus, setNewStatus] = useState("");
+
   const [minDate, setMinDate] = useState(null);
   const [maxDate, setMaxDate] = useState(null);
 
+  // =========================
+  // LOAD DANH SÁCH ĐƠN
+  // =========================
   const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
@@ -40,18 +46,22 @@ const StaffRestaurantOrders = () => {
         size: pageSize,
       };
 
-      // search theo orderCode
+      // Tìm theo mã đơn
       if (search.trim()) {
         params.orderCode = search.trim();
       }
+
+      // Từ ngày
       if (minDate) {
         params.minDate = dayjs(minDate).format("YYYY-MM-DD");
       }
 
+      // Đến ngày
       if (maxDate) {
         params.maxDate = dayjs(maxDate).format("YYYY-MM-DD");
       }
-      // filter status
+
+      // Filter trạng thái
       if (statusFilter && statusFilter !== "all") {
         params.status = statusFilter;
       }
@@ -76,19 +86,21 @@ const StaffRestaurantOrders = () => {
       );
 
       setTotal(data.totalElements || 0);
-    } catch (e) {
-      console.log(e);
+    } catch (error) {
+      console.error("get offline orders error:", error);
       message.error("Không tải được danh sách đơn hàng");
     } finally {
       setLoading(false);
     }
   }, [page, search, statusFilter, minDate, maxDate]);
 
+  // =========================
+  // XEM CHI TIẾT
+  // =========================
   const fetchOrderDetail = async (id) => {
     try {
-      setDetailLoading(true);
-
       const res = await orderStaffService.getOrderDetail(id);
+
       const data = res.data;
 
       setEditingRecord({
@@ -108,29 +120,38 @@ const StaffRestaurantOrders = () => {
 
       setModalOpen(true);
       setEditMode(false);
-    } catch (e) {
+    } catch (error) {
+      console.error("get order detail error:", error);
       message.error("Không load được chi tiết đơn hàng");
-    } finally {
-      setDetailLoading(false);
     }
   };
 
-  const updateOrderStatus = async (id, newStatus) => {
+  // =========================
+  // UPDATE STATUS
+  // =========================
+  const updateOrderStatus = async (id, status) => {
     try {
-      const res = await orderStaffService.updateOrderStatus(id, newStatus);
+      await orderStaffService.updateOrderStatus(id, status);
+
       message.success("Cập nhật trạng thái thành công");
-      fetchOrders();
-    } catch (e) {
-      message.error("Cập nhật thất bại");
+
+      // Load lại danh sách
+      await fetchOrders();
+    } catch (error) {
+      console.error("update order status error:", error);
+
+      const errorMessage =
+        error?.response?.data?.message || "Cập nhật trạng thái thất bại";
+
+      message.error(errorMessage);
+
+      throw error;
     }
   };
-  const handleStatusChange = (newStatus) => {
-    setEditingRecord((prev) => ({
-      ...prev,
-      status: newStatus,
-    }));
-  };
 
+  // =========================
+  // LOAD KHI FILTER THAY ĐỔI
+  // =========================
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
@@ -142,49 +163,68 @@ const StaffRestaurantOrders = () => {
         description="Theo dõi và xử lý các đơn tại bàn"
       />
 
+      {/* =========================
+          FILTER
+      ========================= */}
       <div className="filter-bar">
-        <div style={{ flex: 1, minWidth: 220 }}>
+        <div
+          style={{
+            flex: 1,
+            minWidth: 220,
+          }}
+        >
           <Input
-            placeholder="Tìm mã đơn ..."
+            placeholder="Tìm mã đơn..."
             allowClear
+            value={search}
             onChange={(e) => {
               setPage(0);
               setSearch(e.target.value);
             }}
           />
         </div>
+
         <DatePicker
           placeholder="Từ ngày"
-          onChange={(v) => {
+          value={minDate}
+          onChange={(value) => {
             setPage(0);
-            setMinDate(v);
+            setMinDate(value);
           }}
         />
 
         <DatePicker
           placeholder="Đến ngày"
-          onChange={(v) => {
+          value={maxDate}
+          onChange={(value) => {
             setPage(0);
-            setMaxDate(v);
+            setMaxDate(value);
           }}
         />
+
         <div className="filter-divider" />
+
         <Select
           placeholder="Trạng thái"
           allowClear
           style={{ width: 150 }}
-          onChange={(v) => {
+          value={statusFilter === "all" ? undefined : statusFilter}
+          onChange={(value) => {
             setPage(0);
-            setStatusFilter(v || "all");
+            setStatusFilter(value || "all");
           }}
         >
-          {statusOptions.map((opt) => (
-            <Select.Option key={opt.value} value={opt.value}>
-              {opt.label}
+          {statusOptions.map((option) => (
+            <Select.Option key={option.value} value={option.value}>
+              {option.label}
             </Select.Option>
           ))}
         </Select>
       </div>
+
+      {/* =========================
+          TABLE
+      ========================= */}
       <div className="admin-table-wrapper">
         <OfflineTable
           data={items}
@@ -201,15 +241,21 @@ const StaffRestaurantOrders = () => {
         />
       </div>
 
+      {/* =========================
+          PAGINATION
+      ========================= */}
       <AppPagination
         page={page}
         size={pageSize}
         total={total}
-        onChange={(p) => {
-          setPage(p);
+        onChange={(newPage) => {
+          setPage(newPage);
         }}
       />
 
+      {/* =========================
+          DETAIL MODAL
+      ========================= */}
       <OrderDetailModal
         open={modalOpen && !editMode}
         record={editingRecord}
@@ -219,6 +265,10 @@ const StaffRestaurantOrders = () => {
           setEditingRecord(null);
         }}
       />
+
+      {/* =========================
+          EDIT STATUS MODAL
+      ========================= */}
       <OfflineOrderEditModal
         open={modalOpen && editMode}
         record={editingRecord}
@@ -226,10 +276,15 @@ const StaffRestaurantOrders = () => {
         newStatus={newStatus}
         setNewStatus={setNewStatus}
         onSave={async () => {
-          await updateOrderStatus(editingRecord.id, newStatus);
-          setModalOpen(false);
-          setEditingRecord(null);
-          setNewStatus("");
+          try {
+            await updateOrderStatus(editingRecord.id, newStatus);
+
+            setModalOpen(false);
+            setEditingRecord(null);
+            setNewStatus("");
+          } catch (error) {
+            // Giữ modal mở nếu update thất bại
+          }
         }}
         onClose={() => {
           setModalOpen(false);

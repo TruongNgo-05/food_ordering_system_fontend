@@ -6,12 +6,7 @@
   --admin-support-muted: var(--muted);
 }
 
-.admin-support-page {
-  min-height: 100vh;
-  padding: 20px;
-  background: var(--admin-support-bg);
-  color: var(--text);
-}
+
 
 /* ================= Tabs ================= */
 

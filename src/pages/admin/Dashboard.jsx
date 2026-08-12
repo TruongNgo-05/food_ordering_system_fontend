@@ -1,122 +1,219 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+
 import "../../assets/styles/Dashboard.css";
 import UserHeader from "../../components/user/UserHeader";
+import StatsCards from "../../components/common/StatsCards";
+import adminDashboardService from "../../services/admin/adminDashboardService";
+import CurrentDateTime from "../../components/common/CurrentDateTime";
 
-const revenueByDay = [
-  { day: "T2", revenue: 12.4 },
-  { day: "T3", revenue: 15.8 },
-  { day: "T4", revenue: 11.2 },
-  { day: "T5", revenue: 18.6 },
-  { day: "T6", revenue: 21.4 },
-  { day: "T7", revenue: 24.6 },
-  { day: "CN", revenue: 19.1 },
-];
+const formatRevenue = (value) => {
+  const number = Number(value || 0);
+
+  if (number >= 1_000_000_000) {
+    return `${(number / 1_000_000_000).toLocaleString("vi-VN", {
+      maximumFractionDigits: 2,
+    })} tỷ`;
+  }
+
+  if (number >= 1_000_000) {
+    return `${(number / 1_000_000).toLocaleString("vi-VN", {
+      maximumFractionDigits: 2,
+    })} triệu`;
+  }
+
+  return `${number.toLocaleString("vi-VN")}đ`;
+};
+
+const formatFullPrice = (value) => {
+  return `${Number(value || 0).toLocaleString("vi-VN")}đ`;
+};
 
 const Dashboard = () => {
-  const maxRevenue = Math.max(...revenueByDay.map((item) => item.revenue), 1);
-  const totalRevenue = revenueByDay.reduce((sum, item) => sum + item.revenue, 0).toFixed(1);
-  const avgRevenue = (Number(totalRevenue) / revenueByDay.length).toFixed(1);
-  const bestDay = revenueByDay.reduce((best, current) =>
-    current.revenue > best.revenue ? current : best,
+  const [dashboard, setDashboard] = useState({
+    totalOrders: 0,
+    completedOrders: 0,
+    failedOrders: 0,
+
+    todayRevenue: 0,
+
+    totalRevenueThisWeek: 0,
+    totalRevenueThisMonth: 0,
+
+    bestDay: {
+      day: "",
+      date: "",
+      revenue: 0,
+    },
+
+    revenueByDay: [],
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
+
+        const res = await adminDashboardService.getDashboard();
+
+        setDashboard(res.data);
+      } catch (error) {
+        console.error("Không tải được admin dashboard:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboard();
+  }, []);
+
+  const revenueByDay = dashboard.revenueByDay || [];
+
+  const bestDay = dashboard.bestDay || {
+    day: "",
+    date: "",
+    revenue: 0,
+  };
+
+  const maxRevenue = Math.max(
+    ...revenueByDay.map((item) => Number(item.revenue || 0)),
+    1,
   );
+
   const statCards = [
-    { label: "Đơn hàng hôm nay", value: "128", sub: "+18 so với hôm qua" },
-    { label: "Doanh thu hôm nay", value: "24.6M", sub: "Đạt 92% mục tiêu ngày" },
-    { label: "Khách hàng mới", value: "36", sub: "Tập trung khung giờ 18h - 21h" },
-    { label: "Món sắp hết", value: "7", sub: "Cần bổ sung trong ca tối" },
-  ];
-  const recentActivities = [
-    "Đơn #DH2381 vừa thanh toán thành công",
-    "Bàn B12 vừa tạo yêu cầu gọi món QR",
-    "Voucher FESTIVE20 được áp dụng 5 lần hôm nay",
-    "Món “Cá hồi sốt bơ tỏi” sắp hết kho",
+    {
+      title: "Đơn hàng hôm nay",
+      value: loading ? "..." : dashboard.totalOrders,
+      suffix: "đơn",
+    },
+
+    {
+      title: "Doanh thu hôm nay",
+      value: loading ? "..." : formatRevenue(dashboard.todayRevenue),
+      suffix: "",
+    },
+
+    {
+      title: "Đơn thất bại",
+      value: loading ? "..." : dashboard.failedOrders,
+      suffix: "đơn",
+    },
   ];
 
   return (
-    <section className="admin-page">
-      <div className="admin-hero">
-        <UserHeader
-          title="Dashboard quản lý nhà hàng"
-          description="Tổng quan vận hành theo thời gian thực: doanh thu, đơn hàng và hiệu suất phục vụ."
-        />
-      </div>
+    <>
+      <UserHeader
+        title="Dashboard quản lý nhà hàng"
+        description="Tổng quan vận hành theo thời gian thực: doanh thu, đơn hàng và hiệu suất phục vụ."
+      />
 
-      <div className="admin-grid">
-        {statCards.map((item) => (
-          <div className="admin-stat" key={item.label}>
-            <p className="admin-stat-label">{item.label}</p>
-            <p className="admin-stat-value">{item.value}</p>
-            <p className="admin-stat-sub">{item.sub}</p>
-          </div>
-        ))}
-      </div>
+      <CurrentDateTime />
 
+      <StatsCards items={statCards} />
       <div className="admin-dashboard-grid">
         <div className="admin-dashboard-card">
           <div className="admin-toolbar">
             <div>
               <h3 className="admin-toolbar-title">Doanh thu 7 ngày gần nhất</h3>
-              <p className="admin-toolbar-subtitle">Đơn vị: triệu đồng</p>
+
+              <p className="admin-toolbar-subtitle">Doanh thu thực tế · VNĐ</p>
             </div>
           </div>
 
           <div className="admin-revenue-chart">
-            {revenueByDay.map((item) => (
-              <div key={item.day} className="admin-revenue-col">
-                <span className="admin-revenue-value">{item.revenue}M</span>
-                <div className="admin-revenue-track">
-                  <div
-                    className="admin-revenue-bar"
-                    style={{ height: `${Math.max((item.revenue / maxRevenue) * 100, 8)}%` }}
-                  />
-                </div>
-                <span className="admin-revenue-day">{item.day}</span>
+            {loading ? (
+              <div className="admin-dashboard-empty">Đang tải dữ liệu...</div>
+            ) : revenueByDay.length === 0 ? (
+              <div className="admin-dashboard-empty">
+                Chưa có dữ liệu doanh thu
               </div>
-            ))}
+            ) : (
+              revenueByDay.map((item) => {
+                const revenue = Number(item.revenue || 0);
+
+                const height =
+                  revenue === 0 ? 4 : Math.max((revenue / maxRevenue) * 100, 8);
+
+                return (
+                  <div key={item.date} className="admin-revenue-col">
+                    <span className="admin-revenue-value">
+                      {formatRevenue(revenue)}
+                    </span>
+
+                    <div className="admin-revenue-track">
+                      <div
+                        className="admin-revenue-bar"
+                        style={{
+                          height: `${height}%`,
+                        }}
+                      />
+                    </div>
+
+                    {/* THỨ */}
+                    <span className="admin-revenue-day">{item.day}</span>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
 
         <div className="admin-dashboard-side">
           <div className="admin-dashboard-card">
-            <p className="admin-side-label">Tổng doanh thu 7 ngày</p>
-            <p className="admin-side-value">{totalRevenue}M</p>
-            <p className="admin-side-sub">+12.4% so với tuần trước</p>
+            <p className="admin-side-label">Doanh thu tuần này</p>
+
+            <p className="admin-side-value">
+              {loading ? "..." : formatRevenue(dashboard.totalRevenueThisWeek)}
+            </p>
+
+            <p className="admin-side-sub">
+              {loading
+                ? "Đang tải..."
+                : `Từ thứ 2 · ${formatFullPrice(
+                    dashboard.totalRevenueThisWeek,
+                  )}`}
+            </p>
           </div>
 
           <div className="admin-dashboard-card">
-            <p className="admin-side-label">Trung bình mỗi ngày</p>
-            <p className="admin-side-value">{avgRevenue}M</p>
-            <p className="admin-side-sub">Mục tiêu tuần: 140M</p>
+            <p className="admin-side-label">Doanh thu tháng này</p>
+
+            <p className="admin-side-value">
+              {loading ? "..." : formatRevenue(dashboard.totalRevenueThisMonth)}
+            </p>
+
+            <p className="admin-side-sub">
+              {loading
+                ? "Đang tải..."
+                : `Từ ngày 1 · ${formatFullPrice(
+                    dashboard.totalRevenueThisMonth,
+                  )}`}
+            </p>
           </div>
 
           <div className="admin-dashboard-card">
             <p className="admin-side-label">Ngày hiệu quả nhất</p>
-            <p className="admin-side-value">
-              {bestDay.day} - {bestDay.revenue}M
-            </p>
-            <div className="admin-side-progress">
-              <span>Tỷ lệ đạt mục tiêu</span>
-              <strong>{Math.round((bestDay.revenue / 25) * 100)}%</strong>
-            </div>
-            <div className="admin-side-progress-bar">
-              <div
-                className="admin-side-progress-value"
-                style={{ width: `${Math.min((bestDay.revenue / 25) * 100, 100)}%` }}
-              />
-            </div>
-          </div>
 
-          <div className="admin-dashboard-card">
-            <p className="admin-side-label">Hoạt động gần đây</p>
-            <ul className="admin-activity-list">
-              {recentActivities.map((activity) => (
-                <li key={activity}>{activity}</li>
-              ))}
-            </ul>
+            <p className="admin-side-value">
+              {loading
+                ? "..."
+                : bestDay.date
+                  ? `${bestDay.day} - ${formatRevenue(bestDay.revenue)}`
+                  : "Chưa có dữ liệu"}
+            </p>
+
+            <p className="admin-side-sub">
+              {loading
+                ? ""
+                : bestDay.date
+                  ? `${bestDay.date} · ${formatFullPrice(bestDay.revenue)}`
+                  : ""}
+            </p>
           </div>
         </div>
       </div>
-    </section>
+    </>
   );
 };
 

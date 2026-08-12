@@ -143,16 +143,15 @@ const AdminVouchers = () => {
         loading={loading}
         items={[
           { title: "Tổng voucher", value: total },
-          { title: "Đang dùng", value: items.length },
+
           { title: "Hết hạn", value: 0 },
-          { title: "Khác", value: 0 },
         ]}
       />
 
       {/* SEARCH */}
       <div className="filter-bar">
         <Input
-          placeholder="Tìm voucher..."
+          placeholder="Tìm mã voucher..."
           allowClear
           onChange={(e) => {
             setPage(0);
@@ -163,33 +162,33 @@ const AdminVouchers = () => {
 
       {/* TABLE */}
       <div className="admin-table-wrapper">
-      <VoucherTable
-        data={items}
-        onView={async (record) => {
-          try {
-            const res = await adminVoucherService.getVoucherDetail(record.id);
-            const data = res.data?.data;
+        <VoucherTable
+          data={items}
+          onView={async (record) => {
+            try {
+              const res = await adminVoucherService.getVoucherDetail(record.id);
+              const data = res.data?.data;
 
-            setDetailRecord(data);
-            setOpenDetail(true);
-          } catch (e) {
-            message.error("Không thể tải chi tiết voucher");
-          }
-        }}
-        onEdit={(record) => {
-          setEditingRecord(record);
-          editForm.setFieldsValue({
-            ...record,
-            discount: record.discount / 1000,
-            minOrderValue: record.minOrderValue / 1000,
-            startDate: record.startDate ? dayjs(record.startDate) : null,
-            endDate: record.endDate ? dayjs(record.endDate) : null,
-          });
-          setOpenEdit(true);
-        }}
-        onDelete={handleDelete}
-      />
-</div>
+              setDetailRecord(data);
+              setOpenDetail(true);
+            } catch (e) {
+              message.error("Không thể tải chi tiết voucher");
+            }
+          }}
+          onEdit={(record) => {
+            setEditingRecord(record);
+            editForm.setFieldsValue({
+              ...record,
+              discount: record.discount / 1000,
+              minOrderValue: record.minOrderValue / 1000,
+              startDate: record.startDate ? dayjs(record.startDate) : null,
+              endDate: record.endDate ? dayjs(record.endDate) : null,
+            });
+            setOpenEdit(true);
+          }}
+          onDelete={handleDelete}
+        />
+      </div>
       {/* PAGINATION */}
       <AppPagination
         page={page}

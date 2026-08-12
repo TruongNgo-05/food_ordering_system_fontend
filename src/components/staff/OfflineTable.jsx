@@ -1,17 +1,18 @@
 import React from "react";
 import TableActions from "../common/TableActions";
 import BaseTable from "../common/BaseTable";
+
 const formatPrice = (v) => `${Number(v || 0).toLocaleString("vi-VN")}đ`;
+
 const getStatusText = (status) => {
   const map = {
     PENDING: "Chờ xử lý",
     CONFIRMED: "Đã xác nhận",
     PREPARING: "Đang chuẩn bị",
-    DELIVERING: "Đang giao",
     COMPLETED: "Hoàn thành",
     CANCELED: "Đã hủy",
-    REJECTED: "Từ chối",
   };
+
   return map[status] || status;
 };
 
@@ -39,10 +40,11 @@ const OfflineTable = ({ data, loading, onEdit, onView }) => {
       dataIndex: "paymentMethod",
       render: (value) => {
         const map = {
-          COD: "Tiền mặt (COD)",
-          ONLINE: "Online",
           AT_TABLE: "Tiền mặt tại bàn",
+          ONLINE: "Online",
+          COD: "Tiền mặt",
         };
+
         return map[value] || value;
       },
     },

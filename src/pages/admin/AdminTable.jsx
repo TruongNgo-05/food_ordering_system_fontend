@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Modal, message, Button } from "antd";
+import { Form, Input, message, Button } from "antd";
 import { QrcodeOutlined } from "@ant-design/icons";
+
 import UserHeader from "../../components/user/UserHeader";
 import StatsCards from "../../components/common/StatsCards";
 import AppPagination from "../../components/common/AppPagination";
 import BanTable from "../../components/admin/BanTable";
 
 import TableCreateAndUpdateModal from "../../components/modal/admin/TableCreateAndUpdateModal";
+import TableQrViewModal from "../../components/modal/admin/TableQrViewModal";
 
 import adminTableService from "../../services/admin/adminTableService";
+import tableService from "../../services/user/tableService";
 
 import "../../assets/styles/AdminPages.css";
 
@@ -16,9 +19,11 @@ const pageSize = 5;
 
 const AdminTable = () => {
   const [items, setItems] = useState([]);
+
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(pageSize);
   const [total, setTotal] = useState(0);
+
   const [loading, setLoading] = useState(false);
 
   const [search, setSearch] = useState("");
@@ -28,10 +33,15 @@ const AdminTable = () => {
 
   const [editingRecord, setEditingRecord] = useState(null);
 
+  // Bàn đang được xem QR
+  const [viewingTable, setViewingTable] = useState(null);
+
   const [addForm] = Form.useForm();
   const [editForm] = Form.useForm();
 
-  // ================= LOAD DATA =================
+  // =========================================================
+  // LOAD DATA
+  // =========================================================
   const fetchTables = async () => {
     try {
       setLoading(true);
@@ -54,7 +64,9 @@ const AdminTable = () => {
     }
   };
 
-  // ================= ADD =================
+  // =========================================================
+  // ADD
+  // =========================================================
   const handleAdd = async () => {
     try {
       const values = await addForm.validateFields();
@@ -65,15 +77,22 @@ const AdminTable = () => {
       });
 
       message.success("Thêm bàn thành công");
+
       setOpenAdd(false);
+
       addForm.resetFields();
+
       fetchTables();
     } catch (err) {
-      message.error("Thêm thất bại");
+      console.error("Lỗi thêm bàn:", err);
+
+      message.error(err?.response?.data?.message || "Thêm thất bại");
     }
   };
 
-  // ================= EDIT =================
+  // =========================================================
+  // EDIT
+  // =========================================================
   const handleEdit = async () => {
     try {
       const values = await editForm.validateFields();
@@ -84,35 +103,72 @@ const AdminTable = () => {
       });
 
       message.success("Cập nhật thành công");
+
       setOpenEdit(false);
       setEditingRecord(null);
+
       fetchTables();
     } catch (err) {
-      message.error("Cập nhật thất bại");
+      console.error("Lỗi cập nhật bàn:", err);
+
+      message.error(err?.response?.data?.message || "Cập nhật thất bại");
     }
   };
 
-  // ================= DELETE =================
+  // =========================================================
+  // DELETE
+  // =========================================================
   const handleDelete = async (id) => {
     try {
       await adminTableService.deleteTable(id);
+
       message.success("Xóa thành công");
+
       fetchTables();
     } catch (err) {
-      message.error("Xóa thất bại");
+      console.error("Lỗi xóa bàn:", err);
+
+      message.error(err?.response?.data?.message || "Xóa thất bại");
     }
   };
-  const buildQrImageUrl = (tableNumber) => {
-    const tableUrl = `${window.location.origin}/table-order?table=${encodeURIComponent(
-      tableNumber,
-    )}`;
-    return `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(
-      tableUrl,
-    )}`;
+
+  // =========================================================
+  // VIEW QR
+  // =========================================================
+  const handleView = async (record) => {
+    try {
+      const res = await tableService.getQrTable();
+
+      const qrTables = res?.data?.data || [];
+
+      const qrTable = qrTables.find(
+        (item) => item.tableNumber === record.tableNumber,
+      );
+
+      if (!qrTable) {
+        message.warning(`Không tìm thấy QR của bàn ${record.tableNumber}`);
+        return;
+      }
+
+      if (!qrTable.qrCode) {
+        message.warning(`Bàn ${record.tableNumber} chưa có mã QR`);
+        return;
+      }
+
+      setViewingTable(qrTable);
+    } catch (error) {
+      console.error("Lỗi lấy QR:", error);
+
+      message.error("Không thể tải QR bàn");
+    }
   };
 
+  // =========================================================
+  // PRINT ALL QR
+  // =========================================================
   const openPrintWindow = (tables) => {
     const printWindow = window.open("", "_blank");
+
     if (!printWindow) {
       message.error(
         "Không thể mở cửa sổ in. Vui lòng cho phép cửa sổ bật lên.",
@@ -121,54 +177,161 @@ const AdminTable = () => {
     }
 
     const rows = tables
-      .map(
-        (table) => `
+      .map((table) => {
+        const tableNumber = table.tableNumber;
+        const qrCode = table.qrCode;
+
+        const tableUrl = `${window.location.origin}/table-order?table=${encodeURIComponent(
+          tableNumber,
+        )}`;
+
+        return `
           <div class="print-qr-card">
-            <div class="print-qr-title">Bàn ${table.tableNumber}</div>
-            <img src="${buildQrImageUrl(table.tableNumber)}" alt="QR ${table.tableNumber}" />
-            <div class="print-qr-link">${window.location.origin}/table-order?table=${table.tableNumber}</div>
+            <div class="print-qr-title">
+              Bàn ${tableNumber}
+            </div>
+
+            ${
+              qrCode
+                ? `
+                  <img
+                    src="${qrCode}"
+                    alt="QR ${tableNumber}"
+                  />
+                `
+                : `
+                  <div class="no-qr">
+                    Chưa có mã QR
+                  </div>
+                `
+            }
+
+            <div class="print-qr-link">
+              ${tableUrl}
+            </div>
           </div>
-        `,
-      )
+        `;
+      })
       .join("");
 
     printWindow.document.write(`
+      <!DOCTYPE html>
       <html>
         <head>
           <title>In mã QR bàn</title>
+
           <style>
-            body { margin: 0; padding: 16px; font-family: Arial, sans-serif; background: #fff; }
-            .print-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-            .print-qr-card { padding: 16px; border: 1px solid #ddd; border-radius: 12px; text-align: center; }
-            .print-qr-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
-            .print-qr-card img { width: 220px; height: 220px; object-fit: contain; margin-bottom: 12px; }
-            .print-qr-link { font-size: 12px; word-break: break-all; color: #333; }
-            @media print { .print-qr-card { page-break-inside: avoid; } }
+            * {
+              box-sizing: border-box;
+            }
+
+            body {
+              margin: 0;
+              padding: 16px;
+              font-family: Arial, sans-serif;
+              background: #fff;
+              color: #000;
+            }
+
+            h1 {
+              text-align: center;
+              margin: 0 0 24px;
+              font-size: 24px;
+            }
+
+            .print-grid {
+              display: grid;
+              grid-template-columns:
+                repeat(auto-fit, minmax(220px, 1fr));
+
+              gap: 16px;
+            }
+
+            .print-qr-card {
+              padding: 16px;
+              border: 1px solid #ddd;
+              border-radius: 12px;
+              text-align: center;
+
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
+
+            .print-qr-title {
+              font-size: 18px;
+              font-weight: 700;
+              margin-bottom: 12px;
+            }
+
+            .print-qr-card img {
+              width: 220px;
+              height: 220px;
+              object-fit: contain;
+              display: block;
+              margin: 0 auto 12px;
+            }
+
+            .print-qr-link {
+              font-size: 12px;
+              word-break: break-all;
+              color: #333;
+            }
+
+            .no-qr {
+              width: 220px;
+              height: 220px;
+
+              display: flex;
+              align-items: center;
+              justify-content: center;
+
+              margin: 0 auto 12px;
+
+              border: 1px dashed #aaa;
+              color: #777;
+              font-size: 14px;
+            }
+
+            @media print {
+              body {
+                padding: 10px;
+              }
+
+              .print-qr-card {
+                page-break-inside: avoid;
+                break-inside: avoid;
+              }
+            }
           </style>
         </head>
+
         <body>
-          <h1>In mã QR bàn</h1>
-          <div class="print-grid">${rows}</div>
+          <h1>IN MÃ QR BÀN</h1>
+
+          <div class="print-grid">
+            ${rows}
+          </div>
         </body>
       </html>
     `);
 
     printWindow.document.close();
-    printWindow.focus();
+
+    // Đợi ảnh QR backend load xong rồi mới in
     setTimeout(() => {
+      printWindow.focus();
       printWindow.print();
-    }, 500);
+    }, 1000);
   };
 
   const handlePrintQrCodes = async () => {
     try {
       setLoading(true);
-      const res = await adminTableService.getAllTable({
-        page: 0,
-        size: 9999,
-        tableNumber: search || undefined,
-      });
-      const allTables = res?.data?.data?.content || [];
+
+      // Lấy toàn bộ QR từ backend
+      const res = await adminTableService.getQrTable();
+
+      const allTables = res?.data?.data || [];
 
       if (!allTables.length) {
         message.warning("Không có bàn nào để in QR");
@@ -178,13 +341,16 @@ const AdminTable = () => {
       openPrintWindow(allTables);
     } catch (err) {
       console.error("Lỗi in QR:", err);
-      message.error("Xảy ra lỗi khi in QR");
+
+      message.error("Xảy ra lỗi khi tải QR bàn");
     } finally {
       setLoading(false);
     }
   };
 
-  // ================= EFFECT =================
+  // =========================================================
+  // EFFECT
+  // =========================================================
   useEffect(() => {
     const delay = setTimeout(() => {
       fetchTables();
@@ -193,9 +359,14 @@ const AdminTable = () => {
     return () => clearTimeout(delay);
   }, [search, page, size]);
 
+  // =========================================================
+  // RENDER
+  // =========================================================
   return (
     <>
-      {/* HEADER */}
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
       <UserHeader
         title="Quản lý bàn ăn"
         description="Quản lý bàn ăn trong nhà hàng"
@@ -203,18 +374,27 @@ const AdminTable = () => {
         handleAdd={() => setOpenAdd(true)}
         extra={
           <Button icon={<QrcodeOutlined />} onClick={handlePrintQrCodes}>
-            In QR bàn
+            In tất cả QR bàn
           </Button>
         }
       />
 
-      {/* STATS */}
+      {/* =====================================================
+          STATS
+      ===================================================== */}
       <StatsCards
         loading={loading}
-        items={[{ title: "Tổng bàn", value: total }]}
+        items={[
+          {
+            title: "Tổng bàn",
+            value: total,
+          },
+        ]}
       />
 
-      {/* FILTER */}
+      {/* =====================================================
+          FILTER
+      ===================================================== */}
       <div className="filter-bar">
         <div style={{ flex: 1 }}>
           <Input
@@ -229,11 +409,16 @@ const AdminTable = () => {
         </div>
       </div>
 
-      {/* TABLE */}
+      {/* =====================================================
+          TABLE
+      ===================================================== */}
       <div className="admin-table-wrapper">
         <BanTable
           data={items}
           loading={loading}
+          // VIEW QR
+          onView={handleView}
+          // EDIT
           onEdit={(record) => {
             setEditingRecord(record);
 
@@ -244,11 +429,14 @@ const AdminTable = () => {
 
             setOpenEdit(true);
           }}
+          // DELETE
           onDelete={(id) => handleDelete(id)}
         />
       </div>
 
-      {/* PAGINATION */}
+      {/* =====================================================
+          PAGINATION
+      ===================================================== */}
       <AppPagination
         page={page}
         size={size}
@@ -259,7 +447,9 @@ const AdminTable = () => {
         }}
       />
 
-      {/* MODALS */}
+      {/* =====================================================
+          ADD MODAL
+      ===================================================== */}
       <TableCreateAndUpdateModal
         open={openAdd}
         title="Thêm bàn"
@@ -271,7 +461,9 @@ const AdminTable = () => {
         form={addForm}
       />
 
-      {/* EDIT */}
+      {/* =====================================================
+          EDIT MODAL
+      ===================================================== */}
       <TableCreateAndUpdateModal
         open={openEdit}
         title="Sửa bàn"
@@ -281,6 +473,15 @@ const AdminTable = () => {
         }}
         onSubmit={handleEdit}
         form={editForm}
+      />
+
+      {/* =====================================================
+          VIEW QR MODAL
+      ===================================================== */}
+      <TableQrViewModal
+        open={!!viewingTable}
+        table={viewingTable}
+        onCancel={() => setViewingTable(null)}
       />
     </>
   );

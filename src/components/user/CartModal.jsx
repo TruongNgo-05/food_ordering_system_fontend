@@ -91,7 +91,7 @@ const CartModal = ({
               className="cart-footer-btn cart-footer-btn-outline"
               onClick={() => {
                 onClose();
-                navigate("/customer");
+                navigate("/home");
               }}
             >
               Tiếp tục chọn món
@@ -108,7 +108,7 @@ const CartModal = ({
                   );
                   return;
                 }
-                navigate("/customer/carts");
+                navigate("/carts");
               }}
             >
               Đặt hàng

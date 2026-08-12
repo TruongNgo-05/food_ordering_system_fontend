@@ -20,7 +20,7 @@ const STATUS_COLOR = {
 };
 
 const AdminSupport = () => {
-  const [activeTab, setActiveTab] = useState("tickets"); // tickets | faq
+  const [activeTab, setActiveTab] = useState("faq"); // tickets | faq
 
   // ===== TICKETS STATE =====
   const [tickets, setTickets] = useState([]);
@@ -91,9 +91,15 @@ const AdminSupport = () => {
       setLoadingFAQ(true);
 
       const res = await getFAQ(faqPage, faqSize);
+      const pageData = res?.data?.data ?? {};
+      const list = Array.isArray(pageData.content)
+        ? pageData.content
+        : Array.isArray(pageData)
+          ? pageData
+          : [];
 
-      setFaqList(res.data.data.content || res.data.data);
-      setFaqTotal(res.data.data.totalElements);
+      setFaqList(list);
+      setFaqTotal(pageData.totalElements ?? list.length ?? 0);
     } catch (error) {
       console.error(error);
       message.error("Không thể tải danh sách FAQ");
@@ -108,11 +114,9 @@ const AdminSupport = () => {
   }, [statusFilter, ticketPage]);
 
   useEffect(() => {
-    if (activeTab === "faq") {
-      fetchFAQ();
-    }
+    fetchFAQ();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, faqPage]);
+  }, [faqPage]);
 
   // ---------- TICKET HANDLERS ----------
   const filteredTickets =
@@ -316,6 +320,31 @@ const AdminSupport = () => {
     });
   };
 
+  const handleDeleteTicket = (ticket) => {
+    Modal.confirm({
+      title: "Xóa yêu cầu hỗ trợ",
+      content: `Bạn có chắc muốn xóa yêu cầu "${ticket.subject}"?`,
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
+      centered: true,
+      onOk: async () => {
+        try {
+          await adminSupportService.deleteTicket(ticket.id);
+
+          setTickets((prev) => prev.filter((item) => item.id !== ticket.id));
+          setTicketTotal((prev) => Math.max(prev - 1, 0));
+          setTicketPage(0);
+
+          message.success("Đã xóa yêu cầu hỗ trợ");
+        } catch (error) {
+          console.error(error);
+          message.error("Xóa yêu cầu hỗ trợ thất bại");
+        }
+      },
+    });
+  };
+
   return (
     <div className="admin-support-page">
       <UserHeader
@@ -326,18 +355,18 @@ const AdminSupport = () => {
       {/* TABS */}
       <div className="admin-support-tabs">
         <button
-          className={`admin-tab-btn ${activeTab === "tickets" ? "active" : ""}`}
-          onClick={() => setActiveTab("tickets")}
-        >
-          Yêu cầu hỗ trợ
-          <span className="admin-tab-count">{ticketTotal}</span>
-        </button>
-        <button
           className={`admin-tab-btn ${activeTab === "faq" ? "active" : ""}`}
           onClick={() => setActiveTab("faq")}
         >
           Câu hỏi thường gặp
           <span className="admin-tab-count">{faqTotal}</span>
+        </button>
+        <button
+          className={`admin-tab-btn ${activeTab === "tickets" ? "active" : ""}`}
+          onClick={() => setActiveTab("tickets")}
+        >
+          Yêu cầu hỗ trợ
+          <span className="admin-tab-count">{ticketTotal}</span>
         </button>
       </div>
 
@@ -390,6 +419,17 @@ const AdminSupport = () => {
                     <span>{ticket.createdAt}</span>
                   </div>
                   <div className="admin-ticket-preview">{ticket.message}</div>
+                </div>
+                <div className="admin-faq-actions">
+                  <button
+                    className="admin-action-btn delete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteTicket(ticket);
+                    }}
+                  >
+                    Xóa
+                  </button>
                 </div>
               </div>
             ))}

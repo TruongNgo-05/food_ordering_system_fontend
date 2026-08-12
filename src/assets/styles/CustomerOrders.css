@@ -54,7 +54,6 @@
   font-size: 13px;
 }
 
-
 /* ---- Detail: 2-col layout ---- */
 .ord-detail-grid {
   display: grid;
@@ -188,14 +187,6 @@
 }
 
 /* Cancel / Reorder buttons in detail sidebar */
-.ord-cancel-btn {
-  border: none;
-  border-radius: 12px;
-  font-weight: 800;
-  padding: 10px 12px;
-  cursor: pointer;
-}
-
 .ord-reorder-btn {
   border: none;
   border-radius: 12px;
@@ -305,17 +296,6 @@
 
 .ord-card-reorder-btn {
   margin-top: 8px;
-  border-width: 1px;
-  border-style: solid;
-  border-radius: 10px;
-  font-weight: 800;
-  font-size: 12px;
-  padding: 6px 10px;
-  cursor: pointer;
-}
-
-.ord-card-cancel-btn {
-  margin-top: 6px;
   border-width: 1px;
   border-style: solid;
   border-radius: 10px;

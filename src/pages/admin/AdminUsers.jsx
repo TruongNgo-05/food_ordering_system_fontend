@@ -154,6 +154,13 @@ const AdminUsers = () => {
     return () => clearTimeout(delay);
   }, [search, statusFilter, roleFilter, page, size]);
 
+  const activeUsers = items.filter(
+    (user) => user.raw?.status === "ACTIVED",
+  ).length;
+  const lockedUsers = items.filter(
+    (user) => user.raw?.status !== "ACTIVED",
+  ).length;
+
   return (
     <>
       <UserHeader
@@ -167,10 +174,9 @@ const AdminUsers = () => {
       <StatsCards
         loading={loading}
         items={[
-          { title: "Tổng", value: total },
-          { title: "Số", value: 0 },
-          { title: "Số", value: 0 },
-          { title: "Số", value: 0 },
+          { title: "Tổng số người dùng", value: total },
+          { title: "Số người bị khóa", value: lockedUsers },
+          { title: "Số người đang hoạt động", value: activeUsers },
         ]}
       />
 
